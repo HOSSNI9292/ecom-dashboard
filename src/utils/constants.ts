@@ -1,0 +1,81 @@
+export const COUNTRY_NAMES: Record<string, string> = {
+  GA: "Gabon",
+  ML: "Mali",
+  CI: "Côte d'Ivoire",
+  BF: "Burkina Faso",
+  NE: "Niger",
+  TG: "Togo",
+  BJ: "Benin",
+  SN: "Sénégal",
+  TD: "Chad",
+  GN: "Guinea",
+  CD: "Congo RDC",
+  CG: "Congo Brazzaville",
+};
+
+export const COUNTRY_CURRENCIES: Record<string, string> = {
+  GA: "XAF",
+  ML: "XOF",
+  CI: "XOF",
+  BF: "XOF",
+  NE: "XOF",
+  TG: "XOF",
+  BJ: "XOF",
+  SN: "XOF",
+  TD: "XAF",
+  GN: "GNF",
+  CD: "USD",
+  CG: "XAF",
+};
+
+export const COUNTRY_FLAGS: Record<string, string> = {
+  BF: "https://static.dwcdn.net/css/flag-icons/flags/4x3/bf.svg",
+  NE: "https://static.dwcdn.net/css/flag-icons/flags/4x3/ne.svg",
+  TG: "https://static.dwcdn.net/css/flag-icons/flags/4x3/tg.svg",
+  BJ: "https://static.dwcdn.net/css/flag-icons/flags/4x3/bj.svg",
+  CI: "https://static.dwcdn.net/css/flag-icons/flags/4x3/ci.svg",
+  TD: "https://static.dwcdn.net/css/flag-icons/flags/4x3/td.svg",
+  GA: "https://static.dwcdn.net/css/flag-icons/flags/4x3/ga.svg",
+  SN: "https://static.dwcdn.net/css/flag-icons/flags/4x3/sn.svg",
+  ML: "https://static.dwcdn.net/css/flag-icons/flags/4x3/ml.svg",
+  GN: "https://static.dwcdn.net/css/flag-icons/flags/4x3/gn.svg",
+  CD: "https://static.dwcdn.net/css/flag-icons/flags/4x3/cd.svg",
+  CG: "https://static.dwcdn.net/css/flag-icons/flags/4x3/cg.svg",
+};
+
+export const STATUS_COLORS: Record<string, string> = {
+  Pending: "#f59e0b",
+  Confirmed: "#3b82f6",
+  Delivered: "#10b981",
+  Cancelled: "#ef4444",
+  double: "#8b5cf6",
+  "A transférer": "#06b6d4",
+  OutOfStock: "#6b7280",
+};
+
+export const STATUS_MAP: Record<string, string> = {
+  Pending: "pending",
+  Confirmed: "confirmed",
+  Delivered: "delivered",
+  Cancelled: "cancelled",
+  double: "double",
+  "A transférer": "transferred",
+  OutOfStock: "out_of_stock",
+};
+
+export const COUNTRY_COLORS = [
+  "#6366f1",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#8b5cf6",
+  "#06b6d4",
+  "#ec4899",
+  "#84cc16",
+  "#14b8a6",
+  "#f97316",
+  "#a855f7",
+  "#22d3ee",
+];
+
+export const DEFAULT_API_URL = "https://api.codinafrica.com/api";
