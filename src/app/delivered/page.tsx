@@ -48,6 +48,14 @@ export default function DeliveredPage() {
     return breakdown;
   }, [filteredOrders]);
 
+  const rawStatusBreakdown = useMemo(() => {
+    const breakdown: Record<string, number> = {};
+    filteredOrders.forEach((o) => {
+      breakdown[o.rawStatus] = (breakdown[o.rawStatus] || 0) + 1;
+    });
+    return breakdown;
+  }, [filteredOrders]);
+
   const sampleOrder = useMemo(() => {
     return filteredOrders.length > 0 ? filteredOrders[0] : null;
   }, [filteredOrders]);
@@ -215,7 +223,7 @@ export default function DeliveredPage() {
         <Card hover={false}>
           <CardHeader>
             <CardTitle>Order Status Breakdown</CardTitle>
-            <span className="text-[#606060] text-xs">All statuses in current filter</span>
+            <span className="text-[#606060] text-xs">Mapped statuses</span>
           </CardHeader>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {Object.entries(statusBreakdown).map(([status, count]) => (
@@ -227,14 +235,21 @@ export default function DeliveredPage() {
               </div>
             ))}
           </div>
-          {sampleOrder && (
-            <div className="mt-4 p-4 bg-[#0A0A0A] rounded-lg border border-[#1F1F1F]">
-              <p className="text-[#606060] text-xs mb-2">Sample Order Fields:</p>
-              <pre className="text-xs text-[#22D3EE] overflow-x-auto">
-                {JSON.stringify(sampleOrder, null, 2)}
-              </pre>
-            </div>
-          )}
+        </Card>
+
+        <Card hover={false}>
+          <CardHeader>
+            <CardTitle>Raw API Statuses</CardTitle>
+            <span className="text-[#f59e0b] text-xs">Original status names from API</span>
+          </CardHeader>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {Object.entries(rawStatusBreakdown).map(([status, count]) => (
+              <div key={status} className="bg-[#0A0A0A] rounded-lg p-3 border border-[#f59e0b]/20">
+                <p className="text-[#f59e0b] text-xs font-mono">{status}</p>
+                <p className="text-white text-lg font-bold">{count}</p>
+              </div>
+            ))}
+          </div>
         </Card>
 
         <Card hover={false}>

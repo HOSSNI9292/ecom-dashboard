@@ -55,6 +55,7 @@ function mapOrder(raw: CodinAfricaOrder): Order {
     country: raw.customer?.country || "",
     countryName: COUNTRY_NAMES[raw.customer?.country] || raw.customer?.country || "",
     status: STATUS_MAP[raw.status?.name] || raw.status?.name?.toLowerCase() || "unknown",
+    rawStatus: raw.status?.name || "unknown",
     statusColor: raw.status?.color || "#808080",
     date: raw.date || raw.createdAt,
     amount: raw.totalPrice || 0,

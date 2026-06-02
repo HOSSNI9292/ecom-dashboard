@@ -91,6 +91,7 @@ export interface Order {
   country: string;
   countryName: string;
   status: string;
+  rawStatus: string;
   statusColor: string;
   date: string;
   amount: number;
