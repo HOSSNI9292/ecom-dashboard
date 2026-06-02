@@ -26,7 +26,7 @@ interface CountryDelivered {
 export default function DeliveredPage() {
   const { data, loading, error, refetch } = useDashboardData();
   const [dateFilter, setDateFilter] = useState<DateFilterValue>("all");
-  const [statusFilter, setStatusFilter] = useState("delivered");
+  const [statusFilter, setStatusFilter] = useState("shipping");
 
   const allOrders = data?.orders ?? [];
   const filteredOrders = useMemo(() => filterOrdersByDate(allOrders, dateFilter), [allOrders, dateFilter]);
@@ -166,6 +166,7 @@ export default function DeliveredPage() {
             value={statusFilter}
             onChange={setStatusFilter}
             options={[
+              { value: "shipping", label: "Shipping" },
               { value: "delivered", label: "Delivered" },
               { value: "confirmed", label: "Confirmed" },
               { value: "pending", label: "Pending" },

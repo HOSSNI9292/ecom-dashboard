@@ -165,24 +165,24 @@ class ApiService {
     const outOfStock = orders.filter((o) => o.status === "out_of_stock").length;
     const double = orders.filter((o) => o.status === "double").length;
     const transferred = orders.filter((o) => o.status === "transferred").length;
-    const confirmed = orders.filter((o) => o.status === "confirmed" || o.status === "delivered").length;
-    const delivered = orders.filter((o) => o.status === "delivered").length;
+    const confirmed = orders.filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping").length;
+    const delivered = orders.filter((o) => o.status === "delivered" || o.status === "shipping").length;
     const nonCancelled = total - cancelled;
 
     const nonCancelledOrders = orders.filter((o) => o.status !== "cancelled" && o.status !== "out_of_stock");
     const confirmedOrDelivered = nonCancelledOrders.filter(
-      (o) => o.status === "confirmed" || o.status === "delivered"
+      (o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping"
     ).length;
 
     const uniqueProducts = new Set(products.map((p) => p.id)).size;
 
     const processedOrders = orders.filter((o) => o.status === "confirmed").length;
-    const confirmedOrders = orders.filter((o) => o.status === "confirmed" || o.status === "delivered").length;
+    const confirmedOrders = orders.filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping").length;
     const processedRevenue = orders
       .filter((o) => o.status === "confirmed")
       .reduce((s, o) => s + o.amount, 0);
     const confirmedRevenue = orders
-      .filter((o) => o.status === "confirmed" || o.status === "delivered")
+      .filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping")
       .reduce((s, o) => s + o.amount, 0);
 
     const deliverable = total - cancelled - outOfStock;
@@ -244,7 +244,7 @@ class ApiService {
       if (o.status === "pending") entry.pending += 1;
       else if (o.status === "cancelled") entry.cancelled += 1;
       else if (o.status === "out_of_stock") entry.outOfStock += 1;
-      else if (o.status === "confirmed" || o.status === "delivered") entry.confirmed += 1;
+      else if (o.status === "confirmed" || o.status === "delivered" || o.status === "shipping") entry.confirmed += 1;
       if (o.status === "confirmed") {
         entry.processedOrders += 1;
         entry.processedRevenue += o.amount;
