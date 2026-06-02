@@ -47,6 +47,7 @@ export default function FraudDetectionPage() {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState("");
   const [sortBy, setSortBy] = useState("fakeRate");
+  const [country, setCountry] = useState("");
   const [flaggedProducts, setFlaggedProducts] = useState<string[]>([]);
   const [selectedProduct, setSelectedProduct] = useState<ProductFraudAnalysis | null>(null);
   const [flagReason, setFlagReason] = useState("");
@@ -57,7 +58,20 @@ export default function FraudDetectionPage() {
   }, []);
 
   const allOrders = data?.orders ?? [];
-  const filteredOrders = useMemo(() => filterOrdersByDate(allOrders, dateFilter), [allOrders, dateFilter]);
+  const filteredOrders = useMemo(() => {
+    let list = filterOrdersByDate(allOrders, dateFilter);
+    if (country) list = list.filter((o) => o.country === country);
+    return list;
+  }, [allOrders, dateFilter, country]);
+
+  const countries = useMemo(() => {
+    const seen = new Set<string>();
+    return allOrders.filter((o) => {
+      if (seen.has(o.country)) return false;
+      seen.add(o.country);
+      return true;
+    }).map((o) => ({ label: o.countryName || o.country, value: o.country })).sort((a, b) => a.label.localeCompare(b.label));
+  }, [allOrders]);
 
   const productAnalysis = useMemo((): ProductFraudAnalysis[] => {
     const map = new Map<string, ProductFraudAnalysis>();
@@ -229,7 +243,15 @@ export default function FraudDetectionPage() {
           </div>
         </div>
 
-        <DateFilter value={dateFilter} onChange={setDateFilter} />
+        <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+          <DateFilter value={dateFilter} onChange={setDateFilter} />
+          <Select
+            value={country}
+            onChange={setCountry}
+            options={[{ label: "All Countries", value: "" }, ...countries]}
+            className="w-full sm:w-44"
+          />
+        </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
           <StatCard title="Total Fake Orders" value={formatNumber(stats.totalFakeOrders)} icon={<AlertTriangle className="w-5 h-5" />} color="error" delay={0} subtitle={`${formatPercentage(stats.totalOrders > 0 ? stats.totalFakeOrders / stats.totalOrders : 0)} of all orders`} />
