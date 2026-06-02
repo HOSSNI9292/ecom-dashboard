@@ -189,6 +189,7 @@ export default function FraudDetectionPage() {
         fakeOrders: p.fakeOrders,
         cancelled: p.cancelled,
         double: p.double,
+        confirmed: p.confirmed,
         transferred: p.transferred,
         fakeRate: `${(p.fakeRate * 100).toFixed(1)}%`,
         riskLevel: p.riskLevel,
@@ -200,8 +201,9 @@ export default function FraudDetectionPage() {
       {
         product: "Product", code: "Code", totalOrders: "Total Orders",
         fakeOrders: "Fake Orders", cancelled: "Cancelled", double: "Double",
-        transferred: "Transferred", fakeRate: "Fake Rate", riskLevel: "Risk Level",
-        flagged: "Flagged", revenue: "Revenue (XOF)", fakeRevenue: "Fake Revenue (XOF)",
+        confirmed: "Confirmed", transferred: "Transferred", fakeRate: "Fake Rate",
+        riskLevel: "Risk Level", flagged: "Flagged", revenue: "Revenue (XOF)",
+        fakeRevenue: "Fake Revenue (XOF)",
       }
     );
   }, [filtered]);
@@ -347,6 +349,7 @@ export default function FraudDetectionPage() {
                   <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fake</th>
                   <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Cancelled</th>
                   <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Double</th>
+                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Confirmed</th>
                   <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fake Rate</th>
                   <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Risk</th>
                   <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Status</th>
@@ -375,6 +378,7 @@ export default function FraudDetectionPage() {
                     <td className="py-3.5 px-4 text-center text-[#ef4444] font-semibold">{formatNumber(p.fakeOrders)}</td>
                     <td className="py-3.5 px-4 text-center text-[#f59e0b]">{formatNumber(p.cancelled)}</td>
                     <td className="py-3.5 px-4 text-center text-[#8b5cf6]">{formatNumber(p.double)}</td>
+                    <td className="py-3.5 px-4 text-center text-[#10b981] font-semibold">{formatNumber(p.confirmed)}</td>
                     <td className="py-3.5 px-4 text-center">
                       <span className={`text-sm font-bold ${getRiskColor(p.riskLevel)}`}>{formatPercentage(p.fakeRate)}</span>
                     </td>
@@ -409,7 +413,7 @@ export default function FraudDetectionPage() {
                   </tr>
                 ))}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={9} className="text-center py-12 text-[#606060]">No products found</td></tr>
+                  <tr><td colSpan={10} className="text-center py-12 text-[#606060]">No products found</td></tr>
                 )}
               </tbody>
             </table>
