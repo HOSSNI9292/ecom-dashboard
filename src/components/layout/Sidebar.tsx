@@ -51,9 +51,11 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       >
         <div className="flex items-center justify-between px-5 py-5 border-b border-[#1F1F1F]">
           <Link href="/dashboard" className="flex items-center gap-2.5 group" onClick={onClose}>
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#06B6D4] to-[#0891B2] flex items-center justify-center shadow-[0_0_16px_rgba(6,182,212,0.2)] group-hover:shadow-[0_0_24px_rgba(6,182,212,0.3)] transition-shadow duration-200">
-              <span className="text-white font-bold text-sm">C</span>
-            </div>
+            <img
+              src="https://media.discordapp.net/attachments/1281046520556421120/1504865227253088296/649317ca-03c2-4f35-b1e6-dc39c14b973f.png?ex=6a204575&is=6a1ef3f5&hm=aa3ce1d6d0aa24a18563b3cf190e87fa429bfc910cacb8c20eb8fa1aa481d319&=&format=webp&quality=lossless&width=1020&height=1020"
+              alt="Logo"
+              className="w-9 h-9 rounded-xl object-cover shadow-[0_0_16px_rgba(6,182,212,0.2)] group-hover:shadow-[0_0_24px_rgba(6,182,212,0.3)] transition-shadow duration-200"
+            />
             <div>
               <span className="text-white font-semibold text-sm">COD Analytics</span>
               <p className="text-[#606060] text-[10px]">Dashboard v2.0</p>
