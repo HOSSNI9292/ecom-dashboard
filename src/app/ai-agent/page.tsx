@@ -146,19 +146,258 @@ ${countries.slice(0, 10).map((c) => `- ${c.countryName}: Revenue ${formatCurrenc
     return context;
   }, [data]);
 
+  const generateSmartResponse = (question: string): string => {
+    if (!data) return "⏳ البيانات مازال كتحمّل، عاوني شوية...";
+
+    const q = question.toLowerCase();
+    const orders = data.orders ?? [];
+    const products = data.products ?? [];
+    const stats = data.stats;
+    const countries = data.countries ?? [];
+
+    const productMap = new Map<string, any>();
+    for (const o of orders) {
+      const key = o.productCode || o.productName;
+      if (!key) continue;
+
+      if (!productMap.has(key)) {
+        const product = products.find((p: Product) => p.code === key || p.name === key);
+        productMap.set(key, {
+          productCode: key,
+          productName: o.productName,
+          totalOrders: 0,
+          cancelled: 0,
+          double: 0,
+          transferred: 0,
+          confirmed: 0,
+          pending: 0,
+          fakeOrders: 0,
+          stockQuantity: product?.stockQuantity ?? 0,
+          revenue: 0,
+        });
+      }
+
+      const p = productMap.get(key);
+      p.totalOrders += 1;
+      p.revenue += o.amount;
+
+      if (o.status === "cancelled") { p.cancelled += 1; p.fakeOrders += 1; }
+      else if (o.status === "double") { p.double += 1; p.fakeOrders += 1; }
+      else if (o.status === "transferred") { p.transferred += 1; p.fakeOrders += 1; }
+      else if (o.status === "confirmed") p.confirmed += 1;
+      else if (o.status === "pending") p.pending += 1;
+    }
+
+    const productAnalysis = Array.from(productMap.values()).map((p) => ({
+      ...p,
+      fakeRate: p.totalOrders > 0 ? (p.fakeOrders / p.totalOrders) : 0,
+      fakeRatePercent: p.totalOrders > 0 ? ((p.fakeOrders / p.totalOrders) * 100).toFixed(1) : "0",
+    }));
+
+    const topProducts = [...productAnalysis].sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+    const worstProducts = [...productAnalysis].filter((p) => p.totalOrders > 0).sort((a, b) => b.fakeRate - a.fakeRate).slice(0, 5);
+    const lowStock = productAnalysis.filter((p) => p.stockQuantity <= 10 && p.stockQuantity > 0).sort((a, b) => a.stockQuantity - b.stockQuantity);
+    const outOfStock = productAnalysis.filter((p) => p.stockQuantity === 0);
+    const highRisk = productAnalysis.filter((p) => p.fakeRate >= 0.5);
+
+    if (q.includes("ملخص") || q.includes("summary") || q.includes("overview") || q.includes("كيفاش") || q.includes("كيف")) {
+      const totalRevenue = stats?.revenue ?? orders.reduce((s, o) => s + o.amount, 0);
+      const totalOrders = stats?.totalOrders ?? orders.length;
+      const confirmedOrders = stats?.confirmedOrders ?? 0;
+      const cancelledOrders = stats?.cancelledOrders ?? 0;
+      const netRevenue = stats?.netRevenue ?? 0;
+      const confRate = stats?.confirmationRate ?? 0;
+
+      return `📊 **ملخص البيزنس ديالك:**
+
+💰 **الأرقام:**
+• Total Revenue: ${formatCurrency(totalRevenue)}
+• Net Revenue (بعد الرسوم): ${formatCurrency(netRevenue)}
+• Total Orders: ${formatNumber(totalOrders)}
+• Confirmed: ${formatNumber(confirmedOrders)}
+• Cancelled: ${formatNumber(cancelledOrders)}
+• Confirmation Rate: ${formatPercentage(confRate)}
+
+🎯 **المنتجات:**
+• Total Products: ${formatNumber(productAnalysis.length)}
+• 🟢 منتجات ممتازة (fake < 15%): ${productAnalysis.filter((p) => p.fakeRate < 0.15).length}
+• 🟡 منتجات متوسطة (fake 15-30%): ${productAnalysis.filter((p) => p.fakeRate >= 0.15 && p.fakeRate < 0.3).length}
+• 🔴 منتجات خطيرة (fake > 50%): ${highRisk.length}
+
+📦 **الستوك:**
+• Out of Stock: ${outOfStock.length} منتج
+• Low Stock: ${lowStock.length} منتج
+
+🌍 **Countries:** ${countries.length} دولة
+
+${highRisk.length > 0 ? `⚠️ **تنبيه:** عندك ${highRisk.length} منتج fake rate > 50%، خاصك توقف الإعلانات ديالهم!` : "✅ ما كاينش منتجات خطيرة!"}`;
+    }
+
+    if (q.includes("أحسن") || q.includes("best") || q.includes("top") || q.includes("ممتاز")) {
+      if (topProducts.length === 0) return "ما كاينش بيانات كافية على المنتجات.";
+      
+      return `🏆 **Top 5 المنتجات:**
+
+${topProducts.map((p, i) => `${i + 1}. **${p.productName}**
+   💰 Revenue: ${formatCurrency(p.revenue)}
+   📦 Orders: ${p.totalOrders} (Confirmed: ${p.confirmed})
+   📊 Fake Rate: ${p.fakeRatePercent}%
+   📈 Stock: ${p.stockQuantity} units
+   ${p.fakeRate < 0.15 ? "✅ **زود الإعلانات!**" : p.fakeRate < 0.3 ? "⚠️ راقب" : "🔴 مشكل"}`).join("\n\n")}
+
+💡 **نصيحة:** هاد المنتجات كيجيبو فلوس، زود الميزانية ديالهم!`;
+    }
+
+    if (q.includes("أسوأ") || q.includes("worst") || q.includes("خايب") || q.includes("مشكل") || q.includes("fake")) {
+      if (worstProducts.length === 0) return "✅ ما كاينش منتجات عندها مشاكل!";
+      
+      return `⚠️ **Top 5 منتجات عندها مشاكل:**
+
+${worstProducts.map((p, i) => `${i + 1}. **${p.productName}**
+   🔴 Fake Rate: ${p.fakeRatePercent}%
+   ❌ Fake Orders: ${p.fakeOrders}/${p.totalOrders}
+      • Cancelled: ${p.cancelled}
+      • Double: ${p.double}
+      • Transferred: ${p.transferred}
+   💰 Revenue: ${formatCurrency(p.revenue)}
+   📦 Stock: ${p.stockQuantity} units
+   ${p.fakeRate >= 0.5 ? "⛔ **وقف الإعلانات فوراً!**" : p.fakeRate >= 0.3 ? "⚠️ قلل الإعلانات" : "👍 راقب"}`).join("\n\n")}
+
+💡 **نصيحة:** المنتجات اللي fake rate > 50% خاصك توقف الإعلانات ديالهم فوراً!`;
+    }
+
+    if (q.includes("ستوك") || q.includes("stock") || q.includes("باقي") || q.includes("شحال")) {
+      if (outOfStock.length === 0 && lowStock.length === 0) {
+        return "✅ **الستوك مزيان!** ما كاينش منتجات فارغة أو قليلة.";
+      }
+
+      let response = "📦 **وضع الستوك:**\n\n";
+      
+      if (outOfStock.length > 0) {
+        response += `⛔ **Out of Stock (${outOfStock.length}):**\n`;
+        response += outOfStock.slice(0, 5).map((p) => `• ${p.productName} (Revenue: ${formatCurrency(p.revenue)})`).join("\n");
+        response += "\n\n";
+      }
+
+      if (lowStock.length > 0) {
+        response += `⚠️ **Low Stock (${lowStock.length}):**\n`;
+        response += lowStock.slice(0, 5).map((p) => `• ${p.productName}: ${p.stockQuantity} units`).join("\n");
+      }
+
+      response += "\n\n💡 **نصيحة:** المنتجات اللي out of stock خاصك تعمرهم فوراً، خصوصاً اللي كيجيبو revenue عالي!";
+      return response;
+    }
+
+    if (q.includes("نصيحة") || q.includes("advice") || q.includes("ندير") || q.includes("recommend")) {
+      let advice = "💡 **نصائح للبيزنس ديالك:**\n\n";
+
+      if (highRisk.length > 0) {
+        advice += `⛔ **عاجل:** عندك ${highRisk.length} منتج fake rate > 50%\n`;
+        advice += highRisk.slice(0, 3).map((p) => `• ${p.productName} (${p.fakeRatePercent}%)`).join("\n");
+        advice += "\n**وقف الإعلانات ديالهم فوراً!**\n\n";
+      }
+
+      const goodProducts = productAnalysis.filter((p) => p.fakeRate < 0.15 && p.revenue > 0);
+      if (goodProducts.length > 0) {
+        advice += `✅ **زود الميزانية ف:**\n`;
+        advice += goodProducts.slice(0, 3).map((p) => `• ${p.productName} (Fake: ${p.fakeRatePercent}%, Revenue: ${formatCurrency(p.revenue)})`).join("\n");
+        advice += "\n\n";
+      }
+
+      if (outOfStock.length > 0) {
+        advice += `📦 **عمر الستوك:**\n`;
+        advice += outOfStock.slice(0, 3).map((p) => `• ${p.productName}`).join("\n");
+        advice += "\n\n";
+      }
+
+      const confRate = stats?.confirmationRate ?? 0;
+      if (confRate < 0.5) {
+        advice += `📉 **Confirmation Rate ضعيف (${formatPercentage(confRate)})**\nراجع targeting ديال الإعلانات وجودة المنتجات.\n\n`;
+      }
+
+      advice += "🎯 **خلاصة:** ركز على المنتجات اللي fake rate < 15% وزود الميزانية ديالهم!";
+      return advice;
+    }
+
+    if (q.includes("ربح") || q.includes("profit") || q.includes("revenue") || q.includes("فلوس")) {
+      const totalRevenue = stats?.revenue ?? orders.reduce((s, o) => s + o.amount, 0);
+      const netRevenue = stats?.netRevenue ?? 0;
+      const serviceFees = stats?.serviceFeesTotal ?? 0;
+      const confirmedRevenue = stats?.confirmedRevenue ?? 0;
+
+      return `💰 **تحليل الأرباح:**
+
+📊 **Revenue:**
+• Total Revenue: ${formatCurrency(totalRevenue)}
+• Confirmed Revenue: ${formatCurrency(confirmedRevenue)}
+• Service Fees: ${formatCurrency(serviceFees)}
+• **Net Revenue: ${formatCurrency(netRevenue)}** 💵
+
+📈 **Performance:**
+• Average Order Value: ${formatCurrency(stats?.averageOrderValue ?? 0)}
+• Confirmation Rate: ${formatPercentage(stats?.confirmationRate ?? 0)}
+
+${netRevenue > 0 ? "✅ **البيزنس كيجيب فلوس!**" : "⚠️ **الربح ضعيف، راجع المنتجات والإعلانات.**"}`;
+    }
+
+    if (q.includes("country") || q.includes("دولة") || q.includes("بلد")) {
+      if (countries.length === 0) return "ما كاينش بيانات على الدول.";
+
+      const topCountries = [...countries].sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+      return `🌍 **Top 5 الدول:**
+
+${topCountries.map((c, i) => `${i + 1}. **${c.countryName}** ${c.flag}
+   💰 Revenue: ${formatCurrency(c.revenue)}
+   📦 Orders: ${c.orders}
+   ✅ Confirmation Rate: ${formatPercentage(c.confirmationRate)}
+   📊 Delivery Rate: ${formatPercentage(c.deliveryRate)}`).join("\n\n")}
+
+💡 **نصيحة:** ركز على الدول اللي عندها confirmation rate عالي!`;
+    }
+
+    if (q.includes("product") || q.includes("منتج")) {
+      const productName = question.replace(/.*product|منتج/i, "").trim();
+      if (productName) {
+        const found = productAnalysis.find((p) => 
+          p.productName.toLowerCase().includes(productName.toLowerCase()) ||
+          p.productCode.toLowerCase().includes(productName.toLowerCase())
+        );
+
+        if (found) {
+          return `📊 **${found.productName}:**
+
+💰 Revenue: ${formatCurrency(found.revenue)}
+📦 Total Orders: ${found.totalOrders}
+   • Confirmed: ${found.confirmed}
+   • Cancelled: ${found.cancelled}
+   • Double: ${found.double}
+   • Pending: ${found.pending}
+📊 Fake Rate: ${found.fakeRatePercent}%
+📈 Stock: ${found.stockQuantity} units
+
+${found.fakeRate >= 0.5 ? "⛔ **خطير! وقف الإعلانات فوراً!**" : 
+  found.fakeRate >= 0.3 ? "⚠️ **قلل الإعلانات وراقب**" :
+  found.fakeRate >= 0.15 ? "👍 **مقبول، راقب**" :
+  "✅ **ممتاز! زود الإعلانات!**"}`;
+        }
+      }
+    }
+
+    return `🤔 ما فهمتش السؤال. جرب تسولني على:
+
+• **ملخص**: "عطيني ملخص"
+• **المنتجات**: "شنو أحسن منتج؟" أو "شنو أسوأ منتج؟"
+• **الستوك**: "شحال باقي ف الستوك؟"
+• **النصائح**: "شنو ندير؟"
+• **الأرباح**: "شحال الربح؟"
+• **الدول**: "شنو أحسن دولة؟"
+• **منتج معين**: "عطيني معلومات على [اسم المنتج]"
+
+سولني على أي حاجة! 🚀`;
+  };
+
   const handleSend = async () => {
     if (!input.trim() || isTyping) return;
-
-    if (!groqKey) {
-      const warningMessage: Message = {
-        id: Date.now().toString(),
-        role: "assistant",
-        content: "⚠️ **Groq API key مفقود!**\n\nخاصك تضيف API key ف Settings باش AI Agent يخدم.\n\n1. سجل ف [console.groq.com](https://console.groq.com) (مجاني)\n2. أخد API key\n3. حطو ف Settings > AI Agent - Groq API\n\nGroq API مجاني وسريع بزاف!",
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, warningMessage]);
-      return;
-    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -171,48 +410,63 @@ ${countries.slice(0, 10).map((c) => `- ${c.countryName}: Revenue ${formatCurrenc
     setInput("");
     setIsTyping(true);
 
-    try {
-      const chatHistory = messages
-        .filter((m) => m.role === "user" || m.role === "assistant")
-        .map((m) => ({ role: m.role, content: m.content }))
-        .slice(-10);
+    if (groqKey) {
+      try {
+        const chatHistory = messages
+          .filter((m) => m.role === "user" || m.role === "assistant")
+          .map((m) => ({ role: m.role, content: m.content }))
+          .slice(-10);
 
-      chatHistory.push({ role: "user", content: input });
+        chatHistory.push({ role: "user", content: input });
 
-      const response = await fetch("/api/ai-chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          messages: chatHistory,
-          groqKey,
-          dataContext,
-        }),
-      });
+        const response = await fetch("/api/ai-chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: chatHistory,
+            groqKey,
+            dataContext,
+          }),
+        });
 
-      const result = await response.json();
+        const result = await response.json();
 
-      if (!response.ok) {
-        throw new Error(result.error || "Failed to get response");
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to get response");
+        }
+
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: result.message,
+          timestamp: new Date(),
+        };
+
+        setMessages((prev) => [...prev, assistantMessage]);
+      } catch (err) {
+        const smartResponse = generateSmartResponse(input);
+        const fallbackMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: smartResponse,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, fallbackMessage]);
+      } finally {
+        setIsTyping(false);
       }
-
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: result.message,
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-    } catch (err) {
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: `❌ **خطأ**: ${err instanceof Error ? err.message : "Failed to connect to AI"}`,
-        timestamp: new Date(),
-      };
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsTyping(false);
+    } else {
+      setTimeout(() => {
+        const smartResponse = generateSmartResponse(input);
+        const assistantMessage: Message = {
+          id: (Date.now() + 1).toString(),
+          role: "assistant",
+          content: smartResponse,
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, assistantMessage]);
+        setIsTyping(false);
+      }, 800);
     }
   };
 
