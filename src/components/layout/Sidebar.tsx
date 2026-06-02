@@ -10,6 +10,7 @@ import {
   Warehouse,
   Settings,
   BarChart3,
+  ShieldAlert,
   X,
   ChevronRight,
 } from "lucide-react";
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/orders", label: "Orders", icon: ShoppingCart },
   { href: "/countries", label: "Countries", icon: Globe },
   { href: "/stock", label: "Stock", icon: Warehouse },
+  { href: "/fraud-detection", label: "Fraud Detection", icon: ShieldAlert },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
