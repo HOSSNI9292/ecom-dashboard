@@ -497,7 +497,7 @@ ${found.fakeRate >= 0.5 ? "⛔ **خطير! وقف الإعلانات فوراً!
             <div>
               <h1 className="text-xl font-bold text-white">AI Agent</h1>
               <p className="text-[#606060] text-xs">
-                {groqKey ? "🟢 Connected to Groq AI" : "🔴 No API key - Add in Settings"}
+                {groqKey ? "🟢 Groq AI (Advanced)" : "🟢 Smart AI (Ready)"}
               </p>
             </div>
           </div>
