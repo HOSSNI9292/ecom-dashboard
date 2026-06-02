@@ -11,6 +11,7 @@ import {
   Settings,
   BarChart3,
   ShieldAlert,
+  Bot,
   X,
   ChevronRight,
 } from "lucide-react";
@@ -23,6 +24,7 @@ const navItems = [
   { href: "/countries", label: "Countries", icon: Globe },
   { href: "/stock", label: "Stock", icon: Warehouse },
   { href: "/fraud-detection", label: "Fraud Detection", icon: ShieldAlert },
+  { href: "/ai-agent", label: "AI Agent", icon: Bot },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
