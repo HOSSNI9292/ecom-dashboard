@@ -47,6 +47,11 @@ function buildHeaders(token: string): HeadersInit {
 function mapOrder(raw: CodinAfricaOrder): Order {
   const detail = raw.details?.[0];
   const product = detail?.product;
+  const rawStatusName = raw.status?.name || "unknown";
+  const mappedStatus = STATUS_MAP[rawStatusName] || rawStatusName.toLowerCase();
+  
+  console.log("[DEBUG] Raw status:", rawStatusName, "→ Mapped:", mappedStatus);
+  
   return {
     id: raw._id,
     orderId: raw.id,
@@ -54,8 +59,8 @@ function mapOrder(raw: CodinAfricaOrder): Order {
     phone: raw.customer?.phone || "",
     country: raw.customer?.country || "",
     countryName: COUNTRY_NAMES[raw.customer?.country] || raw.customer?.country || "",
-    status: STATUS_MAP[raw.status?.name] || raw.status?.name?.toLowerCase() || "unknown",
-    rawStatus: raw.status?.name || "unknown",
+    status: mappedStatus,
+    rawStatus: rawStatusName,
     statusColor: raw.status?.color || "#808080",
     date: raw.date || raw.createdAt,
     amount: raw.totalPrice || 0,
@@ -126,6 +131,15 @@ class ApiService {
     const data = await this.request<ApiResponse<CodinAfricaOrder>>("/orders/search?limit=500");
     const orders = data?.content?.results || [];
     this.ordersCache = orders;
+    
+    const statusCounts: Record<string, number> = {};
+    orders.forEach((o) => {
+      const name = o.status?.name || "unknown";
+      statusCounts[name] = (statusCounts[name] || 0) + 1;
+    });
+    console.log("[DEBUG] Raw API status counts:", statusCounts);
+    console.log("[DEBUG] Sample order status:", orders[0]?.status);
+    
     return orders;
   }
 
@@ -150,6 +164,13 @@ class ApiService {
 
     const mappedOrders = rawOrders.map(mapOrder);
     const allProducts = rawOrders.flatMap(mapProduct);
+    
+    const mappedStatusCounts: Record<string, number> = {};
+    mappedOrders.forEach((o) => {
+      mappedStatusCounts[o.status] = (mappedStatusCounts[o.status] || 0) + 1;
+    });
+    console.log("[DEBUG] Mapped status counts:", mappedStatusCounts);
+    
     const stats = this.computeStats(mappedOrders, allProducts);
     const countries = this.computeCountries(mappedOrders, warehouses);
     const revenueTrend = this.computeRevenueTrend(mappedOrders);

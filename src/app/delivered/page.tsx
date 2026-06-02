@@ -223,33 +223,87 @@ export default function DeliveredPage() {
 
         <Card hover={false}>
           <CardHeader>
-            <CardTitle>Order Status Breakdown</CardTitle>
-            <span className="text-[#606060] text-xs">Mapped statuses</span>
+            <CardTitle>🔍 Debug: Order Status Analysis</CardTitle>
+            <span className="text-[#f59e0b] text-xs">Check what statuses exist in your data</span>
           </CardHeader>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {Object.entries(statusBreakdown).map(([status, count]) => (
-              <div key={status} className="bg-[#0A0A0A] rounded-lg p-3 border border-[#1F1F1F]">
-                <p className="text-[#606060] text-xs uppercase">{status}</p>
-                <p className={`text-lg font-bold ${status === "delivered" ? "text-[#10b981]" : "text-white"}`}>
-                  {count}
-                </p>
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-white text-sm font-semibold mb-3">📊 Mapped Statuses (after conversion)</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {Object.entries(statusBreakdown).length === 0 ? (
+                  <p className="text-[#606060] text-sm">No orders found</p>
+                ) : (
+                  Object.entries(statusBreakdown).map(([status, count]) => (
+                    <div key={status} className="bg-[#0A0A0A] rounded-lg p-3 border border-[#1F1F1F]">
+                      <p className="text-[#606060] text-xs uppercase">{status}</p>
+                      <p className={`text-lg font-bold ${status === statusFilter ? "text-[#10b981]" : "text-white"}`}>
+                        {count}
+                      </p>
+                    </div>
+                  ))
+                )}
               </div>
-            ))}
-          </div>
-        </Card>
+            </div>
 
-        <Card hover={false}>
-          <CardHeader>
-            <CardTitle>Raw API Statuses</CardTitle>
-            <span className="text-[#f59e0b] text-xs">Original status names from API</span>
-          </CardHeader>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {Object.entries(rawStatusBreakdown).map(([status, count]) => (
-              <div key={status} className="bg-[#0A0A0A] rounded-lg p-3 border border-[#f59e0b]/20">
-                <p className="text-[#f59e0b] text-xs font-mono">{status}</p>
-                <p className="text-white text-lg font-bold">{count}</p>
+            <div>
+              <h3 className="text-white text-sm font-semibold mb-3">🔥 Raw API Statuses (original from API)</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {Object.entries(rawStatusBreakdown).length === 0 ? (
+                  <p className="text-[#606060] text-sm">No orders found</p>
+                ) : (
+                  Object.entries(rawStatusBreakdown).map(([status, count]) => (
+                    <div key={status} className="bg-[#0A0A0A] rounded-lg p-3 border border-[#f59e0b]/20">
+                      <p className="text-[#f59e0b] text-xs font-mono">{status}</p>
+                      <p className="text-white text-lg font-bold">{count}</p>
+                    </div>
+                  ))
+                )}
               </div>
-            ))}
+            </div>
+
+            {sampleOrder && (
+              <div>
+                <h3 className="text-white text-sm font-semibold mb-3">📋 Sample Order</h3>
+                <div className="bg-[#0A0A0A] rounded-lg p-4 border border-[#1F1F1F]">
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-[#606060] text-xs">Order ID</p>
+                      <p className="text-white font-mono">{sampleOrder.orderId}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#606060] text-xs">Mapped Status</p>
+                      <p className="text-[#10b981] font-semibold">{sampleOrder.status}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#606060] text-xs">Raw Status (from API)</p>
+                      <p className="text-[#f59e0b] font-semibold">{sampleOrder.rawStatus}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#606060] text-xs">Country</p>
+                      <p className="text-white">{sampleOrder.countryName}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#606060] text-xs">Amount</p>
+                      <p className="text-white">{formatCurrency(sampleOrder.amount)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#606060] text-xs">Date</p>
+                      <p className="text-white">{new Date(sampleOrder.date).toLocaleDateString()}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="bg-[#1F1F1F] rounded-lg p-4 border border-[#2a2a2a]">
+              <h3 className="text-white text-sm font-semibold mb-2">💡 How to fix:</h3>
+              <ul className="text-[#c0c0c0] text-sm space-y-1 list-disc list-inside">
+                <li>If you see "Shipping" in Raw API Statuses, it should map to "shipping" in Mapped Statuses</li>
+                <li>If "shipping" shows 0 in Mapped Statuses, check the Raw API Statuses to see the exact name</li>
+                <li>The STATUS_MAP in <code className="text-[#22D3EE]">constants.ts</code> converts API names to lowercase</li>
+                <li>Common mappings: "Shipping" → "shipping", "Delivered" → "delivered", "Confirmed" → "confirmed"</li>
+              </ul>
+            </div>
           </div>
         </Card>
 
@@ -318,34 +372,87 @@ export default function DeliveredPage() {
 
         <Card hover={false}>
           <CardHeader>
-            <CardTitle>Recent {statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Orders</CardTitle>
-            <span className="text-[#606060] text-xs">Latest {Math.min(deliveredOrders.length, 10)}</span>
+            <CardTitle>🔍 Debug: Order Status Analysis</CardTitle>
+            <span className="text-[#f59e0b] text-xs">Check what statuses exist in your data</span>
           </CardHeader>
-          <div className="space-y-2">
-            {deliveredOrders.slice(0, 10).map((o) => (
-              <div
-                key={o.id}
-                className="flex items-center justify-between py-2.5 px-3 rounded-lg border border-[#1F1F1F]/50 hover:border-[#10b981]/20 hover:bg-[#1A1A1A] transition-all duration-200"
-              >
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="p-2 rounded-lg bg-[#10b981]/10">
-                    <CheckCircle className="w-4 h-4 text-[#10b981]" />
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-white text-sm font-semibold mb-3">📊 Mapped Statuses (after conversion)</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {Object.entries(statusBreakdown).length === 0 ? (
+                  <p className="text-[#606060] text-sm">No orders found</p>
+                ) : (
+                  Object.entries(statusBreakdown).map(([status, count]) => (
+                    <div key={status} className="bg-[#0A0A0A] rounded-lg p-3 border border-[#1F1F1F]">
+                      <p className="text-[#606060] text-xs uppercase">{status}</p>
+                      <p className={`text-lg font-bold ${status === statusFilter ? "text-[#10b981]" : "text-white"}`}>
+                        {count}
+                      </p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-white text-sm font-semibold mb-3">🔥 Raw API Statuses (original from API)</h3>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+                {Object.entries(rawStatusBreakdown).length === 0 ? (
+                  <p className="text-[#606060] text-sm">No orders found</p>
+                ) : (
+                  Object.entries(rawStatusBreakdown).map(([status, count]) => (
+                    <div key={status} className="bg-[#0A0A0A] rounded-lg p-3 border border-[#f59e0b]/20">
+                      <p className="text-[#f59e0b] text-xs font-mono">{status}</p>
+                      <p className="text-white text-lg font-bold">{count}</p>
+                    </div>
+                  ))
+                )}
+              </div>
+            </div>
+
+            {sampleOrder && (
+              <div>
+                <h3 className="text-white text-sm font-semibold mb-3">📋 Sample Order</h3>
+                <div className="bg-[#0A0A0A] rounded-lg p-4 border border-[#1F1F1F]">
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <p className="text-[#606060] text-xs">Order ID</p>
+                      <p className="text-white font-mono">{sampleOrder.orderId}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#606060] text-xs">Mapped Status</p>
+                      <p className="text-[#10b981] font-semibold">{sampleOrder.status}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#606060] text-xs">Raw Status (from API)</p>
+                      <p className="text-[#f59e0b] font-semibold">{sampleOrder.rawStatus}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#606060] text-xs">Country</p>
+                      <p className="text-white">{sampleOrder.countryName}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#606060] text-xs">Amount</p>
+                      <p className="text-white">{formatCurrency(sampleOrder.amount)}</p>
+                    </div>
+                    <div>
+                      <p className="text-[#606060] text-xs">Date</p>
+                      <p className="text-white">{new Date(sampleOrder.date).toLocaleDateString()}</p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{o.customerName}</p>
-                    <p className="text-[#606060] text-xs">
-                      {o.productName} • {o.countryName || o.country}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right flex items-center gap-3 shrink-0 ml-3">
-                  <span className="text-[#10b981] text-sm font-semibold">{formatCurrency(o.amount)}</span>
                 </div>
               </div>
-            ))}
-            {deliveredOrders.length === 0 && (
-              <p className="text-[#606060] text-sm text-center py-8">No {statusFilter} orders</p>
             )}
+
+            <div className="bg-[#1F1F1F] rounded-lg p-4 border border-[#2a2a2a]">
+              <h3 className="text-white text-sm font-semibold mb-2">💡 How to fix:</h3>
+              <ul className="text-[#c0c0c0] text-sm space-y-1 list-disc list-inside">
+                <li>If you see "Shipping" in Raw API Statuses, it should map to "shipping" in Mapped Statuses</li>
+                <li>If "shipping" shows 0 in Mapped Statuses, check the Raw API Statuses to see the exact name</li>
+                <li>The STATUS_MAP in <code className="text-[#22D3EE]">constants.ts</code> converts API names to lowercase</li>
+                <li>Common mappings: "Shipping" → "shipping", "Delivered" → "delivered", "Confirmed" → "confirmed"</li>
+              </ul>
+            </div>
           </div>
         </Card>
       </div>
