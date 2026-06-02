@@ -30,12 +30,12 @@ export default function DeliveredPage() {
   const filteredOrders = useMemo(() => filterOrdersByDate(allOrders, dateFilter), [allOrders, dateFilter]);
 
   const deliveredOrders = useMemo(() => {
-    return filteredOrders.filter((o) => o.status === "delivered" || o.status === "confirmed");
+    return filteredOrders.filter((o) => o.status === "delivered");
   }, [filteredOrders]);
 
   const yesterdayOrders = useMemo(() => {
     const yesterday = filterOrdersByDate(allOrders, "yesterday");
-    return yesterday.filter((o) => o.status === "delivered" || o.status === "confirmed");
+    return yesterday.filter((o) => o.status === "delivered");
   }, [allOrders]);
 
   const stats = useMemo(() => {
@@ -77,7 +77,7 @@ export default function DeliveredPage() {
       const c = map.get(country)!;
       c.totalOrders += 1;
 
-      if (o.status === "delivered" || o.status === "confirmed") {
+      if (o.status === "delivered") {
         c.delivered += 1;
         c.revenue += o.amount;
       }
