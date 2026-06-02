@@ -10,19 +10,19 @@ interface SearchInputProps {
 
 export function SearchInput({ value, onChange, placeholder = "Search..." }: SearchInputProps) {
   return (
-    <div className="relative">
-      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400" />
+    <div className="relative group">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#606060] group-focus-within:text-[#06B6D4] transition-colors duration-200" />
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
-        className="w-full pl-10 pr-10 py-2 bg-dark-800 border border-dark-700 rounded-lg text-white placeholder-dark-400 focus:outline-none focus:border-accent-500 transition-colors text-sm"
+        className="w-full pl-10 pr-10 py-2.5 bg-[#111111] border border-[#1F1F1F] rounded-lg text-white placeholder-[#606060] focus:outline-none focus:border-[#06B6D4]/50 focus:ring-1 focus:ring-[#06B6D4]/20 transition-all duration-200 text-sm"
       />
       {value && (
         <button
           onClick={() => onChange("")}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-white transition-colors"
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#606060] hover:text-white transition-colors duration-200"
         >
           <X className="w-4 h-4" />
         </button>

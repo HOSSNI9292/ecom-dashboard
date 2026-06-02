@@ -1,6 +1,7 @@
 "use client";
 
 import { Card } from "./Card";
+import { TrendingUp, TrendingDown } from "lucide-react";
 
 interface StatCardProps {
   title: string;
@@ -8,28 +9,45 @@ interface StatCardProps {
   icon: React.ReactNode;
   trend?: { value: number; isUp: boolean };
   subtitle?: string;
-  color?: string;
+  color?: "primary" | "success" | "warning" | "error" | "info" | "accent";
+  delay?: number;
 }
 
-export function StatCard({ title, value, icon, trend, subtitle, color = "accent" }: StatCardProps) {
+const colorMap = {
+  primary: { bg: "bg-[#06B6D4]/10", text: "text-[#06B6D4]" },
+  accent: { bg: "bg-[#06B6D4]/10", text: "text-[#06B6D4]" },
+  success: { bg: "bg-[#10b981]/10", text: "text-[#10b981]" },
+  warning: { bg: "bg-[#f59e0b]/10", text: "text-[#f59e0b]" },
+  error: { bg: "bg-[#ef4444]/10", text: "text-[#ef4444]" },
+  info: { bg: "bg-[#06b6d4]/10", text: "text-[#06b6d4]" },
+};
+
+export function StatCard({ title, value, icon, trend, subtitle, color = "accent", delay = 0 }: StatCardProps) {
+  const c = colorMap[color] || colorMap.accent;
+
   return (
-    <Card>
-      <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-dark-300 text-sm font-medium">{title}</p>
-          <p className="text-2xl font-bold text-white mt-1">{value}</p>
-          {trend && (
-            <p className={`text-xs mt-1 flex items-center gap-1 ${trend.isUp ? "text-success" : "text-error"}`}>
-              <span>{trend.isUp ? "↑" : "↓"}</span>
-              <span>{Math.abs(trend.value)}%</span>
-            </p>
-          )}
-          {subtitle && <p className="text-dark-400 text-xs mt-1">{subtitle}</p>}
+    <div
+      className="opacity-0 animate-fade-in"
+      style={{ animationDelay: `${delay}ms`, animationFillMode: "forwards" }}
+    >
+      <Card hover={false}>
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <p className="text-[#808080] text-xs font-medium uppercase tracking-wider">{title}</p>
+            <p className="text-3xl sm:text-4xl font-bold text-white mt-2 tracking-tight">{value}</p>
+            {trend && (
+              <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trend.isUp ? "text-[#10b981]" : "text-[#ef4444]"}`}>
+                {trend.isUp ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                <span>{Math.abs(trend.value)}% vs last period</span>
+              </div>
+            )}
+            {subtitle && <p className="text-[#606060] text-xs mt-1.5">{subtitle}</p>}
+          </div>
+          <div className={`p-3 rounded-lg ${c.bg} ${c.text} shrink-0 ml-3`}>
+            {icon}
+          </div>
         </div>
-        <div className={`p-3 rounded-lg bg-${color}-500/10 text-${color}-400`}>
-          {icon}
-        </div>
-      </div>
-    </Card>
+      </Card>
+    </div>
   );
 }

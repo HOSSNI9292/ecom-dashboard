@@ -33,44 +33,69 @@ function useApi<T>(
   const [error, setError] = useState<Error | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const mountedRef = useRef(true);
+  const fetcherRef = useRef(fetcher);
+  const hasDataRef = useRef(false);
 
-  const refetch = useCallback(async () => {
+  fetcherRef.current = fetcher;
+
+  const fetchData = useCallback(async () => {
     api.refreshConfig();
     setLoading(true);
     setError(null);
     try {
-      const result = await fetcher();
-      if (mountedRef.current) setData(result);
+      console.log("[useApi] Fetching data...");
+      const result = await fetcherRef.current();
+      if (mountedRef.current) {
+        console.log("[useApi] Data received, setting state");
+        setData(result);
+        hasDataRef.current = true;
+      }
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      if (mountedRef.current) setError(error);
+      console.log("[useApi] Fetch error:", error.message);
+      if (mountedRef.current) {
+        if (!hasDataRef.current) {
+          setError(error);
+        }
+      }
       onError?.(error);
     } finally {
-      if (mountedRef.current) setLoading(false);
+      if (mountedRef.current) {
+        setLoading(false);
+      }
     }
-  }, [fetcher, onError]);
+  }, [onError]);
 
   useEffect(() => {
     mountedRef.current = true;
-    if (autoFetch) refetch();
-    return () => { mountedRef.current = false; };
-  }, [autoFetch, refetch]);
+    hasDataRef.current = false;
+    if (autoFetch) {
+      console.log("[useApi] Initial fetch");
+      fetchData();
+    }
+    return () => {
+      console.log("[useApi] Cleanup");
+      mountedRef.current = false;
+    };
+  }, [autoFetch, fetchData]);
 
   useEffect(() => {
     if (refreshInterval > 0 && autoFetch) {
-      intervalRef.current = setInterval(refetch, refreshInterval);
+      intervalRef.current = setInterval(fetchData, refreshInterval);
     }
     return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
     };
-  }, [refreshInterval, autoFetch, refetch]);
+  }, [refreshInterval, autoFetch, fetchData]);
 
-  return { data, loading, error, refetch };
+  return { data, loading, error, refetch: fetchData };
 }
 
 export function useDashboardData(options?: UseApiOptions) {
   return useApi(() => api.fetchAllData(), {
-    refreshInterval: 30000,
+    refreshInterval: 60000,
     ...options,
   });
 }
@@ -83,10 +108,12 @@ export function useOrders(options?: UseApiOptions & {
   perPage?: number;
 }) {
   const { search, status, country, page = 1, perPage = 20, ...apiOpts } = options || {};
-  const result = useApi(() => api.fetchAllData(), { refreshInterval: 30000, ...apiOpts });
+  const fetcher = useCallback(() => api.fetchAllData(), []);
+  const result = useApi(fetcher, { refreshInterval: 60000, ...apiOpts });
 
   const filtered = useMemo(() => {
     if (!result.data?.orders) return { orders: [], totalPages: 0 };
+    console.log("[useOrders] Filtering. Total raw orders:", result.data.orders.length);
     let list = [...result.data.orders];
     if (search) {
       const s = search.toLowerCase();
@@ -104,6 +131,7 @@ export function useOrders(options?: UseApiOptions & {
     const totalPages = Math.ceil(total / perPage);
     const start = (page - 1) * perPage;
     list = list.slice(start, start + perPage);
+    console.log("[useOrders] Filtered to", list.length, "orders, page", page, "of", totalPages);
     return { orders: list, totalPages };
   }, [result.data?.orders, search, status, country, page, perPage]);
 
@@ -119,7 +147,8 @@ export function useProducts(options?: UseApiOptions & {
   perPage?: number;
 }) {
   const { search, country, sortBy = "revenue", sortOrder = "desc", page = 1, perPage = 20, ...apiOpts } = options || {};
-  const result = useApi(() => api.fetchAllData(), { refreshInterval: 30000, ...apiOpts });
+  const fetcher = useCallback(() => api.fetchAllData(), []);
+  const result = useApi(fetcher, { refreshInterval: 60000, ...apiOpts });
 
   const processed = useMemo(() => {
     if (!result.data?.products) return { products: [], totalPages: 0 };
@@ -160,22 +189,26 @@ export function useProducts(options?: UseApiOptions & {
 }
 
 export function useCountries(options?: UseApiOptions) {
-  const result = useApi(() => api.fetchAllData(), { refreshInterval: 30000, ...options });
+  const fetcher = useCallback(() => api.fetchAllData(), []);
+  const result = useApi(fetcher, { refreshInterval: 60000, ...options });
   return { ...result, data: result.data?.countries ?? null };
 }
 
 export function useDashboardStats(options?: UseApiOptions) {
-  const result = useApi(() => api.fetchAllData(), { refreshInterval: 30000, ...options });
+  const fetcher = useCallback(() => api.fetchAllData(), []);
+  const result = useApi(fetcher, { refreshInterval: 60000, ...options });
   return { ...result, data: result.data?.stats ?? null };
 }
 
 export function useRevenueTrend(options?: UseApiOptions) {
-  const result = useApi(() => api.fetchAllData(), { refreshInterval: 30000, ...options });
+  const fetcher = useCallback(() => api.fetchAllData(), []);
+  const result = useApi(fetcher, { refreshInterval: 60000, ...options });
   return { ...result, data: result.data?.revenueTrend ?? null };
 }
 
 export function useLowStockProducts(options?: UseApiOptions) {
-  const result = useApi(() => api.fetchAllData(), { refreshInterval: 30000, ...options });
+  const fetcher = useCallback(() => api.fetchAllData(), []);
+  const result = useApi(fetcher, { refreshInterval: 60000, ...options });
   const low = useMemo(() => {
     if (!result.data?.products) return [];
     const aggregated = new Map<string, Product>();
@@ -197,7 +230,8 @@ export function useLowStockProducts(options?: UseApiOptions) {
 }
 
 export function useOutOfStockProducts(options?: UseApiOptions) {
-  const result = useApi(() => api.fetchAllData(), { refreshInterval: 30000, ...options });
+  const fetcher = useCallback(() => api.fetchAllData(), []);
+  const result = useApi(fetcher, { refreshInterval: 60000, ...options });
   const out = useMemo(() => {
     if (!result.data?.products) return [];
     const aggregated = new Map<string, Product>();

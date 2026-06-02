@@ -10,6 +10,7 @@ import type {
   ApiResponse,
 } from "@/types";
 import { COUNTRY_NAMES, COUNTRY_FLAGS, COUNTRY_CURRENCIES, STATUS_MAP, DEFAULT_API_URL } from "@/utils";
+import { getFeeForCountry, computeServiceFees } from "@/utils/fees";
 
 const STORAGE_KEY = "cod_dashboard_credentials";
 
@@ -45,6 +46,7 @@ function buildHeaders(token: string): HeadersInit {
 
 function mapOrder(raw: CodinAfricaOrder): Order {
   const detail = raw.details?.[0];
+  const product = detail?.product;
   return {
     id: raw._id,
     orderId: raw.id,
@@ -56,11 +58,13 @@ function mapOrder(raw: CodinAfricaOrder): Order {
     statusColor: raw.status?.color || "#808080",
     date: raw.date || raw.createdAt,
     amount: raw.totalPrice || 0,
-    productName: detail?.name || detail?.product?.name || "Unknown",
-    productCode: detail?.product?.code?.[0] || "",
+    productName: detail?.name || product?.name || "Unknown",
+    productCode: product?.code?.[0] || "",
     quantity: detail?.quantity || 1,
     city: raw.customer?.city || "",
     source: raw.source,
+    productImage: detail?.picture || product?.picture || "",
+    productImages: product?.relatedPictures?.length ? product.relatedPictures : (detail?.picture || product?.picture ? [detail?.picture || product?.picture || ""] : []),
   };
 }
 
@@ -171,6 +175,27 @@ class ApiService {
 
     const uniqueProducts = new Set(products.map((p) => p.id)).size;
 
+    const processedOrders = orders.filter((o) => o.status === "confirmed").length;
+    const confirmedOrders = orders.filter((o) => o.status === "confirmed" || o.status === "delivered").length;
+    const processedRevenue = orders
+      .filter((o) => o.status === "confirmed")
+      .reduce((s, o) => s + o.amount, 0);
+    const confirmedRevenue = orders
+      .filter((o) => o.status === "confirmed" || o.status === "delivered")
+      .reduce((s, o) => s + o.amount, 0);
+
+    const deliverable = total - cancelled - outOfStock;
+    const deliveryRate = deliverable > 0 ? processedOrders / deliverable : 0;
+
+    let serviceFeesTotal = 0;
+    for (const o of orders) {
+      if (o.status === "confirmed") {
+        const feePercent = getFeeForCountry(o.country);
+        serviceFeesTotal += computeServiceFees(o.amount, feePercent);
+      }
+    }
+    const netRevenue = processedRevenue - serviceFeesTotal;
+
     return {
       totalOrders: total,
       revenue,
@@ -179,10 +204,15 @@ class ApiService {
       outOfStockOrders: outOfStock,
       doubleOrders: double,
       transferredOrders: transferred,
-      confirmedOrders: confirmed,
+      confirmedOrders: confirmedOrders,
       deliveredOrders: delivered,
+      processedOrders,
+      processedRevenue,
+      confirmedRevenue,
+      netRevenue,
+      serviceFeesTotal,
       confirmationRate: nonCancelled > 0 ? confirmed / nonCancelled : 0,
-      deliveryRate: confirmed > 0 ? delivered / confirmed : 0,
+      deliveryRate,
       totalProducts: uniqueProducts,
       averageOrderValue: total > 0 ? revenue / total : 0,
     };
@@ -191,13 +221,22 @@ class ApiService {
   private computeCountries(orders: Order[], warehouses: CodinAfricaWarehouse[]): CountryStats[] {
     const map = new Map<
       string,
-      { revenue: number; orders: number; confirmed: number; pending: number; cancelled: number; outOfStock: number }
+      {
+        revenue: number;
+        orders: number;
+        confirmed: number;
+        pending: number;
+        cancelled: number;
+        outOfStock: number;
+        processedOrders: number;
+        processedRevenue: number;
+      }
     >();
 
     for (const o of orders) {
       const c = o.country || "XX";
       if (!map.has(c))
-        map.set(c, { revenue: 0, orders: 0, confirmed: 0, pending: 0, cancelled: 0, outOfStock: 0 });
+        map.set(c, { revenue: 0, orders: 0, confirmed: 0, pending: 0, cancelled: 0, outOfStock: 0, processedOrders: 0, processedRevenue: 0 });
       const entry = map.get(c)!;
       entry.revenue += o.amount;
       entry.orders += 1;
@@ -205,6 +244,10 @@ class ApiService {
       else if (o.status === "cancelled") entry.cancelled += 1;
       else if (o.status === "out_of_stock") entry.outOfStock += 1;
       else if (o.status === "confirmed" || o.status === "delivered") entry.confirmed += 1;
+      if (o.status === "confirmed") {
+        entry.processedOrders += 1;
+        entry.processedRevenue += o.amount;
+      }
     }
 
     const warehouseMap = new Map(warehouses.map((w) => [w.country, w]));
@@ -212,14 +255,22 @@ class ApiService {
     return Array.from(map.entries()).map(([code, data]) => {
       const w = warehouseMap.get(code);
       const totalNonCancelled = data.orders - data.cancelled - data.outOfStock;
+      const feePercent = getFeeForCountry(code);
+      const serviceFees = computeServiceFees(data.processedRevenue, feePercent);
+      const netRevenue = data.processedRevenue - serviceFees;
+      const deliverable = data.orders - data.cancelled - data.outOfStock;
       return {
         country: code,
         countryName: w?.countryName || COUNTRY_NAMES[code] || code,
         flag: w?.flag || COUNTRY_FLAGS[code] || "",
         currency: w?.currency || COUNTRY_CURRENCIES[code] || "USD",
         ...data,
+        grossRevenue: data.processedRevenue,
+        feePercent,
+        serviceFees,
+        netRevenue,
         confirmationRate: totalNonCancelled > 0 ? data.confirmed / totalNonCancelled : 0,
-        deliveryRate: data.confirmed > 0 ? 0 / data.confirmed : 0,
+        deliveryRate: deliverable > 0 ? data.processedOrders / deliverable : 0,
       };
     }).sort((a, b) => b.revenue - a.revenue);
   }

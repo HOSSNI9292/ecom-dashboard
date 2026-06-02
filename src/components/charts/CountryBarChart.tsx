@@ -12,13 +12,30 @@ import {
 import type { CountryStats } from "@/types";
 import { formatCurrency } from "@/utils";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
-import { COUNTRY_COLORS } from "@/utils";
 
 interface CountryBarChartProps {
   data: CountryStats[];
   loading?: boolean;
   dataKey?: "revenue" | "orders" | "confirmationRate";
   title?: string;
+}
+
+function CustomTooltip({ active, payload, label }: any) {
+  if (!active || !payload?.length) return null;
+  const val = payload[0].value;
+  const dataKey = payload[0].dataKey;
+  return (
+    <div className="bg-[#111111] border border-[#1F1F1F] rounded-lg p-3 shadow-2xl">
+      <p className="text-[#606060] text-xs mb-1">{label}</p>
+      <p className="text-white font-semibold text-sm">
+        {dataKey === "revenue"
+          ? formatCurrency(val)
+          : dataKey === "confirmationRate"
+            ? `${(val * 100).toFixed(1)}%`
+            : val}
+      </p>
+    </div>
+  );
 }
 
 export function CountryBarChart({
@@ -31,49 +48,60 @@ export function CountryBarChart({
     .sort((a, b) => (b[dataKey] as number) - (a[dataKey] as number))
     .slice(0, 10);
 
+  const barColor = dataKey === "revenue"
+    ? "#06B6D4"
+    : dataKey === "orders"
+      ? "#10b981"
+      : "#f59e0b";
+
   return (
-    <Card className="col-span-2">
+    <Card hover={false} className="lg:col-span-2">
       <CardHeader>
         <CardTitle>{title}</CardTitle>
       </CardHeader>
       {loading ? (
         <div className="h-[300px] flex items-center justify-center">
-          <div className="w-8 h-8 border-2 border-dark-600 border-t-accent-500 rounded-full animate-spin" />
+          <div className="relative">
+            <div className="w-10 h-10 border-2 border-[#1F1F1F] rounded-full" />
+            <div className="w-10 h-10 border-2 border-transparent border-t-[#06B6D4] rounded-full animate-spin absolute inset-0" />
+          </div>
         </div>
       ) : chartData.length === 0 ? (
-        <div className="h-[300px] flex items-center justify-center text-dark-400 text-sm">
-          No country data available
-        </div>
+        <div className="h-[300px] flex items-center justify-center text-[#606060] text-sm">No data</div>
       ) : (
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#2a2a2a" />
-              <XAxis dataKey="countryName" stroke="#606060" tick={{ fontSize: 12 }} tickLine={false} />
-              <YAxis
-                stroke="#606060"
-                tick={{ fontSize: 12 }}
+            <BarChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+              <defs>
+                <linearGradient id={`barGradient-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={barColor} stopOpacity={0.8} />
+                  <stop offset="100%" stopColor={barColor} stopOpacity={0.4} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="4 4" stroke="#1F1F1F" vertical={false} />
+              <XAxis
+                dataKey="countryName"
+                stroke="#404040"
+                tick={{ fontSize: 11, fill: "#606060" }}
                 tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                stroke="#404040"
+                tick={{ fontSize: 11, fill: "#606060" }}
+                tickLine={false}
+                axisLine={false}
                 tickFormatter={(v) =>
                   dataKey === "revenue" ? `${(v / 1000).toFixed(0)}k` : String(v)
                 }
               />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#1a1a1a",
-                  border: "1px solid #2a2a2a",
-                  borderRadius: "8px",
-                  color: "#fff",
-                }}
-                formatter={(value: number) =>
-                  dataKey === "revenue"
-                    ? [formatCurrency(value), "Revenue"]
-                    : dataKey === "confirmationRate"
-                      ? [`${(value * 100).toFixed(1)}%`, "Rate"]
-                      : [value, "Orders"]
-                }
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: "#1F1F1F" }} />
+              <Bar
+                dataKey={dataKey}
+                fill={`url(#barGradient-${dataKey})`}
+                radius={[4, 4, 0, 0]}
+                maxBarSize={40}
               />
-              <Bar dataKey={dataKey} fill={COUNTRY_COLORS[0]} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

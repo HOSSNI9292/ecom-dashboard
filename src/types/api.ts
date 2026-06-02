@@ -37,6 +37,7 @@ export interface CodinAfricaProduct {
   id_v2?: string;
   id?: string;
   createdAt?: string;
+  relatedPictures?: string[];
 }
 
 export interface CodinAfricaProductDetail {
@@ -98,6 +99,8 @@ export interface Order {
   quantity: number;
   city: string;
   source?: string;
+  productImage?: string;
+  productImages?: string[];
 }
 
 export interface Product {
@@ -128,6 +131,28 @@ export interface CountryStats {
   outOfStock: number;
   confirmationRate: number;
   deliveryRate: number;
+  processedOrders: number;
+  processedRevenue: number;
+  grossRevenue: number;
+  feePercent: number;
+  serviceFees: number;
+  netRevenue: number;
+}
+
+export interface CountryFeeConfig {
+  [countryCode: string]: number;
+}
+
+export interface BusinessMetrics {
+  totalRevenue: number;
+  confirmedRevenue: number;
+  processedRevenue: number;
+  netRevenue: number;
+  serviceFeesTotal: number;
+  processedOrders: number;
+  confirmedOrders: number;
+  deliveryRate: number;
+  averageOrderValue: number;
 }
 
 export interface DashboardStats {
@@ -140,6 +165,11 @@ export interface DashboardStats {
   transferredOrders: number;
   confirmedOrders: number;
   deliveredOrders: number;
+  processedOrders: number;
+  processedRevenue: number;
+  confirmedRevenue: number;
+  netRevenue: number;
+  serviceFeesTotal: number;
   confirmationRate: number;
   deliveryRate: number;
   totalProducts: number;

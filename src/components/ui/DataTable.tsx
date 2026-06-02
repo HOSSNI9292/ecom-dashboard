@@ -5,6 +5,7 @@ interface Column<T> {
   header: string;
   render?: (item: T) => React.ReactNode;
   className?: string;
+  sortable?: boolean;
 }
 
 interface DataTableProps<T> {
@@ -13,6 +14,19 @@ interface DataTableProps<T> {
   keyExtractor: (item: T) => string;
   loading?: boolean;
   emptyMessage?: string;
+  onRowClick?: (item: T) => void;
+}
+
+function SkeletonRow({ columns }: { columns: Column<any>[] }) {
+  return (
+    <tr className="border-b border-[#1F1F1F]/50">
+      {columns.map((col) => (
+        <td key={col.key} className="py-3.5 px-4">
+          <div className="h-4 skeleton rounded w-3/4" />
+        </td>
+      ))}
+    </tr>
+  );
 }
 
 export function DataTable<T>({
@@ -21,17 +35,18 @@ export function DataTable<T>({
   keyExtractor,
   loading = false,
   emptyMessage = "No data found",
+  onRowClick,
 }: DataTableProps<T>) {
   if (loading) {
     return (
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="border-b border-dark-700">
+            <tr className="border-b border-[#1F1F1F]">
               {columns.map((col) => (
                 <th
                   key={col.key}
-                  className={`text-left text-dark-400 text-xs font-medium uppercase tracking-wider py-3 px-4 ${col.className || ""}`}
+                  className={`text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 ${col.className || ""}`}
                 >
                   {col.header}
                 </th>
@@ -40,13 +55,7 @@ export function DataTable<T>({
           </thead>
           <tbody>
             {Array.from({ length: 5 }).map((_, i) => (
-              <tr key={i} className="border-b border-dark-700/50">
-                {columns.map((col) => (
-                  <td key={col.key} className="py-3 px-4">
-                    <div className="h-4 bg-dark-700 rounded animate-pulse w-3/4" />
-                  </td>
-                ))}
-              </tr>
+              <SkeletonRow key={i} columns={columns} />
             ))}
           </tbody>
         </table>
@@ -56,7 +65,14 @@ export function DataTable<T>({
 
   if (data.length === 0) {
     return (
-      <div className="text-center py-12 text-dark-400">{emptyMessage}</div>
+      <div className="text-center py-16">
+        <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-[#1F1F1F] flex items-center justify-center">
+          <svg className="w-6 h-6 text-[#606060]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+          </svg>
+        </div>
+        <p className="text-[#606060] text-sm">{emptyMessage}</p>
+      </div>
     );
   }
 
@@ -64,11 +80,11 @@ export function DataTable<T>({
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-dark-700">
+          <tr className="border-b border-[#1F1F1F]">
             {columns.map((col) => (
               <th
                 key={col.key}
-                className={`text-left text-dark-400 text-xs font-medium uppercase tracking-wider py-3 px-4 ${col.className || ""}`}
+                className={`text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111111] z-10 ${col.className || ""}`}
               >
                 {col.header}
               </th>
@@ -76,13 +92,18 @@ export function DataTable<T>({
           </tr>
         </thead>
         <tbody>
-          {data.map((item) => (
+          {data.map((item, idx) => (
             <tr
               key={keyExtractor(item)}
-              className="border-b border-dark-700/50 hover:bg-dark-800/50 transition-colors"
+              onClick={() => onRowClick?.(item)}
+              className={`border-b border-[#1F1F1F]/50 transition-all duration-150 ${
+                onRowClick ? "cursor-pointer" : ""
+              } ${
+                idx % 2 === 0 ? "bg-transparent" : "bg-[#0A0A0A]/30"
+              } hover:bg-[#1A1A1A] group`}
             >
               {columns.map((col) => (
-                <td key={col.key} className={`py-3 px-4 text-sm text-dark-200 ${col.className || ""}`}>
+                <td key={col.key} className={`py-3.5 px-4 text-sm text-[#c0c0c0] ${col.className || ""}`}>
                   {col.render ? col.render(item) : String((item as Record<string, unknown>)[col.key] ?? "")}
                 </td>
               ))}
