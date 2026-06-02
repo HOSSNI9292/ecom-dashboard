@@ -12,6 +12,7 @@ import {
   BarChart3,
   ShieldAlert,
   Bot,
+  CheckCircle,
   X,
   ChevronRight,
 } from "lucide-react";
@@ -21,6 +22,7 @@ const navItems = [
   { href: "/business-intelligence", label: "Business Intelligence", icon: BarChart3 },
   { href: "/products", label: "Products", icon: Package },
   { href: "/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/delivered", label: "Delivered", icon: CheckCircle },
   { href: "/countries", label: "Countries", icon: Globe },
   { href: "/stock", label: "Stock", icon: Warehouse },
   { href: "/fraud-detection", label: "Fraud Detection", icon: ShieldAlert },
