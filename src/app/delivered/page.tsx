@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { StatCard } from "@/components/ui/StatCard";
 import { PageWrapper } from "@/components/PageWrapper";
 import { DateFilter } from "@/components/DateFilter";
+import { Select } from "@/components/ui/Select";
 import { useDashboardData } from "@/hooks";
 import { formatNumber, formatCurrency, formatPercentage, filterOrdersByDate, COUNTRY_NAMES, COUNTRY_FLAGS } from "@/utils";
 import { exportToCSV } from "@/utils/csv";
@@ -24,19 +25,36 @@ interface CountryDelivered {
 
 export default function DeliveredPage() {
   const { data, loading, error, refetch } = useDashboardData();
-  const [dateFilter, setDateFilter] = useState<DateFilterValue>("today");
+  const [dateFilter, setDateFilter] = useState<DateFilterValue>("all");
+  const [statusFilter, setStatusFilter] = useState("delivered");
 
   const allOrders = data?.orders ?? [];
   const filteredOrders = useMemo(() => filterOrdersByDate(allOrders, dateFilter), [allOrders, dateFilter]);
 
   const deliveredOrders = useMemo(() => {
-    return filteredOrders.filter((o) => o.status === "delivered");
-  }, [filteredOrders]);
+    return filteredOrders.filter((o) => o.status === statusFilter);
+  }, [filteredOrders, statusFilter]);
 
   const yesterdayOrders = useMemo(() => {
     const yesterday = filterOrdersByDate(allOrders, "yesterday");
-    return yesterday.filter((o) => o.status === "delivered");
-  }, [allOrders]);
+    return yesterday.filter((o) => o.status === statusFilter);
+  }, [allOrders, statusFilter]);
+
+  const statusBreakdown = useMemo(() => {
+    const breakdown: Record<string, number> = {};
+    filteredOrders.forEach((o) => {
+      breakdown[o.status] = (breakdown[o.status] || 0) + 1;
+    });
+    return breakdown;
+  }, [filteredOrders]);
+
+  const sampleOrder = useMemo(() => {
+    return filteredOrders.length > 0 ? filteredOrders[0] : null;
+  }, [filteredOrders]);
+
+  const confirmedOrders = useMemo(() => {
+    return filteredOrders.filter((o) => o.status === "confirmed");
+  }, [filteredOrders]);
 
   const stats = useMemo(() => {
     const totalDelivered = deliveredOrders.length;
@@ -77,7 +95,7 @@ export default function DeliveredPage() {
       const c = map.get(country)!;
       c.totalOrders += 1;
 
-      if (o.status === "delivered") {
+      if (o.status === statusFilter) {
         c.delivered += 1;
         c.revenue += o.amount;
       }
@@ -90,7 +108,7 @@ export default function DeliveredPage() {
       }))
       .filter((c) => c.delivered > 0)
       .sort((a, b) => b.delivered - a.delivered);
-  }, [filteredOrders]);
+  }, [filteredOrders, statusFilter]);
 
   const handleExport = () => {
     exportToCSV(
@@ -121,8 +139,8 @@ export default function DeliveredPage() {
               <CheckCircle className="w-6 h-6 text-[#10b981]" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">Delivered Orders</h1>
-              <p className="text-[#606060] text-xs">Track successful deliveries by country</p>
+              <h1 className="text-xl font-bold text-white">{statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Orders</h1>
+              <p className="text-[#606060] text-xs">Track {statusFilter} orders by country</p>
             </div>
           </div>
           <button
@@ -135,9 +153,25 @@ export default function DeliveredPage() {
 
         <DateFilter value={dateFilter} onChange={setDateFilter} />
 
+        <div className="flex gap-3">
+          <Select
+            value={statusFilter}
+            onChange={setStatusFilter}
+            options={[
+              { value: "delivered", label: "Delivered" },
+              { value: "confirmed", label: "Confirmed" },
+              { value: "pending", label: "Pending" },
+              { value: "cancelled", label: "Cancelled" },
+              { value: "double", label: "Double" },
+              { value: "transferred", label: "Transferred" },
+              { value: "out_of_stock", label: "Out of Stock" },
+            ]}
+          />
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="Delivered Orders"
+            title={`${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Orders`}
             value={formatNumber(stats.totalDelivered)}
             icon={<CheckCircle className="w-5 h-5" />}
             color="success"
@@ -161,7 +195,7 @@ export default function DeliveredPage() {
             }
           />
           <StatCard
-            title="Yesterday Delivered"
+            title={`Yesterday ${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}`}
             value={formatNumber(stats.yesterdayDelivered)}
             icon={<Package className="w-5 h-5" />}
             color="info"
@@ -180,7 +214,32 @@ export default function DeliveredPage() {
 
         <Card hover={false}>
           <CardHeader>
-            <CardTitle>Delivered by Country</CardTitle>
+            <CardTitle>Order Status Breakdown</CardTitle>
+            <span className="text-[#606060] text-xs">All statuses in current filter</span>
+          </CardHeader>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {Object.entries(statusBreakdown).map(([status, count]) => (
+              <div key={status} className="bg-[#0A0A0A] rounded-lg p-3 border border-[#1F1F1F]">
+                <p className="text-[#606060] text-xs uppercase">{status}</p>
+                <p className={`text-lg font-bold ${status === "delivered" ? "text-[#10b981]" : "text-white"}`}>
+                  {count}
+                </p>
+              </div>
+            ))}
+          </div>
+          {sampleOrder && (
+            <div className="mt-4 p-4 bg-[#0A0A0A] rounded-lg border border-[#1F1F1F]">
+              <p className="text-[#606060] text-xs mb-2">Sample Order Fields:</p>
+              <pre className="text-xs text-[#22D3EE] overflow-x-auto">
+                {JSON.stringify(sampleOrder, null, 2)}
+              </pre>
+            </div>
+          )}
+        </Card>
+
+        <Card hover={false}>
+          <CardHeader>
+            <CardTitle>{statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} by Country</CardTitle>
             <span className="text-[#10b981] text-xs font-medium">{countriesData.length} countries</span>
           </CardHeader>
           <div className="overflow-x-auto">
@@ -188,7 +247,7 @@ export default function DeliveredPage() {
               <thead>
                 <tr className="border-b border-[#1F1F1F]">
                   <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Delivered</th>
+                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}</th>
                   <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
                   <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Total Orders</th>
                   <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Delivery Rate</th>
@@ -232,7 +291,7 @@ export default function DeliveredPage() {
                 {countriesData.length === 0 && (
                   <tr>
                     <td colSpan={5} className="text-center py-12 text-[#606060]">
-                      No delivered orders found
+                      No {statusFilter} orders found
                     </td>
                   </tr>
                 )}
@@ -243,7 +302,7 @@ export default function DeliveredPage() {
 
         <Card hover={false}>
           <CardHeader>
-            <CardTitle>Recent Deliveries</CardTitle>
+            <CardTitle>Recent {statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Orders</CardTitle>
             <span className="text-[#606060] text-xs">Latest {Math.min(deliveredOrders.length, 10)}</span>
           </CardHeader>
           <div className="space-y-2">
@@ -269,7 +328,7 @@ export default function DeliveredPage() {
               </div>
             ))}
             {deliveredOrders.length === 0 && (
-              <p className="text-[#606060] text-sm text-center py-8">No delivered orders</p>
+              <p className="text-[#606060] text-sm text-center py-8">No {statusFilter} orders</p>
             )}
           </div>
         </Card>
