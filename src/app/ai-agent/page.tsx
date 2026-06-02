@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Bot, Send, User, Sparkles, TrendingDown, Package, AlertTriangle } from "lucide-react";
+import { useState, useRef, useEffect, useMemo } from "react";
+import { Bot, Send, User, Sparkles, TrendingDown, Package, AlertTriangle, BarChart3, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { PageWrapper } from "@/components/PageWrapper";
 import { useDashboardData } from "@/hooks";
@@ -15,20 +15,7 @@ interface Message {
   timestamp: Date;
 }
 
-interface ProductAnalysis {
-  productCode: string;
-  productName: string;
-  totalOrders: number;
-  cancelled: number;
-  double: number;
-  confirmed: number;
-  fakeOrders: number;
-  fakeRate: number;
-  stockQuantity: number;
-  revenue: number;
-  riskLevel: "high" | "medium" | "low" | "safe";
-  recommendation: string;
-}
+const GROQ_KEY = "groq_api_key";
 
 export default function AIAgentPage() {
   const { data, loading, error, refetch } = useDashboardData();
@@ -36,13 +23,19 @@ export default function AIAgentPage() {
     {
       id: "1",
       role: "assistant",
-      content: "مرحبا! أنا AI Agent ديالك. قدر تسولني على:\n\n• **المنتجات**: \"علاش هاد المنتج عندو fake rate عالية؟\"\n• **الستوك**: \"شحال باقي ف الستوك ديال المنتج X؟\"\n• **النصائح**: \"شنو ندير - نوقف الإعلانات ولا نكمل؟\"\n• **التحليل**: \"شنو أحسن منتج؟\" أو \"شنو أسوأ منتج؟\"\n\nجرب تسولني!",
+      content: "مرحبا! أنا AI Agent ديالك 🤖\n\nقدر تسولني على:\n\n• **المنتجات**: \"علاش هاد المنتج عندو fake rate عالية؟\"\n• **الستوك**: \"شحال باقي ف الستوك ديال المنتج X؟\"\n• **النصائح**: \"شنو ندير - نوقف الإعلانات ولا نكمل؟\"\n• **التحليل**: \"شنو أحسن منتج؟\" أو \"شنو أسوأ منتج؟\"\n• **الأرقام**: \"شحال الربح ديال هاد الشهر؟\"\n\nعندي access لكل البيانات ديالك، سولني على أي حاجة!",
       timestamp: new Date(),
     },
   ]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [groqKey, setGroqKey] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(GROQ_KEY);
+    if (stored) setGroqKey(stored);
+  }, []);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -52,146 +45,120 @@ export default function AIAgentPage() {
     scrollToBottom();
   }, [messages]);
 
-  const analyzeProducts = (): ProductAnalysis[] => {
-    if (!data?.orders) return [];
+  const dataContext = useMemo(() => {
+    if (!data) return "No data available yet.";
 
-    const map = new Map<string, ProductAnalysis>();
-    const orders = data.orders as Order[];
+    const orders = data.orders ?? [];
     const products = data.products ?? [];
+    const stats = data.stats;
+    const countries = data.countries ?? [];
 
+    const productMap = new Map<string, any>();
     for (const o of orders) {
       const key = o.productCode || o.productName;
       if (!key) continue;
 
-      if (!map.has(key)) {
-        const product = products.find((p) => p.code === key || p.name === key);
-        map.set(key, {
+      if (!productMap.has(key)) {
+        const product = products.find((p: Product) => p.code === key || p.name === key);
+        productMap.set(key, {
           productCode: key,
           productName: o.productName,
           totalOrders: 0,
           cancelled: 0,
           double: 0,
+          transferred: 0,
           confirmed: 0,
+          pending: 0,
           fakeOrders: 0,
-          fakeRate: 0,
           stockQuantity: product?.stockQuantity ?? 0,
           revenue: 0,
-          riskLevel: "safe",
-          recommendation: "",
         });
       }
 
-      const p = map.get(key)!;
+      const p = productMap.get(key);
       p.totalOrders += 1;
       p.revenue += o.amount;
 
       if (o.status === "cancelled") { p.cancelled += 1; p.fakeOrders += 1; }
       else if (o.status === "double") { p.double += 1; p.fakeOrders += 1; }
+      else if (o.status === "transferred") { p.transferred += 1; p.fakeOrders += 1; }
       else if (o.status === "confirmed") p.confirmed += 1;
+      else if (o.status === "pending") p.pending += 1;
     }
 
-    for (const p of map.values()) {
-      p.fakeRate = p.totalOrders > 0 ? p.fakeOrders / p.totalOrders : 0;
+    const productAnalysis = Array.from(productMap.values()).map((p) => ({
+      ...p,
+      fakeRate: p.totalOrders > 0 ? (p.fakeOrders / p.totalOrders * 100).toFixed(1) : "0",
+    }));
 
-      if (p.fakeRate >= 0.5) {
-        p.riskLevel = "high";
-        p.recommendation = "⛔ **وقف الإعلانات فوراً** - Fake rate عالية بزاف!";
-      } else if (p.fakeRate >= 0.3) {
-        p.riskLevel = "medium";
-        p.recommendation = "⚠️ **قلل الإعلانات** - Fake rate متوسطة، راقب الوضع.";
-      } else if (p.fakeRate >= 0.15) {
-        p.riskLevel = "low";
-        p.recommendation = "👍 **استمر** - Fake rate مقبولة، لكن راقب.";
-      } else {
-        p.riskLevel = "safe";
-        p.recommendation = "✅ **زود الإعلانات** - منتج ممتاز!";
-      }
+    const topProducts = productAnalysis
+      .sort((a, b) => b.revenue - a.revenue)
+      .slice(0, 10);
 
-      if (p.stockQuantity === 0) {
-        p.recommendation += "\n📦 **الستوك فارغ** - خاصك تعمر!";
-      } else if (p.stockQuantity <= 5) {
-        p.recommendation += "\n⚠️ **الستوك قليل** - خاصك تعمر قريب.";
-      }
-    }
+    const worstProducts = productAnalysis
+      .filter((p) => p.totalOrders > 0)
+      .sort((a, b) => (b.fakeOrders / b.totalOrders) - (a.fakeOrders / a.totalOrders))
+      .slice(0, 10);
 
-    return Array.from(map.values());
-  };
+    const lowStock = productAnalysis
+      .filter((p) => p.stockQuantity <= 10 && p.stockQuantity > 0)
+      .sort((a, b) => a.stockQuantity - b.stockQuantity);
 
-  const generateResponse = (question: string): string => {
-    const q = question.toLowerCase();
-    const products = analyzeProducts();
+    const outOfStock = productAnalysis
+      .filter((p) => p.stockQuantity === 0);
 
-    if (products.length === 0) {
-      return "ما كاينش بيانات كافية. جرب من بعد.";
-    }
+    let context = `=== BUSINESS OVERVIEW ===
+Total Orders: ${stats?.totalOrders ?? orders.length}
+Total Revenue: ${formatCurrency(stats?.revenue ?? orders.reduce((s, o) => s + o.amount, 0))}
+Confirmed Orders: ${stats?.confirmedOrders ?? 0}
+Cancelled Orders: ${stats?.cancelledOrders ?? 0}
+Pending Orders: ${stats?.pendingOrders ?? 0}
+Net Revenue: ${formatCurrency(stats?.netRevenue ?? 0)}
+Service Fees: ${formatCurrency(stats?.serviceFeesTotal ?? 0)}
+Confirmation Rate: ${formatPercentage(stats?.confirmationRate ?? 0)}
+Delivery Rate: ${formatPercentage(stats?.deliveryRate ?? 0)}
+Average Order Value: ${formatCurrency(stats?.averageOrderValue ?? 0)}
 
-    const highRisk = products.filter((p) => p.riskLevel === "high");
-    const bestProducts = products.filter((p) => p.riskLevel === "safe").sort((a, b) => b.revenue - a.revenue);
-    const worstProducts = products.filter((p) => p.riskLevel === "high" || p.riskLevel === "medium");
+=== TOP 10 PRODUCTS BY REVENUE ===
+${topProducts.map((p, i) => `${i + 1}. ${p.productName} (Code: ${p.productCode})
+   - Revenue: ${formatCurrency(p.revenue)}
+   - Total Orders: ${p.totalOrders}
+   - Fake Orders: ${p.fakeOrders} (Cancelled: ${p.cancelled}, Double: ${p.double})
+   - Fake Rate: ${p.fakeRate}%
+   - Stock: ${p.stockQuantity} units`).join("\n")}
 
-    if (q.includes("علاش") || q.includes("ليه") || q.includes("why")) {
-      if (q.includes("fake") || q.includes("cancel") || q.includes("double")) {
-        const product = products.find((p) => q.includes(p.productName.toLowerCase()) || q.includes(p.productCode.toLowerCase()));
-        if (product) {
-          return `**${product.productName}**\n\n📊 **التحليل:**\n• Total Orders: ${formatNumber(product.totalOrders)}\n• Fake Orders: ${formatNumber(product.fakeOrders)} (${formatPercentage(product.fakeRate)})\n• Cancelled: ${formatNumber(product.cancelled)}\n• Double: ${formatNumber(product.double)}\n• Confirmed: ${formatNumber(product.confirmed)}\n\n💡 **الأسباب المحتملة:**\n• Fake rate عالية = ناس كيطلبو وما كيكملوش\n• ممكن السعر غالي أو المنتج مش مطلوب\n• ممكن الإعلانات ماشي مستهدفة مزيان\n\n${product.recommendation}`;
-        }
-        return `علاش fake rate عالية ف المنتجات؟\n\n📊 **الأسباب الشائعة:**\n• الإعلانات ماشي مستهدفة للمهتمين الحقيقيين\n• السعر ماشي مناسب للسوق\n• المنتج مش واضح ف الإعلانات\n• ناس كيطلبو بالخطأ أو للتجريب\n\n🔍 **المنتجات اللي عندها fake rate عالية:**\n${worstProducts.slice(0, 3).map((p) => `• **${p.productName}**: ${formatPercentage(p.fakeRate)}`).join("\n")}\n\n${worstProducts[0]?.recommendation || ""}`;
-      }
-    }
+=== TOP 10 PRODUCTS BY FAKE RATE ===
+${worstProducts.map((p, i) => `${i + 1}. ${p.productName} (Code: ${p.productCode})
+   - Fake Rate: ${p.fakeRate}%
+   - Fake Orders: ${p.fakeOrders}/${p.totalOrders}
+   - Revenue: ${formatCurrency(p.revenue)}
+   - Stock: ${p.stockQuantity} units`).join("\n")}
 
-    if (q.includes("شحال") || q.includes("stock") || q.includes("ستوك") || q.includes("باقي")) {
-      const product = products.find((p) => q.includes(p.productName.toLowerCase()) || q.includes(p.productCode.toLowerCase()));
-      if (product) {
-        let stockStatus = "";
-        if (product.stockQuantity === 0) {
-          stockStatus = "⛔ **الستوك فارغ!** خاصك تعمر فوراً.";
-        } else if (product.stockQuantity <= 5) {
-          stockStatus = "⚠️ **الستوك قليل بزاف** - خاصك تعمر قريب.";
-        } else if (product.stockQuantity <= 20) {
-          stockStatus = "👍 **الستوك مقبول** - راقب.";
-        } else {
-          stockStatus = "✅ **الستوك مزيان**";
-        }
-        return `**${product.productName}**\n\n📦 **الستوك:** ${formatNumber(product.stockQuantity)} وحدة\n\n${stockStatus}\n\n📊 **الأداء:**\n• Total Orders: ${formatNumber(product.totalOrders)}\n• Revenue: ${formatCurrency(product.revenue)}\n• Fake Rate: ${formatPercentage(product.fakeRate)}`;
-      }
-      const lowStock = products.filter((p) => p.stockQuantity <= 5 && p.stockQuantity > 0).slice(0, 5);
-      const outOfStock = products.filter((p) => p.stockQuantity === 0).slice(0, 5);
-      return `📦 **وضع الستوك:**\n\n${outOfStock.length > 0 ? `⛔ **فارغ (${outOfStock.length} منتج):**\n${outOfStock.map((p) => `• ${p.productName}`).join("\n")}\n\n` : ""}${lowStock.length > 0 ? `⚠️ **قليل (${lowStock.length} منتج):**\n${lowStock.map((p) => `• ${p.productName}: ${formatNumber(p.stockQuantity)} وحدة`).join("\n")}` : "✅ كلشي مزيان ف الستوك!"}`;
-    }
+=== LOW STOCK PRODUCTS (${lowStock.length}) ===
+${lowStock.map((p) => `- ${p.productName}: ${p.stockQuantity} units left (Revenue: ${formatCurrency(p.revenue)})`).join("\n") || "No low stock products"}
 
-    if (q.includes("شنو") || q.includes("ندير") || q.includes("نصيحة") || q.includes("advice") || q.includes("recommend")) {
-      if (highRisk.length > 0) {
-        return `🚨 **نصائح عاجلة:**\n\n${highRisk.slice(0, 3).map((p) => `**${p.productName}** (${formatPercentage(p.fakeRate)} fake)\n${p.recommendation}`).join("\n\n")}\n\n💡 **نصيحة عامة:**\n• وقف الإعلانات ديال المنتجات اللي fake rate > 50%\n• راجع targeting ديال الإعلانات\n• جرب تقلل الميزانية ف المنتجات المتوسطة`;
-      }
-      return `✅ **ما كاينش مشاكل كبيرة!**\n\n🎯 **نصائح للتحسين:**\n• زود الميزانية ف المنتجات اللي fake rate < 15%\n• راقب المنتجات اللي fake rate بين 15-30%\n• استمر ف التحسين!`;
-    }
+=== OUT OF STOCK PRODUCTS (${outOfStock.length}) ===
+${outOfStock.map((p) => `- ${p.productName} (Revenue: ${formatCurrency(p.revenue)}, Orders: ${p.totalOrders})`).join("\n") || "No out of stock products"}
 
-    if (q.includes("أحسن") || q.includes("best") || q.includes("ممتاز") || q.includes("top")) {
-      if (bestProducts.length === 0) {
-        return "ما كاينش منتجات ممتازة حالياً. كلشي عندو مشاكل.";
-      }
-      return `🏆 **أحسن المنتجات:**\n\n${bestProducts.slice(0, 5).map((p, i) => `${i + 1}. **${p.productName}**\n   • Revenue: ${formatCurrency(p.revenue)}\n   • Fake Rate: ${formatPercentage(p.fakeRate)}\n   • ${p.recommendation}`).join("\n\n")}`;
-    }
+=== COUNTRIES PERFORMANCE ===
+${countries.slice(0, 10).map((c) => `- ${c.countryName}: Revenue ${formatCurrency(c.revenue)}, Orders ${c.orders}, Confirmation Rate ${formatPercentage(c.confirmationRate)}`).join("\n")}`;
 
-    if (q.includes("أسوأ") || q.includes("worst") || q.includes("خايب") || q.includes("مشكل")) {
-      if (worstProducts.length === 0) {
-        return "✅ ما كاينش منتجات خايبة! كلشي مزيان.";
-      }
-      return `⚠️ **المنتجات اللي عندها مشاكل:**\n\n${worstProducts.slice(0, 5).map((p, i) => `${i + 1}. **${p.productName}**\n   • Fake Rate: ${formatPercentage(p.fakeRate)}\n   • Fake Orders: ${formatNumber(p.fakeOrders)}/${formatNumber(p.totalOrders)}\n   • ${p.recommendation}`).join("\n\n")}`;
-    }
+    return context;
+  }, [data]);
 
-    if (q.includes("ملخص") || q.includes("summary") || q.includes("overview")) {
-      const totalRevenue = products.reduce((s, p) => s + p.revenue, 0);
-      const totalFake = products.reduce((s, p) => s + p.fakeOrders, 0);
-      const totalOrders = products.reduce((s, p) => s + p.totalOrders, 0);
-      return `📊 **ملخص عام:**\n\n• **Total Products:** ${formatNumber(products.length)}\n• **Total Revenue:** ${formatCurrency(totalRevenue)}\n• **Total Orders:** ${formatNumber(totalOrders)}\n• **Fake Orders:** ${formatNumber(totalFake)} (${formatPercentage(totalOrders > 0 ? totalFake / totalOrders : 0)})\n\n🎯 **التوزيع:**\n• 🟢 Safe (< 15%): ${products.filter((p) => p.riskLevel === "safe").length}\n• 🟡 Low (15-30%): ${products.filter((p) => p.riskLevel === "low").length}\n• 🟠 Medium (30-50%): ${products.filter((p) => p.riskLevel === "medium").length}\n• 🔴 High (> 50%): ${highRisk.length}`;
-    }
-
-    return `ما فهمتش السؤال. جرب تسولني على:\n\n• **المنتجات**: \"علاش هاد المنتج عندو fake rate عالية؟\"\n• **الستوك**: \"شحال باقي ف الستوك؟\"\n• **النصائح**: \"شنو ندير؟\"\n• **التحليل**: \"شنو أحسن منتج؟\" أو \"شنو أسوأ منتج؟\"\n• **الملخص**: \"عطيني ملخص\"`;
-  };
-
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim() || isTyping) return;
+
+    if (!groqKey) {
+      const warningMessage: Message = {
+        id: Date.now().toString(),
+        role: "assistant",
+        content: "⚠️ **Groq API key مفقود!**\n\nخاصك تضيف API key ف Settings باش AI Agent يخدم.\n\n1. سجل ف [console.groq.com](https://console.groq.com) (مجاني)\n2. أخد API key\n3. حطو ف Settings > AI Agent - Groq API\n\nGroq API مجاني وسريع بزاف!",
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, warningMessage]);
+      return;
+    }
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -204,17 +171,49 @@ export default function AIAgentPage() {
     setInput("");
     setIsTyping(true);
 
-    setTimeout(() => {
-      const response = generateResponse(input);
+    try {
+      const chatHistory = messages
+        .filter((m) => m.role === "user" || m.role === "assistant")
+        .map((m) => ({ role: m.role, content: m.content }))
+        .slice(-10);
+
+      chatHistory.push({ role: "user", content: input });
+
+      const response = await fetch("/api/ai-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          messages: chatHistory,
+          groqKey,
+          dataContext,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Failed to get response");
+      }
+
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         role: "assistant",
-        content: response,
+        content: result.message,
         timestamp: new Date(),
       };
+
       setMessages((prev) => [...prev, assistantMessage]);
+    } catch (err) {
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: `❌ **خطأ**: ${err instanceof Error ? err.message : "Failed to connect to AI"}`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
       setIsTyping(false);
-    }, 800);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -224,17 +223,37 @@ export default function AIAgentPage() {
     }
   };
 
+  const handleClear = () => {
+    setMessages([{
+      id: Date.now().toString(),
+      role: "assistant",
+      content: "مرحبا! أنا AI Agent ديالك 🤖\n\nقدر تسولني على المنتجات، الستوك، الإعلانات، والأرقام. سولني على أي حاجة!",
+      timestamp: new Date(),
+    }]);
+  };
+
   return (
     <PageWrapper loading={loading && !data} error={error} onRetry={refetch} hasData={!!data}>
       <div className="flex flex-col h-[calc(100vh-10rem)]">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#06B6D4]/20 to-[#0891B2]/20">
-            <Bot className="w-6 h-6 text-[#22D3EE]" />
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#06B6D4]/20 to-[#0891B2]/20">
+              <Bot className="w-6 h-6 text-[#22D3EE]" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white">AI Agent</h1>
+              <p className="text-[#606060] text-xs">
+                {groqKey ? "🟢 Connected to Groq AI" : "🔴 No API key - Add in Settings"}
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-xl font-bold text-white">AI Agent</h1>
-            <p className="text-[#606060] text-xs">سولني على المنتجات، الستوك، والنصائح</p>
-          </div>
+          <button
+            onClick={handleClear}
+            className="p-2 rounded-lg text-[#606060] hover:text-white hover:bg-[#1F1F1F] transition-all"
+            title="Clear chat"
+          >
+            <Trash2 className="w-4 h-4" />
+          </button>
         </div>
 
         <Card hover={false} className="flex-1 flex flex-col overflow-hidden">
@@ -250,13 +269,13 @@ export default function AIAgentPage() {
                   </div>
                 )}
                 <div
-                  className={`max-w-[70%] rounded-2xl px-4 py-3 ${
+                  className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                     msg.role === "user"
                       ? "bg-[#06B6D4] text-white"
                       : "bg-[#1F1F1F] text-[#e0e0e0]"
                   }`}
                 >
-                  <div className="text-sm whitespace-pre-wrap">{msg.content}</div>
+                  <div className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</div>
                   <div className={`text-xs mt-1 ${msg.role === "user" ? "text-white/70" : "text-[#606060]"}`}>
                     {msg.timestamp.toLocaleTimeString("ar-MA", { hour: "2-digit", minute: "2-digit" })}
                   </div>
@@ -305,28 +324,35 @@ export default function AIAgentPage() {
             </div>
             <div className="flex gap-2 mt-3 flex-wrap">
               <button
-                onClick={() => setInput("شنو أحسن منتج؟")}
+                onClick={() => setInput("شنو أحسن منتج عندي؟")}
                 className="px-3 py-1.5 bg-[#1F1F1F] hover:bg-[#2a2a2a] text-[#e0e0e0] text-xs rounded-lg transition-all"
               >
                 <Sparkles className="w-3 h-3 inline mr-1" />
                 أحسن منتج
               </button>
               <button
-                onClick={() => setInput("شنو أسوأ منتج؟")}
+                onClick={() => setInput("شنو المنتجات اللي خاصني نوقف الإعلانات ديالهم؟")}
                 className="px-3 py-1.5 bg-[#1F1F1F] hover:bg-[#2a2a2a] text-[#e0e0e0] text-xs rounded-lg transition-all"
               >
                 <TrendingDown className="w-3 h-3 inline mr-1" />
-                أسوأ منتج
+                نوقف الإعلانات
               </button>
               <button
-                onClick={() => setInput("شحال باقي ف الستوك؟")}
+                onClick={() => setInput("شحال باقي ف الستوك؟ شنو خاصني نعاود نطلب؟")}
                 className="px-3 py-1.5 bg-[#1F1F1F] hover:bg-[#2a2a2a] text-[#e0e0e0] text-xs rounded-lg transition-all"
               >
                 <Package className="w-3 h-3 inline mr-1" />
                 الستوك
               </button>
               <button
-                onClick={() => setInput("شنو ندير؟")}
+                onClick={() => setInput("عطيني ملخص كامل على البيزنس ديالي")}
+                className="px-3 py-1.5 bg-[#1F1F1F] hover:bg-[#2a2a2a] text-[#e0e0e0] text-xs rounded-lg transition-all"
+              >
+                <BarChart3 className="w-3 h-3 inline mr-1" />
+                ملخص
+              </button>
+              <button
+                onClick={() => setInput("شنو النصائح اللي عندك ليا باش نزيد الربح؟")}
                 className="px-3 py-1.5 bg-[#1F1F1F] hover:bg-[#2a2a2a] text-[#e0e0e0] text-xs rounded-lg transition-all"
               >
                 <AlertTriangle className="w-3 h-3 inline mr-1" />

@@ -2,10 +2,12 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { Save, Shield, Key, Globe, Eye, EyeOff, CheckCircle, AlertCircle, RefreshCw, DollarSign, ChevronRight } from "lucide-react";
+import { Save, Shield, Key, Globe, Eye, EyeOff, CheckCircle, AlertCircle, RefreshCw, DollarSign, ChevronRight, Bot } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { saveCredentials, clearCredentials, getApiConfig } from "@/services";
 import type { AuthCredentials } from "@/types";
+
+const GROQ_KEY = "groq_api_key";
 
 export default function SettingsPage() {
   const [creds, setCreds] = useState<AuthCredentials>({
@@ -16,10 +18,15 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [groqKey, setGroqKey] = useState("");
+  const [showGroqKey, setShowGroqKey] = useState(false);
+  const [groqSaved, setGroqSaved] = useState(false);
 
   useEffect(() => {
     const config = getApiConfig();
     setCreds({ apiUrl: config.apiUrl, token: config.token });
+    const stored = localStorage.getItem(GROQ_KEY);
+    if (stored) setGroqKey(stored);
   }, []);
 
   const handleSave = useCallback(() => {
@@ -32,6 +39,12 @@ export default function SettingsPage() {
     clearCredentials();
     setCreds({ apiUrl: "https://api.codinafrica.com/api", token: "" });
   }, []);
+
+  const handleSaveGroq = useCallback(() => {
+    localStorage.setItem(GROQ_KEY, groqKey);
+    setGroqSaved(true);
+    setTimeout(() => setGroqSaved(false), 2000);
+  }, [groqKey]);
 
   const handleTest = useCallback(async () => {
     setTesting(true);
@@ -170,6 +183,50 @@ export default function SettingsPage() {
           </p>
         </Card>
       </Link>
+
+      <Card hover={false}>
+        <CardHeader>
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-lg bg-[#10b981]/10">
+              <Bot className="w-5 h-5 text-[#10b981]" />
+            </div>
+            <CardTitle>AI Agent - Groq API</CardTitle>
+          </div>
+        </CardHeader>
+        <div className="space-y-5">
+          <p className="text-[#808080] text-sm">
+            AI Agent كيستعمل Groq API (مجاني) باش يجاوبك بحال ChatGPT. سجل ف <a href="https://console.groq.com" target="_blank" rel="noopener noreferrer" className="text-[#22D3EE] hover:underline">console.groq.com</a> باش تاخد API key مجاني.
+          </p>
+          <div>
+            <label className="block text-[#808080] text-sm font-medium mb-1.5">
+              <Key className="w-4 h-4 inline mr-1.5" />
+              Groq API Key
+            </label>
+            <div className="relative">
+              <input
+                type={showGroqKey ? "text" : "password"}
+                value={groqKey}
+                onChange={(e) => setGroqKey(e.target.value)}
+                placeholder="gsk_..."
+                className={inputClass + " pr-10"}
+              />
+              <button
+                onClick={() => setShowGroqKey(!showGroqKey)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#606060] hover:text-white transition-colors duration-200"
+              >
+                {showGroqKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+          <button
+            onClick={handleSaveGroq}
+            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#10b981] hover:bg-[#059669] text-white rounded-lg transition-all duration-200 text-sm font-medium"
+          >
+            {groqSaved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
+            {groqSaved ? "Saved!" : "Save Groq Key"}
+          </button>
+        </div>
+      </Card>
 
       <Card hover={false}>
         <CardHeader>
