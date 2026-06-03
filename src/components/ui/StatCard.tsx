@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Card } from "./Card";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
@@ -22,8 +23,18 @@ const colorMap = {
   info: { bg: "bg-[#6366F1]/10", text: "text-[#6366F1]" },
 };
 
+function getValueFontSize(digits: number): string {
+  if (digits <= 5) return "clamp(32px, 4vw, 56px)";
+  if (digits <= 7) return "clamp(28px, 3vw, 44px)";
+  if (digits <= 8) return "clamp(22px, 2.5vw, 36px)";
+  return "clamp(18px, 2vw, 24px)";
+}
+
 export function StatCard({ title, value, icon, trend, subtitle, color = "accent", delay = 0 }: StatCardProps) {
   const c = colorMap[color] || colorMap.accent;
+
+  const digits = useMemo(() => value.replace(/[^0-9]/g, "").length, [value]);
+  const fontSize = getValueFontSize(digits);
 
   return (
     <div
@@ -32,16 +43,22 @@ export function StatCard({ title, value, icon, trend, subtitle, color = "accent"
     >
       <Card hover={false}>
         <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 overflow-hidden">
             <p className="text-[#94A3B8] text-xs font-medium uppercase tracking-widest">{title}</p>
-            <p className="text-4xl sm:text-5xl font-bold text-white mt-1.5 leading-none tracking-tight">{value}</p>
+            <p
+              className="font-bold text-white mt-1.5 leading-none tracking-tight overflow-hidden text-ellipsis"
+              style={{ fontSize }}
+              title={value}
+            >
+              {value}
+            </p>
             {trend && (
               <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trend.isUp ? "text-[#10b981]" : "text-[#ef4444]"}`}>
-                {trend.isUp ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
+                {trend.isUp ? <TrendingUp className="w-3.5 h-3.5 shrink-0" /> : <TrendingDown className="w-3.5 h-3.5 shrink-0" />}
                 <span>{Math.abs(trend.value)}% vs last period</span>
               </div>
             )}
-            {subtitle && <p className="text-[#64748B] text-xs mt-1.5">{subtitle}</p>}
+            {subtitle && <p className="text-[#64748B] text-xs mt-1.5 truncate">{subtitle}</p>}
           </div>
           <div className={`p-3 rounded-xl ${c.bg} ${c.text} shrink-0 ml-3`}>
             {icon}
