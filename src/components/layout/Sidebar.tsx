@@ -55,11 +55,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       >
         <div className="flex items-center justify-between px-5 py-5 border-b border-[#1F2937]">
           <Link href="/dashboard" className="flex items-center gap-2.5 group" onClick={onClose}>
-            <img
-              src="https://media.discordapp.net/attachments/1281046520556421120/1504865227253088296/649317ca-03c2-4f35-b1e6-dc39c14b973f.png?ex=6a204575&is=6a1ef3f5&hm=aa3ce1d6d0aa24a18563b3cf190e87fa429bfc910cacb8c20eb8fa1aa481d319&=&format=webp&quality=lossless&width=1020&height=1020"
-              alt="Logo"
-              className="w-9 h-9 rounded-xl object-cover shadow-[0_0_16px_rgba(99,102,241,0.2)] group-hover:shadow-[0_0_24px_rgba(99,102,241,0.3)] transition-shadow duration-200"
-            />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center shadow-[0_0_16px_rgba(99,102,241,0.15)] group-hover:shadow-[0_0_24px_rgba(99,102,241,0.25)] transition-shadow duration-200">
+              <svg width="20" height="20" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-90">
+                <path d="M12 26V14l6-4 6 4v12l-6 4-6-4z" stroke="white" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
+                <path d="M18 10v12" stroke="white" strokeWidth="1.5" />
+                <path d="M12 14l6 4 6-4" stroke="white" strokeWidth="1.5" strokeLinejoin="round" />
+              </svg>
+            </div>
             <div>
               <span className="text-white font-semibold text-sm">COD Analytics</span>
               <p className="text-[#64748B] text-[10px]">Dashboard v2.0</p>

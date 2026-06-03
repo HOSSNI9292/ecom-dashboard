@@ -20,9 +20,9 @@ export function Card({ children, className = "", onClick, hover = true, gradient
             : "bg-[#111827] border border-[#1F2937] shadow-[0_1px_3px_rgba(0,0,0,0.2)]"
       } ${
         hover && onClick
-          ? "cursor-pointer hover:border-[#6366F1]/30 hover:shadow-[0_0_20px_rgba(99,102,241,0.05)]"
+          ? "cursor-pointer hover:border-[rgba(99,102,241,0.15)] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
           : hover
-            ? "hover:border-[#334155] hover:shadow-[0_4px_12px_rgba(0,0,0,0.3)]"
+            ? "hover:border-[#334155] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
             : ""
       } ${className}`}
       onClick={onClick}

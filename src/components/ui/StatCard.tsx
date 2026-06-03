@@ -33,8 +33,8 @@ export function StatCard({ title, value, icon, trend, subtitle, color = "accent"
       <Card hover={false}>
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <p className="text-[#94A3B8] text-xs font-medium uppercase tracking-wider">{title}</p>
-            <p className="text-3xl sm:text-4xl font-bold text-white mt-2 tracking-tight">{value}</p>
+            <p className="text-[#94A3B8] text-xs font-medium uppercase tracking-widest">{title}</p>
+            <p className="text-4xl sm:text-5xl font-bold text-white mt-1.5 leading-none tracking-tight">{value}</p>
             {trend && (
               <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trend.isUp ? "text-[#10b981]" : "text-[#ef4444]"}`}>
                 {trend.isUp ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
