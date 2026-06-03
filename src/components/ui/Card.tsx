@@ -16,13 +16,13 @@ export function Card({ children, className = "", onClick, hover = true, gradient
         glass
           ? "bg-[#111827]/60 backdrop-blur-xl border border-[#1F2937]/60 shadow-[0_8px_32px_rgba(0,0,0,0.2)]"
           : gradient
-            ? "bg-gradient-to-br from-[#111827] to-[#0B0F19] border border-[#1F2937] shadow-[0_1px_3px_rgba(0,0,0,0.2)]"
-            : "bg-[#111827] border border-[#1F2937] shadow-[0_1px_3px_rgba(0,0,0,0.2)]"
+            ? "bg-gradient-to-br from-[#111827] to-[#0B0F19] border border-[#1F2937]/80 shadow-[0_1px_3px_rgba(0,0,0,0.2)]"
+            : "bg-[#111827] border border-[#1F2937]/80 shadow-[0_1px_3px_rgba(0,0,0,0.2)]"
       } ${
         hover && onClick
           ? "cursor-pointer hover:border-[rgba(99,102,241,0.15)] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
           : hover
-            ? "hover:border-[#334155] hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
+            ? "hover:border-[#334155]/80 hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.25)]"
             : ""
       } ${className}`}
       onClick={onClick}

@@ -11,6 +11,8 @@ interface StatCardProps {
   subtitle?: string;
   color?: "primary" | "success" | "warning" | "error" | "info" | "accent";
   delay?: number;
+  tooltip?: string;
+  loading?: boolean;
 }
 
 const colorMap = {
@@ -22,6 +24,23 @@ const colorMap = {
   info: { bg: "bg-[#6366F1]/10", text: "text-[#6366F1]" },
 };
 
+function SkeletonCard() {
+  return (
+    <Card hover={false}>
+      <div className="flex items-start justify-between">
+        <div className="flex-1 min-w-0 space-y-3">
+          <div className="h-3 skeleton rounded w-24" />
+          <div className="h-8 skeleton rounded w-32" />
+          <div className="h-3 skeleton rounded w-20" />
+        </div>
+        <div className="p-3 rounded-xl bg-[#1F2937] shrink-0 ml-3">
+          <div className="w-5 h-5 rounded bg-[#334155]" />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
 function getValueFontSize(digits: number): string {
   if (digits <= 4) return "clamp(36px, 4vw, 56px)";
   if (digits <= 5) return "clamp(32px, 3.5vw, 48px)";
@@ -29,10 +48,12 @@ function getValueFontSize(digits: number): string {
   return "clamp(22px, 2.2vw, 32px)";
 }
 
-export function StatCard({ title, value, icon, trend, subtitle, color = "accent", delay = 0 }: StatCardProps) {
+export function StatCard({ title, value, icon, trend, subtitle, color = "accent", delay = 0, tooltip, loading }: StatCardProps) {
   const c = colorMap[color] || colorMap.accent;
   const digits = value.replace(/[^0-9]/g, "").length;
   const fontSize = getValueFontSize(digits);
+
+  if (loading) return <SkeletonCard />;
 
   return (
     <div
@@ -42,10 +63,18 @@ export function StatCard({ title, value, icon, trend, subtitle, color = "accent"
       <Card hover={false}>
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <p className="text-[#94A3B8] text-xs font-medium uppercase tracking-widest">{title}</p>
+            <div className="flex items-center gap-1.5">
+              <p className="text-[#94A3B8] text-xs font-medium uppercase tracking-widest">{title}</p>
+              {tooltip && (
+                <span title={tooltip} className="inline-flex items-center justify-center w-3.5 h-3.5 rounded-full bg-[#1F2937] text-[#64748B] text-[10px] font-bold cursor-help shrink-0">
+                  ?
+                </span>
+              )}
+            </div>
             <p
               className="font-bold text-white mt-1.5 leading-none tracking-tight"
               style={{ fontSize }}
+              title={tooltip}
             >
               {value}
             </p>
@@ -55,7 +84,7 @@ export function StatCard({ title, value, icon, trend, subtitle, color = "accent"
                 <span>{Math.abs(trend.value)}% vs last period</span>
               </div>
             )}
-            {subtitle && <p className="text-[#64748B] text-xs mt-1.5">{subtitle}</p>}
+            {subtitle && <p className="text-[#94A3B8] text-xs mt-1.5">{subtitle}</p>}
           </div>
           <div className={`p-3 rounded-xl ${c.bg} ${c.text} shrink-0 ml-3`}>
             {icon}

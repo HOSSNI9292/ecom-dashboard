@@ -19,6 +19,43 @@ import { exportToCSV } from "@/utils/csv";
 import type { DateFilterValue } from "@/utils/dates";
 import type { Order, Product } from "@/types";
 
+function getPreviousPeriodRange(filter: DateFilterValue): { start: string; end: string } | null {
+  const now = new Date();
+  if (filter === "today") {
+    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
+    const yesterdayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).toISOString();
+    return { start: yesterdayStart, end: todayStart };
+  }
+  if (filter === "yesterday") {
+    const yesterdayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).toISOString();
+    const d2Start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2).toISOString();
+    return { start: d2Start, end: yesterdayStart };
+  }
+  if (filter === "7d") {
+    return { start: new Date(now.getTime() - 14 * 86400000).toISOString(), end: new Date(now.getTime() - 7 * 86400000).toISOString() };
+  }
+  if (filter === "30d") {
+    return { start: new Date(now.getTime() - 60 * 86400000).toISOString(), end: new Date(now.getTime() - 30 * 86400000).toISOString() };
+  }
+  if (filter === "thisMonth") {
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
+    return { start: lastMonthStart, end: thisMonthStart };
+  }
+  if (filter === "thisYear") {
+    const thisYearStart = new Date(now.getFullYear(), 0, 1).toISOString();
+    const lastYearStart = new Date(now.getFullYear() - 1, 0, 1).toISOString();
+    return { start: lastYearStart, end: thisYearStart };
+  }
+  return { start: new Date(now.getTime() - 60 * 86400000).toISOString(), end: new Date(now.getTime() - 30 * 86400000).toISOString() };
+}
+
+function computeTrend(current: number, previous: number): { value: number; isUp: boolean } | undefined {
+  if (previous <= 0) return undefined;
+  const pct = ((current - previous) / previous) * 100;
+  return { value: Math.round(Math.abs(pct) * 10) / 10, isUp: pct >= 0 };
+}
+
 export default function DashboardPage() {
   const { data, loading, error, refetch } = useDashboardData();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -30,14 +67,14 @@ export default function DashboardPage() {
 
   const filteredOrders = useMemo(() => filterOrdersByDate(orders, dateFilter), [orders, dateFilter]);
 
-  console.log(`[Dashboard] Period: ${dateFilter}, Filtered: ${filteredOrders.length}, All: ${orders.length}`);
-  if (orders.length > 0) {
-    const raw: Record<string, number> = {};
-    const mapped: Record<string, number> = {};
-    for (const o of orders) { raw[o.rawStatus] = (raw[o.rawStatus] || 0) + 1; mapped[o.status] = (mapped[o.status] || 0) + 1; }
-    console.log("[Dashboard] Raw statuses:", raw);
-    console.log("[Dashboard] Mapped statuses:", mapped);
-  }
+  const previousOrders = useMemo(() => {
+    const range = getPreviousPeriodRange(dateFilter);
+    if (!range) return [];
+    return orders.filter((o) => {
+      if (!o.date) return false;
+      return o.date >= range.start && o.date < range.end;
+    });
+  }, [orders, dateFilter]);
 
   const filteredStats = useMemo(() => {
     const pendingOrders = filteredOrders.filter((o) => o.status === "pending").length;
@@ -57,9 +94,13 @@ export default function DashboardPage() {
   const filteredNonCancelled = filteredOrders.filter((o) => o.status !== "cancelled" && o.status !== "out_of_stock").length;
   const filteredConfRate = filteredNonCancelled > 0 ? filteredConfirmed / filteredNonCancelled : 0;
   const filteredProcessedOrders = filteredOrders.filter((o) => o.status === "confirmed").length;
-  console.log("[Dashboard] Processed (status=confirmed):", filteredProcessedOrders);
   const filteredProcessedRevenue = filteredOrders.filter((o) => o.status === "confirmed").reduce((s, o) => s + o.amount, 0);
   const filteredDeliveryRate = filteredOrders.length > 0 ? filteredProcessedOrders / filteredOrders.length : 0;
+
+  const prevProcessedOrders = previousOrders.filter((o) => o.status === "confirmed").length;
+  const prevProcessedRevenue = previousOrders.filter((o) => o.status === "confirmed").reduce((s, o) => s + o.amount, 0);
+  const prevRevenue = previousOrders.reduce((s, o) => s + o.amount, 0);
+  const prevOrders = previousOrders.length;
 
   const filteredServiceFees = useMemo(() => {
     const byCountry = new Map<string, number>();
@@ -76,7 +117,23 @@ export default function DashboardPage() {
     return total;
   }, [filteredOrders]);
 
+  const prevServiceFees = useMemo(() => {
+    const byCountry = new Map<string, number>();
+    for (const o of previousOrders) {
+      if (o.status === "confirmed") {
+        const c = o.country || "XX";
+        byCountry.set(c, (byCountry.get(c) || 0) + 1);
+      }
+    }
+    let total = 0;
+    for (const [country, count] of byCountry) {
+      total += computeServiceFees(count, getFeeForCountry(country));
+    }
+    return total;
+  }, [previousOrders]);
+
   const filteredNetRevenue = filteredProcessedRevenue - filteredServiceFees;
+  const prevNetRevenue = prevProcessedRevenue - prevServiceFees;
 
   const filteredRevenueTrend = useMemo(() => {
     const dayMap = new Map<string, { revenue: number; orders: number }>();
@@ -143,6 +200,14 @@ export default function DashboardPage() {
     return ids.size;
   }, [filteredOrders]);
 
+  const avgOrderValue = filteredOrders.length > 0 ? filteredRevenue / filteredOrders.length : 0;
+  const prevAvgOrderValue = prevOrders > 0 ? prevRevenue / prevOrders : 0;
+
+  const prevPending = previousOrders.filter((o) => o.status === "pending").length;
+  const prevConfirmed = previousOrders.filter((o) => o.status === "confirmed").length;
+  const prevNonCancelled = previousOrders.filter((o) => o.status !== "cancelled" && o.status !== "out_of_stock").length;
+  const prevConfRate = prevNonCancelled > 0 ? prevConfirmed / prevNonCancelled : 0;
+
   const handleExport = useCallback(() => {
     exportToCSV(
       filteredOrders.map((o) => ({
@@ -168,14 +233,14 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={refetch}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937]/80 transition-all duration-200"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </button>
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937]/80 transition-all duration-200"
             >
               <Download className="w-3.5 h-3.5" /> Export
             </button>
@@ -183,24 +248,136 @@ export default function DashboardPage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title={dateFilter === "all" ? "Total Orders" : `${DATE_FILTER_LABELS[dateFilter]} Orders`} value={formatNumber(filteredOrders.length)} icon={<ShoppingCart className="w-5 h-5" />} color="primary" delay={0} />
-          <StatCard title={dateFilter === "all" ? "Total Revenue" : `${DATE_FILTER_LABELS[dateFilter]} Revenue`} value={formatCurrency(filteredRevenue)} icon={<DollarSign className="w-5 h-5" />} color="success" delay={50} />
-          <StatCard title="Processed Orders" value={formatNumber(filteredProcessedOrders)} icon={<CheckCircle className="w-5 h-5" />} color="primary" delay={100} subtitle="Paid by CodinAfrica" />
-          <StatCard title="Processed Revenue" value={formatCurrency(filteredProcessedRevenue)} icon={<TrendingUp className="w-5 h-5" />} color="success" delay={150} subtitle="Real collected revenue" />
+          <StatCard
+            title={dateFilter === "all" ? "Total Orders" : `${DATE_FILTER_LABELS[dateFilter]} Orders`}
+            value={formatNumber(filteredOrders.length)}
+            icon={<ShoppingCart className="w-5 h-5" />}
+            color="primary"
+            delay={0}
+            loading={isLoading}
+            tooltip="Total number of orders in the selected period across all statuses"
+            trend={computeTrend(filteredOrders.length, prevOrders)}
+          />
+          <StatCard
+            title={dateFilter === "all" ? "Total Revenue" : `${DATE_FILTER_LABELS[dateFilter]} Revenue`}
+            value={formatCurrency(filteredRevenue)}
+            icon={<DollarSign className="w-5 h-5" />}
+            color="success"
+            delay={50}
+            loading={isLoading}
+            tooltip="Total order value before CodinAfrica service fees (all statuses)"
+            trend={computeTrend(filteredRevenue, prevRevenue)}
+          />
+          <StatCard
+            title="Processed Orders"
+            value={formatNumber(filteredProcessedOrders)}
+            icon={<CheckCircle className="w-5 h-5" />}
+            color="primary"
+            delay={100}
+            subtitle="Paid by CodinAfrica"
+            loading={isLoading}
+            tooltip="Orders mapped to 'confirmed' status — these are paid and processed by CodinAfrica"
+            trend={computeTrend(filteredProcessedOrders, prevProcessedOrders)}
+          />
+          <StatCard
+            title="Processed Revenue"
+            value={formatCurrency(filteredProcessedRevenue)}
+            icon={<TrendingUp className="w-5 h-5" />}
+            color="success"
+            delay={150}
+            subtitle="Real collected revenue"
+            loading={isLoading}
+            tooltip="Sum of all order amounts where status = 'confirmed'. This is the actual revenue collected by CodinAfrica."
+            trend={computeTrend(filteredProcessedRevenue, prevProcessedRevenue)}
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Net Revenue" value={formatCurrency(filteredNetRevenue)} icon={<DollarSign className="w-5 h-5" />} color="success" delay={200} subtitle="After service fees" />
-          <StatCard title="Service Fees" value={formatCurrency(filteredServiceFees)} icon={<Percent className="w-5 h-5" />} color="warning" delay={250} subtitle="CodinAfrica fees" />
-          <StatCard title="Delivery Rate" value={formatPercentage(filteredDeliveryRate)} icon={<Activity className="w-5 h-5" />} color="primary" delay={300} subtitle="Based on Processed" />
-          <StatCard title="Confirmation Rate" value={formatPercentage(filteredConfRate)} icon={<CheckCircle className="w-5 h-5" />} color="success" delay={350} />
+          <StatCard
+            title="Net Revenue"
+            value={formatCurrency(filteredNetRevenue)}
+            icon={<DollarSign className="w-5 h-5" />}
+            color="success"
+            delay={200}
+            subtitle="After service fees"
+            loading={isLoading}
+            tooltip="Processed Revenue minus CodinAfrica service fees. This is your actual earnings."
+            trend={computeTrend(filteredNetRevenue, prevNetRevenue)}
+          />
+          <StatCard
+            title="Service Fees"
+            value={formatCurrency(filteredServiceFees)}
+            icon={<Percent className="w-5 h-5" />}
+            color="warning"
+            delay={250}
+            subtitle="CodinAfrica fees"
+            loading={isLoading}
+            tooltip="Total fees paid to CodinAfrica. Fees are 6,500 XOF/order for GA and 5,000 XOF/order for other countries."
+            trend={computeTrend(filteredServiceFees, prevServiceFees)}
+          />
+          <StatCard
+            title="Delivery Rate"
+            value={formatPercentage(filteredDeliveryRate)}
+            icon={<Activity className="w-5 h-5" />}
+            color="primary"
+            delay={300}
+            subtitle="Based on Processed"
+            loading={isLoading}
+            tooltip="Processed Orders / Total Orders. Measures the percentage of orders successfully delivered and paid."
+          />
+          <StatCard
+            title="Confirmation Rate"
+            value={formatPercentage(filteredConfRate)}
+            icon={<CheckCircle className="w-5 h-5" />}
+            color="success"
+            delay={350}
+            loading={isLoading}
+            tooltip="Confirmed orders / (Total - Cancelled - Out of Stock). Measures order quality excluding unavoidable cancellations."
+          />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Average Order Value" value={formatCurrency(filteredOrders.length > 0 ? filteredRevenue / filteredOrders.length : 0)} icon={<TrendingUp className="w-5 h-5" />} color="primary" delay={400} />
-          <StatCard title="Products Sold" value={formatNumber(uniqueProductCount)} icon={<Package className="w-5 h-5" />} color="primary" delay={450} subtitle="Unique in period" />
-          <StatCard title="Pending" value={formatNumber(filteredPending)} icon={<Clock className="w-5 h-5" />} color="warning" delay={500} subtitle={`${filteredOrders.length > 0 ? ((filteredPending / filteredOrders.length) * 100).toFixed(1) : 0}% of total`} />
-          <StatCard title="Confirmed Orders" value={formatNumber(filteredConfirmed)} icon={<CheckCircle className="w-5 h-5" />} color="success" delay={550} />
+          <StatCard
+            title="Average Order Value"
+            value={formatCurrency(avgOrderValue)}
+            icon={<TrendingUp className="w-5 h-5" />}
+            color="primary"
+            delay={400}
+            loading={isLoading}
+            tooltip="Total Revenue / Total Orders. The average amount per order."
+            trend={computeTrend(avgOrderValue, prevAvgOrderValue)}
+          />
+          <StatCard
+            title="Products Sold"
+            value={formatNumber(uniqueProductCount)}
+            icon={<Package className="w-5 h-5" />}
+            color="primary"
+            delay={450}
+            subtitle="Unique in period"
+            loading={isLoading}
+            tooltip="Number of unique product codes/names found in orders for this period."
+          />
+          <StatCard
+            title="Pending"
+            value={formatNumber(filteredPending)}
+            icon={<Clock className="w-5 h-5" />}
+            color="warning"
+            delay={500}
+            subtitle={`${filteredOrders.length > 0 ? ((filteredPending / filteredOrders.length) * 100).toFixed(1) : 0}% of total`}
+            loading={isLoading}
+            tooltip="Orders with status 'pending' — not yet processed or confirmed."
+            trend={computeTrend(filteredPending, prevPending)}
+          />
+          <StatCard
+            title="Confirmed Orders"
+            value={formatNumber(filteredConfirmed)}
+            icon={<CheckCircle className="w-5 h-5" />}
+            color="success"
+            delay={550}
+            loading={isLoading}
+            tooltip="Orders with status 'confirmed' — successfully processed and paid by CodinAfrica."
+            trend={computeTrend(filteredConfirmed, prevConfirmed)}
+          />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -212,7 +389,7 @@ export default function DashboardPage() {
           <Card gradient>
             <CardHeader>
               <CardTitle>Best Selling</CardTitle>
-              <span className="text-[#64748B] text-xs font-medium">Top 5</span>
+              <span className="text-[#94A3B8] text-xs font-medium">Top 5</span>
             </CardHeader>
             <div className="space-y-2">
               {topSelling.map((p, i) => (
@@ -234,7 +411,7 @@ export default function DashboardPage() {
           <Card gradient>
             <CardHeader>
               <CardTitle>Highest Revenue</CardTitle>
-              <span className="text-[#64748B] text-xs font-medium">Top 5</span>
+              <span className="text-[#94A3B8] text-xs font-medium">Top 5</span>
             </CardHeader>
             <div className="space-y-2">
               {topRevenue.map((p, i) => (
@@ -256,7 +433,7 @@ export default function DashboardPage() {
           <Card gradient>
             <CardHeader>
               <CardTitle>Lowest Stock</CardTitle>
-              <span className="text-[#64748B] text-xs font-medium">Needs attention</span>
+              <span className="text-[#94A3B8] text-xs font-medium">Needs attention</span>
             </CardHeader>
             <div className="space-y-2">
               {lowestStock.map((p, i) => (
@@ -288,12 +465,12 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-4 mt-2">
                     <div>
                       <p className="text-[#10b981] text-sm font-semibold">{formatCurrency(bestCountry.netRevenue)}</p>
-                      <p className="text-[#64748B] text-[11px]">Net Revenue</p>
+                      <p className="text-[#94A3B8] text-[11px]">Net Revenue</p>
                     </div>
-                    <div className="w-px h-8 bg-[#1F2937]" />
+                    <div className="w-px h-8 bg-[#1F2937]/80" />
                     <div>
                       <p className="text-white text-sm font-semibold">{formatNumber(bestCountry.processedOrders)}</p>
-                      <p className="text-[#64748B] text-[11px]">Processed</p>
+                      <p className="text-[#94A3B8] text-[11px]">Processed</p>
                     </div>
                   </div>
                 </div>
@@ -321,12 +498,12 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-4 mt-1.5">
                     <div>
                       <p className="text-[#10b981] text-sm font-semibold">{formatCurrency(bestProduct.revenue)}</p>
-                      <p className="text-[#64748B] text-[11px]">Revenue</p>
+                      <p className="text-[#94A3B8] text-[11px]">Revenue</p>
                     </div>
-                    <div className="w-px h-7 bg-[#1F2937]" />
+                    <div className="w-px h-7 bg-[#1F2937]/80" />
                     <div>
                       <p className="text-white text-sm font-semibold">{formatNumber(bestProduct.totalSold)}</p>
-                      <p className="text-[#64748B] text-[11px]">Sold</p>
+                      <p className="text-[#94A3B8] text-[11px]">Sold</p>
                     </div>
                   </div>
                 </div>
@@ -336,7 +513,7 @@ export default function DashboardPage() {
           <Card gradient>
             <CardHeader>
               <CardTitle>Recent Orders</CardTitle>
-              <span className="text-[#64748B] text-xs">Latest 5</span>
+              <span className="text-[#94A3B8] text-xs">Latest 5</span>
             </CardHeader>
             <div className="space-y-2">
               {filteredOrders.slice(0, 5).map((order) => (
@@ -349,7 +526,7 @@ export default function DashboardPage() {
                     <Eye className="w-3.5 h-3.5 text-[#64748B] group-hover:text-[#8B5CF6] shrink-0 transition-colors duration-200" />
                     <div className="min-w-0">
                       <p className="text-white text-sm font-medium truncate">{order.customerName}</p>
-                      <p className="text-[#64748B] text-xs">{formatDate(order.date)}</p>
+                      <p className="text-[#94A3B8] text-xs">{formatDate(order.date)}</p>
                     </div>
                   </div>
                   <div className="text-right flex items-center gap-3 shrink-0 ml-3">
