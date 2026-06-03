@@ -13,6 +13,7 @@ const STATUS_LABELS: Record<string, string> = {
   double: "Double",
   transferred: "A transférer",
   out_of_stock: "Out of Stock",
+  unreached: "Unreached",
 };
 
 interface StatusBadgeProps {

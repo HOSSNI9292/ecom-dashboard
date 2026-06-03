@@ -165,7 +165,7 @@ function mapOrder(raw: CodinAfricaOrder): Order {
     rawStatus: rawStatusName,
     statusColor: raw.status?.color || "#808080",
     date: raw.date || raw.createdAt,
-    amount: raw.totalPrice || 0,
+    amount: Math.round(raw.totalPrice || 0),
     productName: detail?.name || product?.name || "Unknown",
     productCode: product?.code?.[0] || "",
     quantity: detail?.quantity || 1,
@@ -186,7 +186,7 @@ function mapProduct(raw: CodinAfricaOrder): Product[] {
       name: d.name || p?.name || "Unknown",
       code: p?.code?.[0] || "",
       totalSold: d.quantity || 0,
-      revenue: d.unitPrice * d.quantity || 0,
+      revenue: Math.round(d.unitPrice * d.quantity) || 0,
       stockQuantity: p?.quantity?.inStock ?? 0,
       warehouse: pd?.warehouse || "",
       country: pd?.country || raw.customer?.country || "",
@@ -267,15 +267,28 @@ class ApiService {
         return firstResults;
       }
 
-      const pagePromises: Promise<ApiResponse<CodinAfricaOrder>>[] = [];
-      for (let p = 2; p <= lastPage; p++) {
-        pagePromises.push(this.request<ApiResponse<CodinAfricaOrder>>(`/orders/search?limit=${perPage}&page=${p}`));
+    const pagesToFetch = Math.min(lastPage, 35);
+    const pagePromises: Promise<ApiResponse<CodinAfricaOrder>>[] = [];
+    for (let p = 2; p <= pagesToFetch; p++) {
+      pagePromises.push(this.request<ApiResponse<CodinAfricaOrder>>(`/orders/search?limit=${perPage}&page=${p}`));
+    }
+    const settled = await Promise.allSettled(pagePromises);
+    const restResults: CodinAfricaOrder[] = [];
+    let failedPages = 0;
+    for (let i = 0; i < settled.length; i++) {
+      const r = settled[i];
+      if (r.status === "fulfilled") {
+        const items = r.value?.content?.results || [];
+        restResults.push(...items);
+      } else {
+        failedPages++;
+        console.warn(`[API] Page ${i + 2} failed: ${r.reason}`);
       }
-      const rest = await Promise.all(pagePromises);
-      const allOrders = [firstResults, ...rest.map((r) => r?.content?.results || [])].flat();
-      console.log(`[API] Fetched ${allOrders.length} orders total`);
-      this.ordersCache = allOrders;
-      return allOrders;
+    }
+    const allOrders = [firstResults, ...restResults].flat();
+    console.log(`[API] Fetched ${allOrders.length} orders total${failedPages > 0 ? ` (${failedPages} pages failed)` : ""}`);
+    this.ordersCache = allOrders;
+    return allOrders;
     };
 
     this.pendingFetchOrders = doFetch();

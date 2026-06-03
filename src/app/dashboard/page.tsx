@@ -47,7 +47,8 @@ export default function DashboardPage() {
     const outOfStockOrders = filteredOrders.filter((o) => o.status === "out_of_stock").length;
     const doubleOrders = filteredOrders.filter((o) => o.status === "double").length;
     const transferredOrders = filteredOrders.filter((o) => o.status === "transferred").length;
-    return { pendingOrders, confirmedOrders, deliveredOrders, cancelledOrders, outOfStockOrders, doubleOrders, transferredOrders };
+    const unreachedOrders = filteredOrders.filter((o) => o.status === "unreached").length;
+    return { pendingOrders, confirmedOrders, deliveredOrders, cancelledOrders, outOfStockOrders, doubleOrders, transferredOrders, unreachedOrders };
   }, [filteredOrders]);
 
   const filteredRevenue = filteredOrders.reduce((s, o) => s + o.amount, 0);
@@ -58,8 +59,7 @@ export default function DashboardPage() {
   const filteredProcessedOrders = filteredOrders.filter((o) => o.status === "confirmed").length;
   console.log("[Dashboard] Processed (status=confirmed):", filteredProcessedOrders);
   const filteredProcessedRevenue = filteredOrders.filter((o) => o.status === "confirmed").reduce((s, o) => s + o.amount, 0);
-  const filteredDeliverable = filteredOrders.filter((o) => o.status !== "cancelled" && o.status !== "out_of_stock").length;
-  const filteredDeliveryRate = filteredDeliverable > 0 ? filteredConfirmed / filteredDeliverable : 0;
+  const filteredDeliveryRate = filteredOrders.length > 0 ? filteredProcessedOrders / filteredOrders.length : 0;
 
   const filteredServiceFees = useMemo(() => {
     const byCountry = new Map<string, number>();

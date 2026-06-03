@@ -54,6 +54,7 @@ export const STATUS_COLORS: Record<string, string> = {
   double: "#ec4899",
   transferred: "#06b6d4",
   out_of_stock: "#6b7280",
+  unreached: "#94a3b8",
 };
 
 export const STATUS_MAP: Record<string, string> = {
@@ -95,6 +96,12 @@ export const STATUS_MAP: Record<string, string> = {
   out_of_stock: "out_of_stock",
   "Out of Stock": "out_of_stock",
   OUT_OF_STOCK: "out_of_stock",
+  Unreached: "unreached",
+  unreached: "unreached",
+  UNREACHED: "unreached",
+  Spam: "cancelled",
+  spam: "cancelled",
+  SPAM: "cancelled",
 };
 
 export const COUNTRY_COLORS = [
@@ -122,6 +129,10 @@ export const FIXED_COUNTRY_FEES: Record<string, number> = {
   CI: 5000,
   ML: 5000,
   BF: 5000,
+  NE: 5000,
+  TD: 5000,
+  BJ: 5000,
+  TG: 5000,
 };
 
 export const DEFAULT_FIXED_FEE = 5000;

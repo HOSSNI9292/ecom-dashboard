@@ -19,6 +19,7 @@ interface FilteredChartStats {
   outOfStockOrders: number;
   doubleOrders: number;
   transferredOrders: number;
+  unreachedOrders: number;
 }
 
 interface OrdersStatusChartProps {
@@ -29,11 +30,11 @@ interface OrdersStatusChartProps {
 const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   pending: { label: "Pending", color: "#F59E0B" },
   confirmed: { label: "Confirmed", color: "#10B981" },
-  processed: { label: "Processed", color: "#3B82F6" },
   cancelled: { label: "Cancelled", color: "#EF4444" },
   double: { label: "Double", color: "#EC4899" },
   transferred: { label: "Transferred", color: "#8B5CF6" },
   out_of_stock: { label: "Out of Stock", color: "#6B7280" },
+  unreached: { label: "Unreached", color: "#94A3B8" },
 };
 
 export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
@@ -43,12 +44,12 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
         const cfg = STATUS_CONFIG[key];
         let value = 0;
         if (key === "pending") value = stats.pendingOrders;
-        else if (key === "confirmed") value = Math.max(0, stats.confirmedOrders - stats.deliveredOrders);
-        else if (key === "processed") value = stats.deliveredOrders;
+        else if (key === "confirmed") value = stats.confirmedOrders;
         else if (key === "cancelled") value = stats.cancelledOrders;
         else if (key === "double") value = stats.doubleOrders;
         else if (key === "transferred") value = stats.transferredOrders;
         else if (key === "out_of_stock") value = stats.outOfStockOrders;
+        else if (key === "unreached") value = stats.unreachedOrders;
         return { key, ...cfg, value };
       }).filter((d) => d.value > 0).sort((a, b) => b.value - a.value);
 
