@@ -203,6 +203,15 @@ class ApiService {
   private apiUrl: string;
   private ordersCache: CodinAfricaOrder[] = [];
   private warehousesCache: CodinAfricaWarehouse[] = [];
+  private allDataCache: {
+    data: { orders: Order[]; products: Product[]; countries: CountryStats[]; stats: DashboardStats; revenueTrend: RevenuePoint[] } | null;
+    ts: number;
+  } = { data: null, ts: 0 };
+  private pendingFetchOrders: Promise<CodinAfricaOrder[]> | null = null;
+  private pendingFetchAllData: Promise<{
+    orders: Order[]; products: Product[]; countries: CountryStats[]; stats: DashboardStats; revenueTrend: RevenuePoint[];
+  }> | null = null;
+  private readonly CACHE_TTL = 45000;
 
   constructor() {
     const config = getApiConfig();
@@ -212,10 +221,18 @@ class ApiService {
 
   refreshConfig(): void {
     const config = getApiConfig();
+    if (config.token === this.token && config.apiUrl === this.apiUrl) return;
     this.token = config.token;
     this.apiUrl = config.apiUrl;
+    this.clearCache();
+  }
+
+  clearCache(): void {
     this.ordersCache = [];
     this.warehousesCache = [];
+    this.allDataCache = { data: null, ts: 0 };
+    this.pendingFetchOrders = null;
+    this.pendingFetchAllData = null;
   }
 
   private async request<T>(endpoint: string): Promise<T> {
@@ -231,39 +248,50 @@ class ApiService {
 
   async fetchAllOrders(): Promise<CodinAfricaOrder[]> {
     if (!this.token) {
-      console.log("[API] No token, using mock data");
       this.ordersCache = MOCK_ORDERS;
       return MOCK_ORDERS;
     }
-    const perPage = 1000;
-    const first = await this.request<ApiResponse<CodinAfricaOrder>>(`/orders/search?limit=${perPage}&page=1`);
-    const firstResults = first?.content?.results || [];
-    const lastPage = first?.content?.last_page || 1;
-    const total = first?.content?.total || firstResults.length;
-    console.log(`[API] Orders: ${total} total, ${lastPage} pages, fetching...`);
+    if (this.ordersCache.length > 0) return this.ordersCache;
+    if (this.pendingFetchOrders) return this.pendingFetchOrders;
 
-    if (lastPage <= 1) {
-      this.ordersCache = firstResults;
-      return firstResults;
-    }
+    const doFetch = async () => {
+      const perPage = 1000;
+      const first = await this.request<ApiResponse<CodinAfricaOrder>>(`/orders/search?limit=${perPage}&page=1`);
+      const firstResults = first?.content?.results || [];
+      const lastPage = first?.content?.last_page || 1;
+      const total = first?.content?.total || firstResults.length;
+      console.log(`[API] Orders: ${total} total, ${lastPage} pages, fetching...`);
 
-    const pagePromises: Promise<ApiResponse<CodinAfricaOrder>>[] = [];
-    for (let p = 2; p <= lastPage; p++) {
-      pagePromises.push(this.request<ApiResponse<CodinAfricaOrder>>(`/orders/search?limit=${perPage}&page=${p}`));
+      if (lastPage <= 1) {
+        this.ordersCache = firstResults;
+        return firstResults;
+      }
+
+      const pagePromises: Promise<ApiResponse<CodinAfricaOrder>>[] = [];
+      for (let p = 2; p <= lastPage; p++) {
+        pagePromises.push(this.request<ApiResponse<CodinAfricaOrder>>(`/orders/search?limit=${perPage}&page=${p}`));
+      }
+      const rest = await Promise.all(pagePromises);
+      const allOrders = [firstResults, ...rest.map((r) => r?.content?.results || [])].flat();
+      console.log(`[API] Fetched ${allOrders.length} orders total`);
+      this.ordersCache = allOrders;
+      return allOrders;
+    };
+
+    this.pendingFetchOrders = doFetch();
+    try {
+      return await this.pendingFetchOrders;
+    } finally {
+      this.pendingFetchOrders = null;
     }
-    const rest = await Promise.all(pagePromises);
-    const allOrders = [firstResults, ...rest.map((r) => r?.content?.results || [])].flat();
-    console.log(`[API] Fetched ${allOrders.length} orders total`);
-    this.ordersCache = allOrders;
-    return allOrders;
   }
 
   async fetchWarehouses(): Promise<CodinAfricaWarehouse[]> {
     if (!this.token) {
-      console.log("[API] No token, using mock warehouses");
       this.warehousesCache = MOCK_WAREHOUSES;
       return MOCK_WAREHOUSES;
     }
+    if (this.warehousesCache.length > 0) return this.warehousesCache;
     const data = await this.request<ApiResponse<CodinAfricaWarehouse>>("/warehouses/search?limit=50");
     const warehouses = data?.content?.results || [];
     this.warehousesCache = warehouses;
@@ -277,18 +305,35 @@ class ApiService {
     stats: DashboardStats;
     revenueTrend: RevenuePoint[];
   }> {
-    const [rawOrders, warehouses] = await Promise.all([
-      this.fetchAllOrders(),
-      this.fetchWarehouses(),
-    ]);
+    const now = Date.now();
+    if (this.allDataCache.data && now - this.allDataCache.ts < this.CACHE_TTL) {
+      return this.allDataCache.data;
+    }
+    if (this.pendingFetchAllData) return this.pendingFetchAllData;
 
-    const mappedOrders = rawOrders.map(mapOrder);
-    const allProducts = rawOrders.flatMap(mapProduct);
-    const stats = this.computeStats(mappedOrders, allProducts);
-    const countries = this.computeCountries(mappedOrders, warehouses);
-    const revenueTrend = this.computeRevenueTrend(mappedOrders);
+    const doFetch = async () => {
+      const [rawOrders, warehouses] = await Promise.all([
+        this.fetchAllOrders(),
+        this.fetchWarehouses(),
+      ]);
 
-    return { orders: mappedOrders, products: allProducts, countries, stats, revenueTrend };
+      const mappedOrders = rawOrders.map(mapOrder);
+      const allProducts = rawOrders.flatMap(mapProduct);
+      const stats = this.computeStats(mappedOrders, allProducts);
+      const countries = this.computeCountries(mappedOrders, warehouses);
+      const revenueTrend = this.computeRevenueTrend(mappedOrders);
+
+      const result = { orders: mappedOrders, products: allProducts, countries, stats, revenueTrend };
+      this.allDataCache = { data: result, ts: Date.now() };
+      return result;
+    };
+
+    this.pendingFetchAllData = doFetch();
+    try {
+      return await this.pendingFetchAllData;
+    } finally {
+      this.pendingFetchAllData = null;
+    }
   }
 
   private computeStats(orders: Order[], products: Product[]): DashboardStats {

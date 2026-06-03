@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { Save, Shield, Key, Globe, Eye, EyeOff, CheckCircle, AlertCircle, RefreshCw, DollarSign, ChevronRight, Bot } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
-import { saveCredentials, clearCredentials, getApiConfig } from "@/services";
+import { saveCredentials, clearCredentials, getApiConfig, api } from "@/services";
 import type { AuthCredentials } from "@/types";
 
 const GROQ_KEY = "groq_api_key";
@@ -31,12 +31,14 @@ export default function SettingsPage() {
 
   const handleSave = useCallback(() => {
     saveCredentials(creds);
+    api.refreshConfig();
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }, [creds]);
 
   const handleClear = useCallback(() => {
     clearCredentials();
+    api.refreshConfig();
     setCreds({ apiUrl: "https://api.codinafrica.com/api", token: "" });
   }, []);
 

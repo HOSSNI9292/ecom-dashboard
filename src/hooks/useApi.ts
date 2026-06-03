@@ -39,20 +39,16 @@ function useApi<T>(
   fetcherRef.current = fetcher;
 
   const fetchData = useCallback(async () => {
-    api.refreshConfig();
     setLoading(true);
     setError(null);
     try {
-      console.log("[useApi] Fetching data...");
       const result = await fetcherRef.current();
       if (mountedRef.current) {
-        console.log("[useApi] Data received, setting state");
         setData(result);
         hasDataRef.current = true;
       }
     } catch (err) {
       const error = err instanceof Error ? err : new Error(String(err));
-      console.log("[useApi] Fetch error:", error.message);
       if (mountedRef.current) {
         if (!hasDataRef.current) {
           setError(error);
