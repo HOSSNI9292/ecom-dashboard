@@ -6,24 +6,18 @@ interface CardProps {
   onClick?: () => void;
   hover?: boolean;
   gradient?: boolean;
-  glass?: boolean;
-  glow?: boolean;
 }
 
-export function Card({ children, className = "", onClick, hover = true, gradient = false, glass = false, glow = false }: CardProps) {
+export function Card({ children, className = "", onClick, hover = true, gradient = false }: CardProps) {
   return (
     <div
-      className={`rounded-2xl p-5 transition-all duration-300 ${
-        glass
-          ? "glass-card"
-          : "bg-[#141417] border border-[#27272A]"
-      } ${
+      className={`bg-[#111111] border border-[#1F1F1F] rounded-xl p-5 transition-all duration-200 ${
         hover && onClick
-          ? "cursor-pointer hover:-translate-y-0.5 hover:shadow-card-hover hover:border-[#10B981]/30"
+          ? "cursor-pointer hover:border-[#06B6D4]/30 hover:shadow-[0_0_20px_rgba(6,182,212,0.05)]"
           : hover
-            ? "hover:border-[#3F3F46]"
+            ? "hover:border-[#2a2a2a]"
             : ""
-      } ${gradient ? "bg-gradient-to-br from-[#141417] via-[#141417] to-[#0A0A0B]" : ""} ${glow ? "glow-primary" : ""} ${className}`}
+      } ${gradient ? "bg-gradient-to-br from-[#111111] to-[#0A0A0A]" : ""} ${className}`}
       onClick={onClick}
     >
       {children}
@@ -36,5 +30,5 @@ export function CardHeader({ children, className = "" }: { children: React.React
 }
 
 export function CardTitle({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <h3 className={`text-base font-semibold text-[#FAFAFA] ${className}`}>{children}</h3>;
+  return <h3 className={`text-base font-semibold text-white ${className}`}>{children}</h3>;
 }

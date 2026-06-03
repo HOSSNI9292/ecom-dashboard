@@ -35,7 +35,7 @@ const MOCK_ORDERS: CodinAfricaOrder[] = [
   },
   {
     _id: "4", id: "ORD-004", customer: { fullName: "Aisha Diallo", phone: "+221771234567", country: "SN", city: "Dakar" },
-    status: { _id: "s3", name: "Confirmed", color: "#0EA5E9" }, date: "2026-06-02T11:45:00Z", createdAt: "2026-06-02T11:45:00Z", updatedAt: "2026-06-02T11:45:00Z",
+    status: { _id: "s3", name: "Confirmed", color: "#8b5cf6" }, date: "2026-06-02T11:45:00Z", createdAt: "2026-06-02T11:45:00Z", updatedAt: "2026-06-02T11:45:00Z",
     totalPrice: 650, source: "instagram",
     details: [{ _id: "d4", name: "Bluetooth Speaker", quantity: 1, unitPrice: 650, picture: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=200", product: { _id: "p4", name: "Bluetooth Speaker", code: ["BS-004"], price: 650, picture: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=200", relatedPictures: [], quantity: { inStock: 75, defective: 0, total: 75 }, details: [{ warehouse: "WH-SN", country: "SN", currency: "XOF", price: 650, quantity: { total: 75, inStock: 75, defective: 0, stockAll: 75, expedition: 0 } }] } }],
   },
@@ -77,7 +77,7 @@ const MOCK_ORDERS: CodinAfricaOrder[] = [
   },
   {
     _id: "11", id: "ORD-011", customer: { fullName: "Kwame Asante", phone: "+233201234567", country: "GH", city: "Kumasi" },
-    status: { _id: "s3", name: "Confirmed", color: "#0EA5E9" }, date: "2026-05-31T09:30:00Z", createdAt: "2026-05-31T09:30:00Z", updatedAt: "2026-05-31T09:30:00Z",
+    status: { _id: "s3", name: "Confirmed", color: "#8b5cf6" }, date: "2026-05-31T09:30:00Z", createdAt: "2026-05-31T09:30:00Z", updatedAt: "2026-05-31T09:30:00Z",
     totalPrice: 950, source: "website",
     details: [{ _id: "d11", name: "Mechanical Keyboard", quantity: 1, unitPrice: 950, picture: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=200", product: { _id: "p11", name: "Mechanical Keyboard", code: ["MK-011"], price: 950, picture: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=200", relatedPictures: [], quantity: { inStock: 28, defective: 0, total: 28 }, details: [{ warehouse: "WH-GH", country: "GH", currency: "GHS", price: 950, quantity: { total: 28, inStock: 28, defective: 0, stockAll: 28, expedition: 0 } }] } }],
   },
@@ -101,7 +101,7 @@ const MOCK_ORDERS: CodinAfricaOrder[] = [
   },
   {
     _id: "15", id: "ORD-015", customer: { fullName: "Moussa Camara", phone: "+224621234567", country: "GN", city: "Conakry" },
-    status: { _id: "s8", name: "Transferred", color: "#0EA5E9" }, date: "2026-05-27T10:10:00Z", createdAt: "2026-05-27T10:10:00Z", updatedAt: "2026-05-27T10:10:00Z",
+    status: { _id: "s8", name: "Transferred", color: "#06b6d4" }, date: "2026-05-27T10:10:00Z", createdAt: "2026-05-27T10:10:00Z", updatedAt: "2026-05-27T10:10:00Z",
     totalPrice: 890, source: "instagram",
     details: [{ _id: "d15", name: "Portable Projector", quantity: 1, unitPrice: 890, picture: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=200", product: { _id: "p15", name: "Portable Projector", code: ["PP-015"], price: 890, picture: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=200", relatedPictures: [], quantity: { inStock: 12, defective: 0, total: 12 }, details: [{ warehouse: "WH-GN", country: "GN", currency: "GNF", price: 890, quantity: { total: 12, inStock: 12, defective: 0, stockAll: 12, expedition: 0 } }] } }],
   },

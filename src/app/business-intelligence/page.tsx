@@ -237,8 +237,8 @@ export default function BusinessIntelligencePage() {
       onClick={() => setActiveTab(key)}
       className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
         activeTab === key
-          ? "bg-[#10B981] text-white shadow-[0_0_12px_rgba(99,102,241,0.3)]"
-          : "text-[#71717A] hover:text-white"
+          ? "bg-[#06B6D4] text-white shadow-[0_0_12px_rgba(6,182,212,0.3)]"
+          : "text-[#606060] hover:text-white"
       }`}
     >
       {label}
@@ -250,8 +250,8 @@ export default function BusinessIntelligencePage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-2">
-            <div className="p-2 rounded-lg bg-[#10B981]/10">
-              <BarChart3 className="w-5 h-5 text-[#34D399]" />
+            <div className="p-2 rounded-lg bg-[#06B6D4]/10">
+              <BarChart3 className="w-5 h-5 text-[#22D3EE]" />
             </div>
             <h1 className="text-xl font-bold text-white">Business Intelligence</h1>
           </div>
@@ -259,26 +259,26 @@ export default function BusinessIntelligencePage() {
           <div className="flex items-center gap-2">
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#71717A] hover:text-white hover:bg-[#141417] border border-[#27272A] transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200"
             >
               <Download className="w-3.5 h-3.5" /> Export Orders
             </button>
             <button
               onClick={handleExportCountries}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#71717A] hover:text-white hover:bg-[#141417] border border-[#27272A] transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200"
             >
               <Download className="w-3.5 h-3.5" /> Export Countries
             </button>
             <button
               onClick={handleExportProducts}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#71717A] hover:text-white hover:bg-[#141417] border border-[#27272A] transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200"
             >
               <Download className="w-3.5 h-3.5" /> Export Products
             </button>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 bg-[#141417] border border-[#27272A] rounded-lg p-1 overflow-x-auto">
+        <div className="flex items-center gap-2 bg-[#111111] border border-[#1F1F1F] rounded-lg p-1 overflow-x-auto">
           {tabBtn("profit", "Profit Analytics")}
           {tabBtn("revenue", "Revenue Trends")}
           {tabBtn("countries", "Revenue by Country")}
@@ -302,74 +302,74 @@ export default function BusinessIntelligencePage() {
               return (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="p-4 rounded-xl bg-[#141417] border border-[#27272A]">
-                      <p className="text-[#71717A] text-xs font-medium mb-1">Gross Revenue</p>
+                    <div className="p-4 rounded-xl bg-[#111111] border border-[#1F1F1F]">
+                      <p className="text-[#606060] text-xs font-medium mb-1">Gross Revenue</p>
                       <p className="text-white text-xl font-bold">{formatCurrency(totalProcessed)}</p>
-                      <p className="text-[#71717A] text-xs mt-1">Processed orders only</p>
+                      <p className="text-[#606060] text-xs mt-1">Processed orders only</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-[#141417] border border-[#27272A]">
-                      <p className="text-[#71717A] text-xs font-medium mb-1">Service Fees</p>
-                      <p className="text-[#EF4444] text-xl font-bold">{formatCurrency(totalFees)}</p>
-                      <p className="text-[#71717A] text-xs mt-1">CodinAfrica fees</p>
+                    <div className="p-4 rounded-xl bg-[#111111] border border-[#1F1F1F]">
+                      <p className="text-[#606060] text-xs font-medium mb-1">Service Fees</p>
+                      <p className="text-[#ef4444] text-xl font-bold">{formatCurrency(totalFees)}</p>
+                      <p className="text-[#606060] text-xs mt-1">CodinAfrica fees</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-[#141417] border border-[#27272A]">
-                      <p className="text-[#71717A] text-xs font-medium mb-1">Net Profit</p>
-                      <p className="text-[#10B981] text-xl font-bold">{formatCurrency(totalNet)}</p>
-                      <p className="text-[#71717A] text-xs mt-1">After all fees</p>
+                    <div className="p-4 rounded-xl bg-[#111111] border border-[#1F1F1F]">
+                      <p className="text-[#606060] text-xs font-medium mb-1">Net Profit</p>
+                      <p className="text-[#10b981] text-xl font-bold">{formatCurrency(totalNet)}</p>
+                      <p className="text-[#606060] text-xs mt-1">After all fees</p>
                     </div>
-                    <div className="p-4 rounded-xl bg-[#141417] border border-[#27272A]">
-                      <p className="text-[#71717A] text-xs font-medium mb-1">Profit Margin</p>
-                      <p className="text-[#34D399] text-xl font-bold">{formatPercentage(margin)}</p>
-                      <p className="text-[#71717A] text-xs mt-1">Net / Gross</p>
+                    <div className="p-4 rounded-xl bg-[#111111] border border-[#1F1F1F]">
+                      <p className="text-[#606060] text-xs font-medium mb-1">Profit Margin</p>
+                      <p className="text-[#22D3EE] text-xl font-bold">{formatPercentage(margin)}</p>
+                      <p className="text-[#606060] text-xs mt-1">Net / Gross</p>
                     </div>
                   </div>
 
                   <Card hover={false}>
                     <CardHeader>
                       <CardTitle>Profit by Country</CardTitle>
-                      <span className="text-[#34D399] text-xs font-medium">{filteredCountries.length} countries</span>
+                      <span className="text-[#22D3EE] text-xs font-medium">{filteredCountries.length} countries</span>
                     </CardHeader>
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
-                          <tr className="border-b border-[#27272A]">
-                            <th className="text-left text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">#</th>
-                            <th className="text-left text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
-                            <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Processed Orders</th>
-                            <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Gross Revenue</th>
-                            <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fee %</th>
-                            <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Service Fees</th>
-                            <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Net Revenue</th>
-                            <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Margin</th>
+                          <tr className="border-b border-[#1F1F1F]">
+                            <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">#</th>
+                            <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
+                            <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Processed Orders</th>
+                            <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Gross Revenue</th>
+                            <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fee %</th>
+                            <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Service Fees</th>
+                            <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Net Revenue</th>
+                            <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Margin</th>
                           </tr>
                         </thead>
                         <tbody>
                           {filteredCountries.map((c, i) => {
                             const cMargin = c.processedRevenue > 0 ? c.netRevenue / c.processedRevenue : 0;
                             return (
-                              <tr key={c.country} className="border-b border-[#27272A]/50 hover:bg-[#1A1A1A] transition-all duration-150">
-                                <td className="py-3.5 px-4 text-[#71717A] text-sm">{i + 1}</td>
+                              <tr key={c.country} className="border-b border-[#1F1F1F]/50 hover:bg-[#1A1A1A] transition-all duration-150">
+                                <td className="py-3.5 px-4 text-[#606060] text-sm">{i + 1}</td>
                                 <td className="py-3.5 px-4">
                                   <span className="text-white font-medium">{c.countryName}</span>
                                 </td>
-                                <td className="py-3.5 px-4 text-right text-[#A1A1AA]">{formatNumber(c.processedOrders)}</td>
+                                <td className="py-3.5 px-4 text-right text-[#c0c0c0]">{formatNumber(c.processedOrders)}</td>
                                 <td className="py-3.5 px-4 text-right text-white">{formatCurrency(c.processedRevenue)}</td>
-                                <td className="py-3.5 px-4 text-right text-[#F59E0B] font-mono text-sm">{formatCurrency(c.feePerOrder)}</td>
-                                <td className="py-3.5 px-4 text-right text-[#EF4444]">{formatCurrency(c.serviceFees)}</td>
-                                <td className="py-3.5 px-4 text-right text-[#10B981] font-semibold">{formatCurrency(c.netRevenue)}</td>
+                                <td className="py-3.5 px-4 text-right text-[#f59e0b] font-mono text-sm">{formatCurrency(c.feePerOrder)}</td>
+                                <td className="py-3.5 px-4 text-right text-[#ef4444]">{formatCurrency(c.serviceFees)}</td>
+                                <td className="py-3.5 px-4 text-right text-[#10b981] font-semibold">{formatCurrency(c.netRevenue)}</td>
                                 <td className="py-3.5 px-4 text-right">
                                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                                    cMargin >= 0.9 ? "bg-[#10B981]/20 text-[#10B981]" :
-                                    cMargin >= 0.8 ? "bg-[#34D399]/20 text-[#34D399]" :
-                                    cMargin >= 0.7 ? "bg-[#F59E0B]/20 text-[#F59E0B]" :
-                                    "bg-[#EF4444]/20 text-[#EF4444]"
+                                    cMargin >= 0.9 ? "bg-[#10b981]/20 text-[#10b981]" :
+                                    cMargin >= 0.8 ? "bg-[#22D3EE]/20 text-[#22D3EE]" :
+                                    cMargin >= 0.7 ? "bg-[#f59e0b]/20 text-[#f59e0b]" :
+                                    "bg-[#ef4444]/20 text-[#ef4444]"
                                   }`}>{formatPercentage(cMargin)}</span>
                                 </td>
                               </tr>
                             );
                           })}
                           {filteredCountries.length === 0 && (
-                            <tr><td colSpan={8} className="text-center py-12 text-[#71717A]">No data</td></tr>
+                            <tr><td colSpan={8} className="text-center py-12 text-[#606060]">No data</td></tr>
                           )}
                         </tbody>
                       </table>
@@ -386,7 +386,7 @@ export default function BusinessIntelligencePage() {
           <Card hover={false}>
             <CardHeader>
               <CardTitle>Revenue Trends</CardTitle>
-              <span className="text-[#71717A] text-xs">Daily revenue over time</span>
+              <span className="text-[#606060] text-xs">Daily revenue over time</span>
             </CardHeader>
             <RevenueChart data={data?.revenueTrend ?? []} loading={false} />
           </Card>
@@ -396,26 +396,26 @@ export default function BusinessIntelligencePage() {
         {activeTab === "countries" && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-[#34D399]" />
+              <Globe className="w-4 h-4 text-[#22D3EE]" />
               <span className="text-white text-sm font-medium">Top 10 Countries by Revenue</span>
             </div>
             <div className="space-y-2">
               {topCountries.map((c: CountryStats, i: number) => {
                 const share = c.revenue / maxRevenue;
                 return (
-                  <div key={c.country} className="flex items-center gap-4 p-3 rounded-xl bg-[#141417] border border-[#27272A] hover:border-[#10B981]/20 transition-all duration-200">
+                  <div key={c.country} className="flex items-center gap-4 p-3 rounded-xl bg-[#111111] border border-[#1F1F1F] hover:border-[#06B6D4]/20 transition-all duration-200">
                     <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
-                      i === 0 ? "bg-[#F59E0B]/20 text-[#F59E0B]" :
-                      i === 1 ? "bg-[#71717A]/20 text-[#71717A]" :
-                      i === 2 ? "bg-[#0EA5E9]/20 text-[#0EA5E9]" :
-                      "bg-[#27272A] text-[#71717A]"
+                      i === 0 ? "bg-[#f59e0b]/20 text-[#f59e0b]" :
+                      i === 1 ? "bg-[#808080]/20 text-[#808080]" :
+                      i === 2 ? "bg-[#8b5cf6]/20 text-[#8b5cf6]" :
+                      "bg-[#1F1F1F] text-[#606060]"
                     }`}>{i + 1}</div>
                     <div className="flex items-center gap-3 min-w-0 w-48 shrink-0">
                       {c.flag && <img src={c.flag} alt={c.countryName} className="w-6 h-4 rounded shadow-sm object-cover" />}
                       <span className="text-white text-sm font-medium truncate">{c.countryName}</span>
                     </div>
-                    <div className="flex-1 h-2 bg-[#27272A] rounded-full overflow-hidden">
-                      <div className="h-full rounded-full bg-[#10B981]" style={{ width: `${share * 100}%` }} />
+                    <div className="flex-1 h-2 bg-[#1F1F1F] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-[#06B6D4]" style={{ width: `${share * 100}%` }} />
                     </div>
                     <span className="text-white text-sm font-medium shrink-0 w-28 text-right">{formatCurrency(c.revenue)}</span>
                   </div>
@@ -429,40 +429,40 @@ export default function BusinessIntelligencePage() {
         {activeTab === "net" && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <DollarSign className="w-4 h-4 text-[#10B981]" />
+              <DollarSign className="w-4 h-4 text-[#10b981]" />
               <span className="text-white text-sm font-medium">Net Revenue by Country (after service fees)</span>
             </div>
             <Card hover={false}>
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-[#27272A]">
-                      <th className="text-left text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">#</th>
-                      <th className="text-left text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
-                      <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Gross Revenue</th>
-                      <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fee %</th>
-                      <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Service Fees</th>
-                      <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Net Revenue</th>
+                    <tr className="border-b border-[#1F1F1F]">
+                      <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">#</th>
+                      <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
+                      <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Gross Revenue</th>
+                      <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fee %</th>
+                      <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Service Fees</th>
+                      <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Net Revenue</th>
                     </tr>
                   </thead>
                   <tbody>
                     {netRevenueByCountry.map((c: CountryStats, i: number) => (
-                      <tr key={c.country} className="border-b border-[#27272A]/50 hover:bg-[#1A1A1A] transition-all duration-150">
-                        <td className="py-3.5 px-4 text-[#71717A] text-sm">{i + 1}</td>
+                      <tr key={c.country} className="border-b border-[#1F1F1F]/50 hover:bg-[#1A1A1A] transition-all duration-150">
+                        <td className="py-3.5 px-4 text-[#606060] text-sm">{i + 1}</td>
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-3">
                             {c.flag && <img src={c.flag} alt={c.countryName} className="w-6 h-4 rounded shadow-sm object-cover" />}
                             <span className="text-white font-medium">{c.countryName}</span>
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 text-right text-[#A1A1AA]">{formatCurrency(c.processedRevenue)}</td>
-                        <td className="py-3.5 px-4 text-right text-[#F59E0B] font-mono text-sm">{formatCurrency(c.feePerOrder)}</td>
-                        <td className="py-3.5 px-4 text-right text-[#EF4444]">{formatCurrency(c.serviceFees)}</td>
-                        <td className="py-3.5 px-4 text-right text-[#10B981] font-semibold">{formatCurrency(c.netRevenue)}</td>
+                        <td className="py-3.5 px-4 text-right text-[#c0c0c0]">{formatCurrency(c.processedRevenue)}</td>
+                        <td className="py-3.5 px-4 text-right text-[#f59e0b] font-mono text-sm">{formatCurrency(c.feePerOrder)}</td>
+                        <td className="py-3.5 px-4 text-right text-[#ef4444]">{formatCurrency(c.serviceFees)}</td>
+                        <td className="py-3.5 px-4 text-right text-[#10b981] font-semibold">{formatCurrency(c.netRevenue)}</td>
                       </tr>
                     ))}
                     {netRevenueByCountry.length === 0 && (
-                      <tr><td colSpan={6} className="text-center py-12 text-[#71717A]">No data</td></tr>
+                      <tr><td colSpan={6} className="text-center py-12 text-[#606060]">No data</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -480,64 +480,64 @@ export default function BusinessIntelligencePage() {
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#27272A]">
-                    <th className="text-left text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">#</th>
-                    <th className="text-left text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Product</th>
-                    <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
-                    <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Sold</th>
-                    <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Stock</th>
-                    <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Price</th>
+                  <tr className="border-b border-[#1F1F1F]">
+                    <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">#</th>
+                    <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Product</th>
+                    <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
+                    <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Sold</th>
+                    <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Stock</th>
+                    <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Price</th>
                   </tr>
                 </thead>
                 <tbody>
                   {topProducts.map((p: Product, i: number) => {
                     const share = p.revenue / maxProductRevenue;
                     return (
-                      <tr key={p.id} className="border-b border-[#27272A]/50 hover:bg-[#1A1A1A] transition-all duration-150">
+                      <tr key={p.id} className="border-b border-[#1F1F1F]/50 hover:bg-[#1A1A1A] transition-all duration-150">
                         <td className="py-3.5 px-4">
                           <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
-                            i === 0 ? "bg-[#F59E0B]/20 text-[#F59E0B]" :
-                            i === 1 ? "bg-[#71717A]/20 text-[#71717A]" :
-                            i === 2 ? "bg-[#0EA5E9]/20 text-[#0EA5E9]" :
-                            "bg-[#27272A] text-[#71717A]"
+                            i === 0 ? "bg-[#f59e0b]/20 text-[#f59e0b]" :
+                            i === 1 ? "bg-[#808080]/20 text-[#808080]" :
+                            i === 2 ? "bg-[#8b5cf6]/20 text-[#8b5cf6]" :
+                            "bg-[#1F1F1F] text-[#606060]"
                           }`}>{i + 1}</div>
                         </td>
                         <td className="py-3.5 px-4">
                           <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-lg bg-[#27272A] flex items-center justify-center shrink-0 overflow-hidden">
+                            <div className="w-10 h-10 rounded-lg bg-[#1F1F1F] flex items-center justify-center shrink-0 overflow-hidden">
                               {p.image ? (
                                 <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" crossOrigin="anonymous" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                               ) : (
-                                <Package className="w-5 h-5 text-[#71717A]" />
+                                <Package className="w-5 h-5 text-[#606060]" />
                               )}
                             </div>
                             <div className="min-w-0">
                               <p className="text-white text-sm font-medium truncate max-w-[200px]">{p.name}</p>
-                              <p className="text-[#71717A] text-xs">{p.code}</p>
+                              <p className="text-[#606060] text-xs">{p.code}</p>
                             </div>
                           </div>
                         </td>
                         <td className="py-3.5 px-4">
                           <div className="flex flex-col items-end">
                             <span className="text-white text-sm font-semibold">{formatCurrency(p.revenue)}</span>
-                            <div className="w-20 h-1 rounded-full bg-[#27272A] mt-1 overflow-hidden">
-                              <div className="h-full rounded-full bg-[#10B981]" style={{ width: `${share * 100}%` }} />
+                            <div className="w-20 h-1 rounded-full bg-[#1F1F1F] mt-1 overflow-hidden">
+                              <div className="h-full rounded-full bg-[#06B6D4]" style={{ width: `${share * 100}%` }} />
                             </div>
                           </div>
                         </td>
-                        <td className="py-3.5 px-4 text-right text-[#A1A1AA]">{formatNumber(p.totalSold)}</td>
+                        <td className="py-3.5 px-4 text-right text-[#c0c0c0]">{formatNumber(p.totalSold)}</td>
                         <td className="py-3.5 px-4 text-right">
                           <span className={`text-sm font-medium ${
-                            p.stockQuantity === 0 ? "text-[#EF4444]" :
-                            p.stockQuantity <= 10 ? "text-[#F59E0B]" : "text-white"
+                            p.stockQuantity === 0 ? "text-[#ef4444]" :
+                            p.stockQuantity <= 10 ? "text-[#f59e0b]" : "text-white"
                           }`}>{formatNumber(p.stockQuantity)}</span>
                         </td>
-                        <td className="py-3.5 px-4 text-right text-[#A1A1AA]">{formatCurrency(p.price)}</td>
+                        <td className="py-3.5 px-4 text-right text-[#c0c0c0]">{formatCurrency(p.price)}</td>
                       </tr>
                     );
                   })}
                   {topProducts.length === 0 && (
-                    <tr><td colSpan={6} className="text-center py-12 text-[#71717A]">No data</td></tr>
+                    <tr><td colSpan={6} className="text-center py-12 text-[#606060]">No data</td></tr>
                   )}
                 </tbody>
               </table>
@@ -550,23 +550,23 @@ export default function BusinessIntelligencePage() {
           <Card hover={false}>
             <CardHeader>
               <CardTitle>Worst Performing Products</CardTitle>
-              <span className="text-[#EF4444] text-xs font-medium">Bottom 10 by revenue</span>
+              <span className="text-[#ef4444] text-xs font-medium">Bottom 10 by revenue</span>
             </CardHeader>
             <div className="space-y-2">
               {worstProducts.map((p: Product, i: number) => (
-                <div key={p.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-[#EF4444]/5 border border-[#EF4444]/10 hover:bg-[#EF4444]/10 transition-all duration-200">
+                <div key={p.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-[#ef4444]/5 border border-[#ef4444]/10 hover:bg-[#ef4444]/10 transition-all duration-200">
                   <div className="min-w-0 flex-1">
                     <p className="text-white text-sm font-medium truncate">{p.name}</p>
-                    <p className="text-[#71717A] text-xs">{p.code} &middot; {formatNumber(p.totalSold)} sold</p>
+                    <p className="text-[#606060] text-xs">{p.code} &middot; {formatNumber(p.totalSold)} sold</p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0 ml-3">
-                    <span className="text-[#EF4444] font-bold text-sm">{formatCurrency(p.revenue)}</span>
-                    <TrendingDown className="w-4 h-4 text-[#EF4444]" />
+                    <span className="text-[#ef4444] font-bold text-sm">{formatCurrency(p.revenue)}</span>
+                    <TrendingDown className="w-4 h-4 text-[#ef4444]" />
                   </div>
                 </div>
               ))}
               {worstProducts.length === 0 && (
-                <p className="text-center py-8 text-[#71717A]">No data</p>
+                <p className="text-center py-8 text-[#606060]">No data</p>
               )}
             </div>
           </Card>
@@ -576,33 +576,33 @@ export default function BusinessIntelligencePage() {
         {activeTab === "confirmation" && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-[#10B981]" />
+              <CheckCircle className="w-4 h-4 text-[#10b981]" />
               <span className="text-white text-sm font-medium">Confirmation Rate by Country</span>
             </div>
             <div className="space-y-2">
               {confirmationByCountry.map((c: CountryStats, i: number) => (
-                <div key={c.country} className="flex items-center gap-4 p-3 rounded-xl bg-[#141417] border border-[#27272A] hover:border-[#10B981]/20 transition-all duration-200">
+                <div key={c.country} className="flex items-center gap-4 p-3 rounded-xl bg-[#111111] border border-[#1F1F1F] hover:border-[#06B6D4]/20 transition-all duration-200">
                   <div className="flex items-center gap-3 min-w-0 w-48 shrink-0">
                     {c.flag && <img src={c.flag} alt={c.countryName} className="w-6 h-4 rounded shadow-sm object-cover" />}
                     <span className="text-white text-sm font-medium truncate">{c.countryName}</span>
                   </div>
-                  <div className="flex-1 h-2 bg-[#27272A] rounded-full overflow-hidden">
+                  <div className="flex-1 h-2 bg-[#1F1F1F] rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full ${
-                        c.confirmationRate >= 0.5 ? "bg-[#10B981]" :
-                        c.confirmationRate >= 0.2 ? "bg-[#F59E0B]" : "bg-[#EF4444]"
+                        c.confirmationRate >= 0.5 ? "bg-[#10b981]" :
+                        c.confirmationRate >= 0.2 ? "bg-[#f59e0b]" : "bg-[#ef4444]"
                       }`}
                       style={{ width: `${c.confirmationRate * 100}%` }}
                     />
                   </div>
                   <span className={`text-sm font-medium shrink-0 w-16 text-right ${
-                    c.confirmationRate >= 0.5 ? "text-[#10B981]" :
-                    c.confirmationRate >= 0.2 ? "text-[#F59E0B]" : "text-[#EF4444]"
+                    c.confirmationRate >= 0.5 ? "text-[#10b981]" :
+                    c.confirmationRate >= 0.2 ? "text-[#f59e0b]" : "text-[#ef4444]"
                   }`}>{formatPercentage(c.confirmationRate)}</span>
                 </div>
               ))}
               {confirmationByCountry.length === 0 && (
-                <p className="text-center py-8 text-[#71717A]">No data</p>
+                <p className="text-center py-8 text-[#606060]">No data</p>
               )}
             </div>
           </div>
@@ -612,34 +612,34 @@ export default function BusinessIntelligencePage() {
         {activeTab === "processed" && (
           <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <ShoppingCart className="w-4 h-4 text-[#34D399]" />
+              <ShoppingCart className="w-4 h-4 text-[#22D3EE]" />
               <span className="text-white text-sm font-medium">Processed Orders by Country</span>
             </div>
             <div className="space-y-2">
               {processedByCountry.map((c: CountryStats, i: number) => {
                 const share = c.processedOrders / maxProcessed;
                 return (
-                  <div key={c.country} className="flex items-center gap-4 p-3 rounded-xl bg-[#141417] border border-[#27272A] hover:border-[#10B981]/20 transition-all duration-200">
+                  <div key={c.country} className="flex items-center gap-4 p-3 rounded-xl bg-[#111111] border border-[#1F1F1F] hover:border-[#06B6D4]/20 transition-all duration-200">
                     <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 ${
-                      i === 0 ? "bg-[#F59E0B]/20 text-[#F59E0B]" :
-                      i === 1 ? "bg-[#71717A]/20 text-[#71717A]" :
-                      i === 2 ? "bg-[#0EA5E9]/20 text-[#0EA5E9]" :
-                      "bg-[#27272A] text-[#71717A]"
+                      i === 0 ? "bg-[#f59e0b]/20 text-[#f59e0b]" :
+                      i === 1 ? "bg-[#808080]/20 text-[#808080]" :
+                      i === 2 ? "bg-[#8b5cf6]/20 text-[#8b5cf6]" :
+                      "bg-[#1F1F1F] text-[#606060]"
                     }`}>{i + 1}</div>
                     <div className="flex items-center gap-3 min-w-0 w-48 shrink-0">
                       {c.flag && <img src={c.flag} alt={c.countryName} className="w-6 h-4 rounded shadow-sm object-cover" />}
                       <span className="text-white text-sm font-medium truncate">{c.countryName}</span>
                     </div>
-                    <div className="flex-1 h-2 bg-[#27272A] rounded-full overflow-hidden">
-                      <div className="h-full rounded-full bg-[#34D399]" style={{ width: `${share * 100}%` }} />
+                    <div className="flex-1 h-2 bg-[#1F1F1F] rounded-full overflow-hidden">
+                      <div className="h-full rounded-full bg-[#818CF8]" style={{ width: `${share * 100}%` }} />
                     </div>
                     <span className="text-white text-sm font-medium shrink-0 w-16 text-right">{formatNumber(c.processedOrders)}</span>
-                    <span className="text-[#71717A] text-xs shrink-0 w-20 text-right">{formatCurrency(c.processedRevenue)}</span>
+                    <span className="text-[#606060] text-xs shrink-0 w-20 text-right">{formatCurrency(c.processedRevenue)}</span>
                   </div>
                 );
               })}
               {processedByCountry.length === 0 && (
-                <p className="text-center py-8 text-[#71717A]">No data</p>
+                <p className="text-center py-8 text-[#606060]">No data</p>
               )}
             </div>
           </div>
@@ -650,39 +650,39 @@ export default function BusinessIntelligencePage() {
           <Card hover={false}>
             <CardHeader>
               <CardTitle>Top 10 Customers by Revenue</CardTitle>
-              <span className="text-[#34D399] text-xs font-medium">{topCustomers.length} customers</span>
+              <span className="text-[#22D3EE] text-xs font-medium">{topCustomers.length} customers</span>
             </CardHeader>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="border-b border-[#27272A]">
-                    <th className="text-left text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">#</th>
-                    <th className="text-left text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Customer</th>
-                    <th className="text-left text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
-                    <th className="text-center text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Orders</th>
-                    <th className="text-center text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Products</th>
-                    <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
+                  <tr className="border-b border-[#1F1F1F]">
+                    <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">#</th>
+                    <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Customer</th>
+                    <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
+                    <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Orders</th>
+                    <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Products</th>
+                    <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
                   </tr>
                 </thead>
                 <tbody>
                   {topCustomers.map((c, i) => (
-                    <tr key={c.phone} className="border-b border-[#27272A]/50 hover:bg-[#1A1A1A] transition-all duration-150">
+                    <tr key={c.phone} className="border-b border-[#1F1F1F]/50 hover:bg-[#1A1A1A] transition-all duration-150">
                       <td className="py-3.5 px-4">
                         <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
-                          i === 0 ? "bg-[#F59E0B]/20 text-[#F59E0B]" :
-                          i === 1 ? "bg-[#71717A]/20 text-[#71717A]" :
-                          i === 2 ? "bg-[#0EA5E9]/20 text-[#0EA5E9]" :
-                          "bg-[#27272A] text-[#71717A]"
+                          i === 0 ? "bg-[#f59e0b]/20 text-[#f59e0b]" :
+                          i === 1 ? "bg-[#808080]/20 text-[#808080]" :
+                          i === 2 ? "bg-[#8b5cf6]/20 text-[#8b5cf6]" :
+                          "bg-[#1F1F1F] text-[#606060]"
                         }`}>{i + 1}</div>
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-full bg-[#10B981]/10 flex items-center justify-center">
-                            <Users className="w-4 h-4 text-[#34D399]" />
+                          <div className="w-8 h-8 rounded-full bg-[#06B6D4]/10 flex items-center justify-center">
+                            <Users className="w-4 h-4 text-[#22D3EE]" />
                           </div>
                           <div className="min-w-0">
                             <p className="text-white text-sm font-medium truncate max-w-[180px]">{c.name}</p>
-                            <a href={`tel:${c.phone}`} className="text-[#34D399] text-xs hover:underline inline-flex items-center gap-1">
+                            <a href={`tel:${c.phone}`} className="text-[#22D3EE] text-xs hover:underline inline-flex items-center gap-1">
                               <Phone className="w-3 h-3" /> {c.phone}
                             </a>
                           </div>
@@ -690,15 +690,15 @@ export default function BusinessIntelligencePage() {
                       </td>
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2">
-                          <MapPin className="w-3.5 h-3.5 text-[#71717A]" />
-                          <span className="text-[#A1A1AA] text-sm">{c.countryName}</span>
+                          <MapPin className="w-3.5 h-3.5 text-[#606060]" />
+                          <span className="text-[#c0c0c0] text-sm">{c.countryName}</span>
                         </div>
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <span className="text-white font-semibold">{c.orders}</span>
                       </td>
                       <td className="py-3.5 px-4 text-center">
-                        <span className="text-[#A1A1AA] text-sm">{c.products.size}</span>
+                        <span className="text-[#c0c0c0] text-sm">{c.products.size}</span>
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         <span className="text-white font-semibold">{formatCurrency(c.revenue)}</span>
@@ -706,7 +706,7 @@ export default function BusinessIntelligencePage() {
                     </tr>
                   ))}
                   {topCustomers.length === 0 && (
-                    <tr><td colSpan={6} className="text-center py-12 text-[#71717A]">No customer data</td></tr>
+                    <tr><td colSpan={6} className="text-center py-12 text-[#606060]">No customer data</td></tr>
                   )}
                 </tbody>
               </table>
@@ -719,27 +719,27 @@ export default function BusinessIntelligencePage() {
           <Card hover={false}>
             <CardHeader>
               <CardTitle>Low Stock Products</CardTitle>
-              <span className="text-[#F59E0B] text-xs font-medium">{lowStockData.length} items</span>
+              <span className="text-[#f59e0b] text-xs font-medium">{lowStockData.length} items</span>
             </CardHeader>
             <div className="space-y-2">
               {lowStockData.map((p: Product) => (
-                <div key={p.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-[#F59E0B]/5 border border-[#F59E0B]/10 hover:bg-[#F59E0B]/10 transition-all duration-200">
+                <div key={p.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-[#f59e0b]/5 border border-[#f59e0b]/10 hover:bg-[#f59e0b]/10 transition-all duration-200">
                   <div className="min-w-0 flex-1">
                     <p className="text-white text-sm font-medium truncate">{p.name}</p>
-                    <p className="text-[#71717A] text-xs">{p.code}</p>
+                    <p className="text-[#606060] text-xs">{p.code}</p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0 ml-3">
-                    <span className="text-[#F59E0B] font-bold text-lg">{formatNumber(p.stockQuantity)}</span>
+                    <span className="text-[#f59e0b] font-bold text-lg">{formatNumber(p.stockQuantity)}</span>
                     <div className="flex flex-col items-end">
-                      <span className="text-[#A1A1AA] text-xs">{formatNumber(p.totalSold)} sold</span>
-                      <span className="text-[#71717A] text-xs">{formatCurrency(p.revenue)}</span>
+                      <span className="text-[#c0c0c0] text-xs">{formatNumber(p.totalSold)} sold</span>
+                      <span className="text-[#606060] text-xs">{formatCurrency(p.revenue)}</span>
                     </div>
                   </div>
                 </div>
               ))}
               {lowStockData.length === 0 && (
                 <div className="text-center py-8">
-                  <p className="text-[#10B981] text-sm font-medium">All products well stocked</p>
+                  <p className="text-[#10b981] text-sm font-medium">All products well stocked</p>
                 </div>
               )}
             </div>
