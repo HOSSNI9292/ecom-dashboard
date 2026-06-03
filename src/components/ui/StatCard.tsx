@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { Card } from "./Card";
 import { TrendingUp, TrendingDown } from "lucide-react";
 
@@ -24,16 +23,15 @@ const colorMap = {
 };
 
 function getValueFontSize(digits: number): string {
-  if (digits <= 5) return "clamp(32px, 4vw, 56px)";
-  if (digits <= 7) return "clamp(28px, 3vw, 44px)";
-  if (digits <= 8) return "clamp(22px, 2.5vw, 36px)";
-  return "clamp(18px, 2vw, 24px)";
+  if (digits <= 4) return "clamp(36px, 4vw, 56px)";
+  if (digits <= 5) return "clamp(32px, 3.5vw, 48px)";
+  if (digits <= 6) return "clamp(28px, 3vw, 40px)";
+  return "clamp(22px, 2.2vw, 32px)";
 }
 
 export function StatCard({ title, value, icon, trend, subtitle, color = "accent", delay = 0 }: StatCardProps) {
   const c = colorMap[color] || colorMap.accent;
-
-  const digits = useMemo(() => value.replace(/[^0-9]/g, "").length, [value]);
+  const digits = value.replace(/[^0-9]/g, "").length;
   const fontSize = getValueFontSize(digits);
 
   return (
@@ -43,12 +41,11 @@ export function StatCard({ title, value, icon, trend, subtitle, color = "accent"
     >
       <Card hover={false}>
         <div className="flex items-start justify-between">
-          <div className="flex-1 min-w-0 overflow-hidden">
+          <div className="flex-1 min-w-0">
             <p className="text-[#94A3B8] text-xs font-medium uppercase tracking-widest">{title}</p>
             <p
-              className="font-bold text-white mt-1.5 leading-none tracking-tight overflow-hidden text-ellipsis"
+              className="font-bold text-white mt-1.5 leading-none tracking-tight"
               style={{ fontSize }}
-              title={value}
             >
               {value}
             </p>
@@ -58,7 +55,7 @@ export function StatCard({ title, value, icon, trend, subtitle, color = "accent"
                 <span>{Math.abs(trend.value)}% vs last period</span>
               </div>
             )}
-            {subtitle && <p className="text-[#64748B] text-xs mt-1.5 truncate">{subtitle}</p>}
+            {subtitle && <p className="text-[#64748B] text-xs mt-1.5">{subtitle}</p>}
           </div>
           <div className={`p-3 rounded-xl ${c.bg} ${c.text} shrink-0 ml-3`}>
             {icon}
