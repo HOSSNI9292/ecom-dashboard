@@ -1,140 +1,158 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { CheckCircle, Package, DollarSign, TrendingUp, TrendingDown, Download, Globe } from "lucide-react";
+import { CheckCircle, Package, DollarSign, TrendingUp, TrendingDown, Download, Globe, RefreshCw } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { StatCard } from "@/components/ui/StatCard";
 import { PageWrapper } from "@/components/PageWrapper";
 import { DateFilter } from "@/components/DateFilter";
 import { Select } from "@/components/ui/Select";
 import { useDashboardData } from "@/hooks";
-import { formatNumber, formatCurrency, formatPercentage, filterOrdersByDate, COUNTRY_NAMES, COUNTRY_FLAGS } from "@/utils";
+import { formatNumber, formatCurrency, formatPercentage, filterOrdersByDate, COUNTRY_FLAGS } from "@/utils";
+import { getImageUrlOrFallback } from "@/utils/images";
 import { exportToCSV } from "@/utils/csv";
-import type { Order } from "@/types";
 import type { DateFilterValue } from "@/utils/dates";
 
-interface CountryDelivered {
-  country: string;
-  countryName: string;
-  flag: string;
-  delivered: number;
-  revenue: number;
-  totalOrders: number;
-  deliveryRate: number;
-}
+const DELIVERY_STATUS_COLORS: Record<string, string> = {
+  processed: "#10b981",
+  delivered: "#10b981",
+  shipped: "#3b82f6",
+  confirmed: "#8b5cf6",
+  pending: "#f59e0b",
+  cancelled: "#6b7280",
+  returned: "#ef4444",
+  double: "#ec4899",
+  out_of_stock: "#6b7280",
+  transferred: "#06b6d4",
+};
+
+const DELIVERY_STATUS_LABELS: Record<string, string> = {
+  processed: "Delivered",
+  delivered: "Delivered",
+  shipped: "Shipped",
+  confirmed: "Confirmed",
+  pending: "Pending",
+  cancelled: "Cancelled",
+  returned: "Returned",
+  double: "Double",
+  out_of_stock: "Out of Stock",
+  transferred: "To Transfer",
+};
 
 export default function DeliveredPage() {
   const { data, loading, error, refetch } = useDashboardData();
   const [dateFilter, setDateFilter] = useState<DateFilterValue>("all");
-  const [statusFilter, setStatusFilter] = useState("shipping");
+  const [statusFilter, setStatusFilter] = useState("all");
 
   const allOrders = data?.orders ?? [];
   const filteredOrders = useMemo(() => filterOrdersByDate(allOrders, dateFilter), [allOrders, dateFilter]);
 
-  const deliveredOrders = useMemo(() => {
-    return filteredOrders.filter((o) => o.status === statusFilter);
-  }, [filteredOrders, statusFilter]);
+  const deliveryOrders = useMemo(() => {
+    return filteredOrders.filter((o) => {
+      const status = o.status.toLowerCase();
+      return [
+        "pending",
+        "confirmed",
+        "cancelled",
+        "double",
+        "out_of_stock",
+        "transferred",
+        "processed",
+        "delivered",
+        "shipped",
+        "returned",
+      ].includes(status);
+    });
+  }, [filteredOrders]);
 
-  const yesterdayOrders = useMemo(() => {
-    const yesterday = filterOrdersByDate(allOrders, "yesterday");
-    return yesterday.filter((o) => o.status === statusFilter);
-  }, [allOrders, statusFilter]);
+  const filteredByStatus = useMemo(() => {
+    if (statusFilter === "all") return deliveryOrders;
+    return deliveryOrders.filter((o) => {
+      const status = o.status.toLowerCase().replace(/\s+/g, "_");
+      return status === statusFilter;
+    });
+  }, [deliveryOrders, statusFilter]);
+
+  const stats = useMemo(() => {
+    const totalDeliveries = deliveryOrders.length;
+    const deliveredOrders = deliveryOrders.filter((o) => {
+      const s = o.status.toLowerCase();
+      return s === "delivered" || s === "processed";
+    }).length;
+    const deliveredRevenue = deliveryOrders
+      .filter((o) => {
+        const s = o.status.toLowerCase();
+        return s === "delivered" || s === "processed";
+      })
+      .reduce((s, o) => s + o.amount, 0);
+    const returnedOrders = deliveryOrders.filter((o) => 
+      o.status.toLowerCase() === "returned"
+    ).length;
+    
+    const returnRate = totalDeliveries > 0 ? returnedOrders / totalDeliveries : 0;
+    const deliveryRate = totalDeliveries > 0 ? deliveredOrders / totalDeliveries : 0;
+    
+    const countriesSet = new Set(deliveryOrders.map((o) => o.country));
+
+    return {
+      totalDeliveries,
+      deliveredOrders,
+      deliveredRevenue,
+      returnRate,
+      deliveryRate,
+      countriesCount: countriesSet.size,
+    };
+  }, [deliveryOrders]);
 
   const statusBreakdown = useMemo(() => {
     const breakdown: Record<string, number> = {};
-    filteredOrders.forEach((o) => {
-      breakdown[o.status] = (breakdown[o.status] || 0) + 1;
+    deliveryOrders.forEach((o) => {
+      const status = o.status.toLowerCase().replace(/\s+/g, "_");
+      breakdown[status] = (breakdown[status] || 0) + 1;
     });
     return breakdown;
-  }, [filteredOrders]);
-
-  const rawStatusBreakdown = useMemo(() => {
-    const breakdown: Record<string, number> = {};
-    filteredOrders.forEach((o) => {
-      breakdown[o.rawStatus] = (breakdown[o.rawStatus] || 0) + 1;
-    });
-    return breakdown;
-  }, [filteredOrders]);
-
-  const sampleOrder = useMemo(() => {
-    return filteredOrders.length > 0 ? filteredOrders[0] : null;
-  }, [filteredOrders]);
-
-  const confirmedOrders = useMemo(() => {
-    return filteredOrders.filter((o) => o.status === "confirmed");
-  }, [filteredOrders]);
-
-  const stats = useMemo(() => {
-    const totalDelivered = deliveredOrders.length;
-    const totalRevenue = deliveredOrders.reduce((s, o) => s + o.amount, 0);
-    const yesterdayDelivered = yesterdayOrders.length;
-    const yesterdayRevenue = yesterdayOrders.reduce((s, o) => s + o.amount, 0);
-
-    const changeDelivered = yesterdayDelivered > 0 ? ((totalDelivered - yesterdayDelivered) / yesterdayDelivered) : 0;
-    const changeRevenue = yesterdayRevenue > 0 ? ((totalRevenue - yesterdayRevenue) / yesterdayRevenue) : 0;
-
-    return {
-      totalDelivered,
-      totalRevenue,
-      yesterdayDelivered,
-      yesterdayRevenue,
-      changeDelivered,
-      changeRevenue,
-    };
-  }, [deliveredOrders, yesterdayOrders]);
-
-  const countriesData = useMemo((): CountryDelivered[] => {
-    const map = new Map<string, CountryDelivered>();
-
-    for (const o of filteredOrders) {
-      const country = o.country || "XX";
-      if (!map.has(country)) {
-        map.set(country, {
-          country,
-          countryName: o.countryName || COUNTRY_NAMES[country] || country,
-          flag: COUNTRY_FLAGS[country] || "",
-          delivered: 0,
-          revenue: 0,
-          totalOrders: 0,
-          deliveryRate: 0,
-        });
-      }
-
-      const c = map.get(country)!;
-      c.totalOrders += 1;
-
-      if (o.status === statusFilter) {
-        c.delivered += 1;
-        c.revenue += o.amount;
-      }
-    }
-
-    return Array.from(map.values())
-      .map((c) => ({
-        ...c,
-        deliveryRate: c.totalOrders > 0 ? c.delivered / c.totalOrders : 0,
-      }))
-      .filter((c) => c.delivered > 0)
-      .sort((a, b) => b.delivered - a.delivered);
-  }, [filteredOrders, statusFilter]);
+  }, [deliveryOrders]);
 
   const handleExport = () => {
     exportToCSV(
-      countriesData.map((c) => ({
-        country: c.countryName,
-        delivered: c.delivered,
-        revenue: c.revenue,
-        totalOrders: c.totalOrders,
-        deliveryRate: `${(c.deliveryRate * 100).toFixed(1)}%`,
+      filteredByStatus.map((o) => ({
+        trackingNumber: o.orderId,
+        product: o.productName,
+        country: o.countryName || o.country,
+        deliveryDate: new Date(o.date).toLocaleDateString(),
+        quantity: o.quantity,
+        status: o.status,
+        revenue: o.amount,
       })),
-      "delivered_orders",
+      "deliveries",
       {
+        trackingNumber: "Tracking Number",
+        product: "Product",
         country: "Country",
-        delivered: "Delivered Orders",
+        deliveryDate: "Delivery Date",
+        quantity: "Quantity",
+        status: "Status",
         revenue: "Revenue (XOF)",
-        totalOrders: "Total Orders",
-        deliveryRate: "Delivery Rate",
       }
+    );
+  };
+
+  const getStatusBadge = (status: string) => {
+    const normalizedStatus = status.toLowerCase().replace(/\s+/g, "_");
+    const color = DELIVERY_STATUS_COLORS[normalizedStatus] || "#6b7280";
+    const label = DELIVERY_STATUS_LABELS[normalizedStatus] || status;
+    
+    return (
+      <span
+        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold"
+        style={{
+          backgroundColor: `${color}20`,
+          color: color,
+          border: `1px solid ${color}40`,
+        }}
+      >
+        {label}
+      </span>
     );
   };
 
@@ -147,312 +165,182 @@ export default function DeliveredPage() {
               <CheckCircle className="w-6 h-6 text-[#10b981]" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">{statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Orders</h1>
-              <p className="text-[#606060] text-xs">Track {statusFilter} orders by country</p>
+              <h1 className="text-xl font-bold text-white">Deliveries</h1>
+              <p className="text-[#606060] text-xs">Track delivery status and performance</p>
             </div>
           </div>
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200"
-          >
-            <Download className="w-3.5 h-3.5" /> Export
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={refetch}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
+              Refresh
+            </button>
+            <button
+              onClick={handleExport}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200"
+            >
+              <Download className="w-3.5 h-3.5" /> Export
+            </button>
+          </div>
         </div>
 
-        <DateFilter value={dateFilter} onChange={setDateFilter} />
-
-        <div className="flex gap-3">
+        <div className="flex gap-3 flex-wrap">
+          <DateFilter value={dateFilter} onChange={setDateFilter} />
           <Select
             value={statusFilter}
             onChange={setStatusFilter}
             options={[
-              { value: "shipping", label: "Shipping" },
-              { value: "delivered", label: "Delivered" },
-              { value: "confirmed", label: "Confirmed" },
+              { value: "all", label: "All Statuses" },
               { value: "pending", label: "Pending" },
+              { value: "confirmed", label: "Confirmed" },
               { value: "cancelled", label: "Cancelled" },
+              { value: "delivered", label: "Delivered" },
+              { value: "processed", label: "Delivered" },
+              { value: "shipped", label: "Shipped" },
+              { value: "returned", label: "Returned" },
               { value: "double", label: "Double" },
-              { value: "transferred", label: "Transferred" },
               { value: "out_of_stock", label: "Out of Stock" },
+              { value: "transferred", label: "To Transfer" },
             ]}
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <StatCard
-            title={`${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} Orders`}
-            value={formatNumber(stats.totalDelivered)}
+            title="Total Deliveries"
+            value={formatNumber(stats.totalDeliveries)}
+            icon={<Package className="w-5 h-5" />}
+            color="primary"
+            delay={0}
+            subtitle={`${stats.countriesCount} countries`}
+          />
+          <StatCard
+            title="Delivered Orders"
+            value={formatNumber(stats.deliveredOrders)}
             icon={<CheckCircle className="w-5 h-5" />}
             color="success"
-            delay={0}
-            subtitle={
-              stats.changeDelivered !== 0
-                ? `${stats.changeDelivered > 0 ? "+" : ""}${(stats.changeDelivered * 100).toFixed(1)}% vs yesterday`
-                : "vs yesterday"
-            }
+            delay={50}
+            subtitle={formatCurrency(stats.deliveredRevenue)}
           />
           <StatCard
-            title="Revenue"
-            value={formatCurrency(stats.totalRevenue)}
+            title="Delivered Revenue"
+            value={formatCurrency(stats.deliveredRevenue)}
             icon={<DollarSign className="w-5 h-5" />}
             color="success"
-            delay={50}
-            subtitle={
-              stats.changeRevenue !== 0
-                ? `${stats.changeRevenue > 0 ? "+" : ""}${(stats.changeRevenue * 100).toFixed(1)}% vs yesterday`
-                : "vs yesterday"
-            }
+            delay={100}
+            subtitle={`${stats.deliveredOrders} orders`}
           />
           <StatCard
-            title={`Yesterday ${statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}`}
-            value={formatNumber(stats.yesterdayDelivered)}
-            icon={<Package className="w-5 h-5" />}
-            color="info"
-            delay={100}
-            subtitle={formatCurrency(stats.yesterdayRevenue)}
+            title="Return Rate"
+            value={formatPercentage(stats.returnRate)}
+            icon={<TrendingDown className="w-5 h-5" />}
+            color="error"
+            delay={150}
+            subtitle="Returned orders"
+          />
+          <StatCard
+            title="Delivery Rate"
+            value={formatPercentage(stats.deliveryRate)}
+            icon={<TrendingUp className="w-5 h-5" />}
+            color="success"
+            delay={200}
+            subtitle="Successfully delivered"
           />
           <StatCard
             title="Countries"
-            value={formatNumber(countriesData.length)}
+            value={formatNumber(stats.countriesCount)}
             icon={<Globe className="w-5 h-5" />}
-            color="primary"
-            delay={150}
-            subtitle="Active deliveries"
+            color="info"
+            delay={250}
+            subtitle="With deliveries"
           />
         </div>
 
         <Card hover={false}>
           <CardHeader>
-            <CardTitle>🔍 Debug: Order Status Analysis</CardTitle>
-            <span className="text-[#f59e0b] text-xs">Check what statuses exist in your data</span>
-          </CardHeader>
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-white text-sm font-semibold mb-3">📊 Mapped Statuses (after conversion)</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                {Object.entries(statusBreakdown).length === 0 ? (
-                  <p className="text-[#606060] text-sm">No orders found</p>
-                ) : (
-                  Object.entries(statusBreakdown).map(([status, count]) => (
-                    <div key={status} className="bg-[#0A0A0A] rounded-lg p-3 border border-[#1F1F1F]">
-                      <p className="text-[#606060] text-xs uppercase">{status}</p>
-                      <p className={`text-lg font-bold ${status === statusFilter ? "text-[#10b981]" : "text-white"}`}>
-                        {count}
-                      </p>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-white text-sm font-semibold mb-3">🔥 Raw API Statuses (original from API)</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                {Object.entries(rawStatusBreakdown).length === 0 ? (
-                  <p className="text-[#606060] text-sm">No orders found</p>
-                ) : (
-                  Object.entries(rawStatusBreakdown).map(([status, count]) => (
-                    <div key={status} className="bg-[#0A0A0A] rounded-lg p-3 border border-[#f59e0b]/20">
-                      <p className="text-[#f59e0b] text-xs font-mono">{status}</p>
-                      <p className="text-white text-lg font-bold">{count}</p>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {sampleOrder && (
-              <div>
-                <h3 className="text-white text-sm font-semibold mb-3">📋 Sample Order</h3>
-                <div className="bg-[#0A0A0A] rounded-lg p-4 border border-[#1F1F1F]">
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <p className="text-[#606060] text-xs">Order ID</p>
-                      <p className="text-white font-mono">{sampleOrder.orderId}</p>
-                    </div>
-                    <div>
-                      <p className="text-[#606060] text-xs">Mapped Status</p>
-                      <p className="text-[#10b981] font-semibold">{sampleOrder.status}</p>
-                    </div>
-                    <div>
-                      <p className="text-[#606060] text-xs">Raw Status (from API)</p>
-                      <p className="text-[#f59e0b] font-semibold">{sampleOrder.rawStatus}</p>
-                    </div>
-                    <div>
-                      <p className="text-[#606060] text-xs">Country</p>
-                      <p className="text-white">{sampleOrder.countryName}</p>
-                    </div>
-                    <div>
-                      <p className="text-[#606060] text-xs">Amount</p>
-                      <p className="text-white">{formatCurrency(sampleOrder.amount)}</p>
-                    </div>
-                    <div>
-                      <p className="text-[#606060] text-xs">Date</p>
-                      <p className="text-white">{new Date(sampleOrder.date).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="bg-[#1F1F1F] rounded-lg p-4 border border-[#2a2a2a]">
-              <h3 className="text-white text-sm font-semibold mb-2">💡 How to fix:</h3>
-              <ul className="text-[#c0c0c0] text-sm space-y-1 list-disc list-inside">
-                <li>If you see "Shipping" in Raw API Statuses, it should map to "shipping" in Mapped Statuses</li>
-                <li>If "shipping" shows 0 in Mapped Statuses, check the Raw API Statuses to see the exact name</li>
-                <li>The STATUS_MAP in <code className="text-[#22D3EE]">constants.ts</code> converts API names to lowercase</li>
-                <li>Common mappings: "Shipping" → "shipping", "Delivered" → "delivered", "Confirmed" → "confirmed"</li>
-              </ul>
-            </div>
-          </div>
-        </Card>
-
-        <Card hover={false}>
-          <CardHeader>
-            <CardTitle>{statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)} by Country</CardTitle>
-            <span className="text-[#10b981] text-xs font-medium">{countriesData.length} countries</span>
+            <CardTitle>Deliveries</CardTitle>
+            <span className="text-[#10b981] text-xs font-medium">{filteredByStatus.length} deliveries</span>
           </CardHeader>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#1F1F1F]">
+                  <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Tracking</th>
+                  <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Product</th>
                   <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{statusFilter.charAt(0).toUpperCase() + statusFilter.slice(1)}</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Total Orders</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Delivery Rate</th>
+                  <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Date</th>
+                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Qty</th>
+                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Status</th>
+                  <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
                 </tr>
               </thead>
               <tbody>
-                {countriesData.map((c) => (
-                  <tr key={c.country} className="border-b border-[#1F1F1F]/50 transition-all duration-150 hover:bg-[#1A1A1A] group">
+                {filteredByStatus.map((o) => (
+                  <tr key={o.id} className="border-b border-[#1F1F1F]/50 transition-all duration-150 hover:bg-[#1A1A1A] group">
+                    <td className="py-3.5 px-4">
+                      <span className="text-white font-mono text-xs">{o.orderId.substring(0, 12)}...</span>
+                    </td>
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        {c.flag && (
-                          <img src={c.flag} alt={c.countryName} className="w-6 h-4 rounded shadow-sm object-cover" />
-                        )}
-                        <span className="text-white font-medium">{c.countryName}</span>
-                      </div>
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <span className="text-[#10b981] text-lg font-bold">{formatNumber(c.delivered)}</span>
-                    </td>
-                    <td className="py-3.5 px-4 text-center text-white font-semibold">
-                      {formatCurrency(c.revenue)}
-                    </td>
-                    <td className="py-3.5 px-4 text-center text-[#c0c0c0]">
-                      {formatNumber(c.totalOrders)}
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <div className="w-16 h-1.5 rounded-full bg-[#1F1F1F] overflow-hidden">
-                          <div
-                            className="h-full rounded-full bg-[#10b981]"
-                            style={{ width: `${c.deliveryRate * 100}%` }}
+                        {o.productImage ? (
+                          <img 
+                            src={getImageUrlOrFallback(o.productImage)} 
+                            alt={o.productName} 
+                            className="w-10 h-10 rounded-lg object-cover bg-[#1F1F1F]"
+                            referrerPolicy="no-referrer"
+                            crossOrigin="anonymous"
+                            onError={(e) => {
+                              e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23606060' stroke-width='2'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3C/svg%3E";
+                            }}
                           />
+                        ) : (
+                          <div className="w-10 h-10 rounded-lg bg-[#1F1F1F] flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#606060" strokeWidth="2">
+                              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                              <circle cx="9" cy="9" r="2"/>
+                              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                            </svg>
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-white text-sm font-medium truncate max-w-[200px]">{o.productName}</p>
+                          <p className="text-[#606060] text-xs">{o.productCode}</p>
                         </div>
-                        <span className="text-[#10b981] text-sm font-semibold">
-                          {formatPercentage(c.deliveryRate)}
-                        </span>
                       </div>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <div className="flex items-center gap-2">
+                        {COUNTRY_FLAGS[o.country] && (
+                          <img src={COUNTRY_FLAGS[o.country]} alt={o.countryName} className="w-5 h-3.5 rounded shadow-sm object-cover" />
+                        )}
+                        <span className="text-white text-sm">{o.countryName || o.country}</span>
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4">
+                      <span className="text-[#c0c0c0] text-sm">{new Date(o.date).toLocaleDateString()}</span>
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      <span className="text-white font-semibold">{o.quantity}</span>
+                    </td>
+                    <td className="py-3.5 px-4 text-center">
+                      {getStatusBadge(o.status)}
+                    </td>
+                    <td className="py-3.5 px-4 text-right">
+                      <span className="text-white font-semibold">{formatCurrency(o.amount)}</span>
                     </td>
                   </tr>
                 ))}
-                {countriesData.length === 0 && (
+                {filteredByStatus.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="text-center py-12 text-[#606060]">
-                      No {statusFilter} orders found
+                    <td colSpan={7} className="text-center py-12 text-[#606060]">
+                      No deliveries found
                     </td>
                   </tr>
                 )}
               </tbody>
             </table>
-          </div>
-        </Card>
-
-        <Card hover={false}>
-          <CardHeader>
-            <CardTitle>🔍 Debug: Order Status Analysis</CardTitle>
-            <span className="text-[#f59e0b] text-xs">Check what statuses exist in your data</span>
-          </CardHeader>
-          <div className="space-y-6">
-            <div>
-              <h3 className="text-white text-sm font-semibold mb-3">📊 Mapped Statuses (after conversion)</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                {Object.entries(statusBreakdown).length === 0 ? (
-                  <p className="text-[#606060] text-sm">No orders found</p>
-                ) : (
-                  Object.entries(statusBreakdown).map(([status, count]) => (
-                    <div key={status} className="bg-[#0A0A0A] rounded-lg p-3 border border-[#1F1F1F]">
-                      <p className="text-[#606060] text-xs uppercase">{status}</p>
-                      <p className={`text-lg font-bold ${status === statusFilter ? "text-[#10b981]" : "text-white"}`}>
-                        {count}
-                      </p>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-white text-sm font-semibold mb-3">🔥 Raw API Statuses (original from API)</h3>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-                {Object.entries(rawStatusBreakdown).length === 0 ? (
-                  <p className="text-[#606060] text-sm">No orders found</p>
-                ) : (
-                  Object.entries(rawStatusBreakdown).map(([status, count]) => (
-                    <div key={status} className="bg-[#0A0A0A] rounded-lg p-3 border border-[#f59e0b]/20">
-                      <p className="text-[#f59e0b] text-xs font-mono">{status}</p>
-                      <p className="text-white text-lg font-bold">{count}</p>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {sampleOrder && (
-              <div>
-                <h3 className="text-white text-sm font-semibold mb-3">📋 Sample Order</h3>
-                <div className="bg-[#0A0A0A] rounded-lg p-4 border border-[#1F1F1F]">
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    <div>
-                      <p className="text-[#606060] text-xs">Order ID</p>
-                      <p className="text-white font-mono">{sampleOrder.orderId}</p>
-                    </div>
-                    <div>
-                      <p className="text-[#606060] text-xs">Mapped Status</p>
-                      <p className="text-[#10b981] font-semibold">{sampleOrder.status}</p>
-                    </div>
-                    <div>
-                      <p className="text-[#606060] text-xs">Raw Status (from API)</p>
-                      <p className="text-[#f59e0b] font-semibold">{sampleOrder.rawStatus}</p>
-                    </div>
-                    <div>
-                      <p className="text-[#606060] text-xs">Country</p>
-                      <p className="text-white">{sampleOrder.countryName}</p>
-                    </div>
-                    <div>
-                      <p className="text-[#606060] text-xs">Amount</p>
-                      <p className="text-white">{formatCurrency(sampleOrder.amount)}</p>
-                    </div>
-                    <div>
-                      <p className="text-[#606060] text-xs">Date</p>
-                      <p className="text-white">{new Date(sampleOrder.date).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <div className="bg-[#1F1F1F] rounded-lg p-4 border border-[#2a2a2a]">
-              <h3 className="text-white text-sm font-semibold mb-2">💡 How to fix:</h3>
-              <ul className="text-[#c0c0c0] text-sm space-y-1 list-disc list-inside">
-                <li>If you see "Shipping" in Raw API Statuses, it should map to "shipping" in Mapped Statuses</li>
-                <li>If "shipping" shows 0 in Mapped Statuses, check the Raw API Statuses to see the exact name</li>
-                <li>The STATUS_MAP in <code className="text-[#22D3EE]">constants.ts</code> converts API names to lowercase</li>
-                <li>Common mappings: "Shipping" → "shipping", "Delivered" → "delivered", "Confirmed" → "confirmed"</li>
-              </ul>
-            </div>
           </div>
         </Card>
       </div>

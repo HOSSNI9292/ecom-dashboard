@@ -50,7 +50,6 @@ export default function CountriesPage() {
       const feePercent = getFeeForCountry(code);
       const serviceFees = computeServiceFees(d.processedRevenue, feePercent);
       const nonCancelled = d.orders - d.cancelled - d.outOfStock;
-      const deliverable = d.orders - d.cancelled - d.outOfStock;
       return {
         ...d,
         countryName: COUNTRY_NAMES[code] || code,
@@ -61,7 +60,7 @@ export default function CountriesPage() {
         serviceFees,
         netRevenue: d.processedRevenue - serviceFees,
         confirmationRate: nonCancelled > 0 ? d.confirmed / nonCancelled : 0,
-        deliveryRate: deliverable > 0 ? d.processedOrders / deliverable : 0,
+        deliveryRate: d.orders > 0 ? d.processedOrders / d.orders : 0,
       } as CountryStats;
     }).sort((a, b) => b.revenue - a.revenue);
   }, [data, filteredOrders, dateFilter]);

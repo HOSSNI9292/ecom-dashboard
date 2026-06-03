@@ -4,6 +4,7 @@
   "outputDirectory": ".next",
   "installCommand": "npm install",
   "env": {
-    "NEXT_PUBLIC_CODINAFRICA_API_URL": "https://api.codinafrica.com/api"
+    "NEXT_PUBLIC_CODINAFRICA_API_URL": "https://api.codinafrica.com/api",
+    "NEXT_PUBLIC_CODINAFRICA_TOKEN": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2NWYxYzg1MTBiNTg2MjBhMmJjZmZiZTgiLCJlbWFpbCI6ImFybWFzaG9wNjlAZ21haWwuY29tIiwiaWF0IjoxNzgwMDA1NTYyLCJleHAiOjE3ODA2MTAzNjJ9.aKPcUtTqHbXQhWuaJmGuNfr9otkBePtomtfv5gU9pXU"
   }
 }

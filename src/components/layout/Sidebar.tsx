@@ -15,11 +15,13 @@ import {
   CheckCircle,
   X,
   ChevronRight,
+  TrendingUp,
 } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/business-intelligence", label: "Business Intelligence", icon: BarChart3 },
+  { href: "/executive-bi", label: "Executive BI", icon: TrendingUp },
   { href: "/products", label: "Products", icon: Package },
   { href: "/orders", label: "Orders", icon: ShoppingCart },
   { href: "/delivered", label: "Delivered", icon: CheckCircle },

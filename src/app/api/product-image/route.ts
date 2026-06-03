@@ -33,8 +33,10 @@ export async function GET(req: NextRequest) {
     return new NextResponse(buffer, {
       headers: {
         "Content-Type": contentType,
-        "Cache-Control": "public, max-age=86400, s-maxage=86400",
+        "Cache-Control": "public, max-age=31536000, s-maxage=31536000, immutable, stale-while-revalidate=86400",
         "Access-Control-Allow-Origin": "*",
+        "CDN-Cache-Control": "public, max-age=31536000",
+        "Vercel-CDN-Cache-Control": "public, max-age=31536000",
       },
     });
   } catch {

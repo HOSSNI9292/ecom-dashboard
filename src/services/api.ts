@@ -14,6 +14,110 @@ import { getFeeForCountry, computeServiceFees } from "@/utils/fees";
 
 const STORAGE_KEY = "cod_dashboard_credentials";
 
+const MOCK_ORDERS: CodinAfricaOrder[] = [
+  {
+    _id: "1", id: "ORD-001", customer: { fullName: "Ahmed Benali", phone: "+212612345678", country: "MA", city: "Casablanca" },
+    status: { _id: "s1", name: "Delivered", color: "#10b981" }, date: "2026-06-01T10:00:00Z", createdAt: "2026-06-01T10:00:00Z", updatedAt: "2026-06-01T10:00:00Z",
+    totalPrice: 450, source: "website",
+    details: [{ _id: "d1", name: "Smart Watch Pro", quantity: 1, unitPrice: 450, picture: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200", product: { _id: "p1", name: "Smart Watch Pro", code: ["SWP-001"], price: 450, picture: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200", relatedPictures: [], quantity: { inStock: 45, defective: 0, total: 45 }, details: [{ warehouse: "WH-MA", country: "MA", currency: "MAD", price: 450, quantity: { total: 45, inStock: 45, defective: 0, stockAll: 45, expedition: 0 } }] } }],
+  },
+  {
+    _id: "2", id: "ORD-002", customer: { fullName: "Fatima Zahra", phone: "+212698765432", country: "MA", city: "Rabat" },
+    status: { _id: "s1", name: "Delivered", color: "#10b981" }, date: "2026-06-01T14:30:00Z", createdAt: "2026-06-01T14:30:00Z", updatedAt: "2026-06-01T14:30:00Z",
+    totalPrice: 299, source: "website",
+    details: [{ _id: "d2", name: "Wireless Earbuds", quantity: 2, unitPrice: 149.5, picture: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=200", product: { _id: "p2", name: "Wireless Earbuds", code: ["WE-002"], price: 149.5, picture: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=200", relatedPictures: [], quantity: { inStock: 120, defective: 0, total: 120 }, details: [{ warehouse: "WH-MA", country: "MA", currency: "MAD", price: 149.5, quantity: { total: 120, inStock: 120, defective: 0, stockAll: 120, expedition: 0 } }] } }],
+  },
+  {
+    _id: "3", id: "ORD-003", customer: { fullName: "Mohamed Amine", phone: "+213555123456", country: "DZ", city: "Algiers" },
+    status: { _id: "s2", name: "Shipping", color: "#3b82f6" }, date: "2026-06-02T09:15:00Z", createdAt: "2026-06-02T09:15:00Z", updatedAt: "2026-06-02T09:15:00Z",
+    totalPrice: 899, source: "facebook",
+    details: [{ _id: "d3", name: "Fitness Tracker", quantity: 1, unitPrice: 899, picture: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=200", product: { _id: "p3", name: "Fitness Tracker", code: ["FT-003"], price: 899, picture: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=200", relatedPictures: [], quantity: { inStock: 30, defective: 0, total: 30 }, details: [{ warehouse: "WH-DZ", country: "DZ", currency: "DZD", price: 899, quantity: { total: 30, inStock: 30, defective: 0, stockAll: 30, expedition: 0 } }] } }],
+  },
+  {
+    _id: "4", id: "ORD-004", customer: { fullName: "Aisha Diallo", phone: "+221771234567", country: "SN", city: "Dakar" },
+    status: { _id: "s3", name: "Confirmed", color: "#8b5cf6" }, date: "2026-06-02T11:45:00Z", createdAt: "2026-06-02T11:45:00Z", updatedAt: "2026-06-02T11:45:00Z",
+    totalPrice: 650, source: "instagram",
+    details: [{ _id: "d4", name: "Bluetooth Speaker", quantity: 1, unitPrice: 650, picture: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=200", product: { _id: "p4", name: "Bluetooth Speaker", code: ["BS-004"], price: 650, picture: "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=200", relatedPictures: [], quantity: { inStock: 75, defective: 0, total: 75 }, details: [{ warehouse: "WH-SN", country: "SN", currency: "XOF", price: 650, quantity: { total: 75, inStock: 75, defective: 0, stockAll: 75, expedition: 0 } }] } }],
+  },
+  {
+    _id: "5", id: "ORD-005", customer: { fullName: "Kofi Mensah", phone: "+233241234567", country: "GH", city: "Accra" },
+    status: { _id: "s4", name: "Pending", color: "#f59e0b" }, date: "2026-06-02T16:20:00Z", createdAt: "2026-06-02T16:20:00Z", updatedAt: "2026-06-02T16:20:00Z",
+    totalPrice: 1200, source: "website",
+    details: [{ _id: "d5", name: "Smart Home Hub", quantity: 1, unitPrice: 1200, picture: "https://images.unsplash.com/photo-1558089687-f282ffcbc126?w=200", product: { _id: "p5", name: "Smart Home Hub", code: ["SHH-005"], price: 1200, picture: "https://images.unsplash.com/photo-1558089687-f282ffcbc126?w=200", relatedPictures: [], quantity: { inStock: 15, defective: 0, total: 15 }, details: [{ warehouse: "WH-GH", country: "GH", currency: "GHS", price: 1200, quantity: { total: 15, inStock: 15, defective: 0, stockAll: 15, expedition: 0 } }] } }],
+  },
+  {
+    _id: "6", id: "ORD-006", customer: { fullName: "Yusuf Ibrahim", phone: "+2348012345678", country: "NG", city: "Lagos" },
+    status: { _id: "s1", name: "Delivered", color: "#10b981" }, date: "2026-06-03T08:00:00Z", createdAt: "2026-06-03T08:00:00Z", updatedAt: "2026-06-03T08:00:00Z",
+    totalPrice: 2500, source: "tiktok",
+    details: [{ _id: "d6", name: "Gaming Mouse", quantity: 3, unitPrice: 833.33, picture: "https://images.unsplash.com/photo-1527814050087-37898b6baf30?w=200", product: { _id: "p6", name: "Gaming Mouse", code: ["GM-006"], price: 833.33, picture: "https://images.unsplash.com/photo-1527814050087-37898b6baf30?w=200", relatedPictures: [], quantity: { inStock: 200, defective: 0, total: 200 }, details: [{ warehouse: "WH-NG", country: "NG", currency: "NGN", price: 833.33, quantity: { total: 200, inStock: 200, defective: 0, stockAll: 200, expedition: 0 } }] } }],
+  },
+  {
+    _id: "7", id: "ORD-007", customer: { fullName: "Aminata Traoré", phone: "+22507123456", country: "CI", city: "Abidjan" },
+    status: { _id: "s5", name: "Cancelled", color: "#ef4444" }, date: "2026-06-03T10:30:00Z", createdAt: "2026-06-03T10:30:00Z", updatedAt: "2026-06-03T10:30:00Z",
+    totalPrice: 350, source: "facebook",
+    details: [{ _id: "d7", name: "Phone Case", quantity: 5, unitPrice: 70, picture: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=200", product: { _id: "p7", name: "Phone Case", code: ["PC-007"], price: 70, picture: "https://images.unsplash.com/photo-1601784551446-20c9e07cdbdb?w=200", relatedPictures: [], quantity: { inStock: 500, defective: 0, total: 500 }, details: [{ warehouse: "WH-CI", country: "CI", currency: "XOF", price: 70, quantity: { total: 500, inStock: 500, defective: 0, stockAll: 500, expedition: 0 } }] } }],
+  },
+  {
+    _id: "8", id: "ORD-008", customer: { fullName: "Hassan El Fassi", phone: "+212655443322", country: "MA", city: "Marrakech" },
+    status: { _id: "s1", name: "Delivered", color: "#10b981" }, date: "2026-06-03T13:15:00Z", createdAt: "2026-06-03T13:15:00Z", updatedAt: "2026-06-03T13:15:00Z",
+    totalPrice: 780, source: "website",
+    details: [{ _id: "d8", name: "Power Bank 20000mAh", quantity: 2, unitPrice: 390, picture: "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=200", product: { _id: "p8", name: "Power Bank 20000mAh", code: ["PB-008"], price: 390, picture: "https://images.unsplash.com/photo-1609091839311-d5365f9ff1c5?w=200", relatedPictures: [], quantity: { inStock: 88, defective: 0, total: 88 }, details: [{ warehouse: "WH-MA", country: "MA", currency: "MAD", price: 390, quantity: { total: 88, inStock: 88, defective: 0, stockAll: 88, expedition: 0 } }] } }],
+  },
+  {
+    _id: "9", id: "ORD-009", customer: { fullName: "Grace Okafor", phone: "+2347098765432", country: "NG", city: "Abuja" },
+    status: { _id: "s2", name: "Shipping", color: "#3b82f6" }, date: "2026-06-03T15:45:00Z", createdAt: "2026-06-03T15:45:00Z", updatedAt: "2026-06-03T15:45:00Z",
+    totalPrice: 1850, source: "instagram",
+    details: [{ _id: "d9", name: "Wireless Charger", quantity: 1, unitPrice: 1850, picture: "https://images.unsplash.com/photo-1586953208270-767889fa9b0f?w=200", product: { _id: "p9", name: "Wireless Charger", code: ["WC-009"], price: 1850, picture: "https://images.unsplash.com/photo-1586953208270-767889fa9b0f?w=200", relatedPictures: [], quantity: { inStock: 42, defective: 0, total: 42 }, details: [{ warehouse: "WH-NG", country: "NG", currency: "NGN", price: 1850, quantity: { total: 42, inStock: 42, defective: 0, stockAll: 42, expedition: 0 } }] } }],
+  },
+  {
+    _id: "10", id: "ORD-010", customer: { fullName: "Omar Sow", phone: "+221789876543", country: "SN", city: "Thiès" },
+    status: { _id: "s4", name: "Pending", color: "#f59e0b" }, date: "2026-06-03T17:00:00Z", createdAt: "2026-06-03T17:00:00Z", updatedAt: "2026-06-03T17:00:00Z",
+    totalPrice: 420, source: "facebook",
+    details: [{ _id: "d10", name: "LED Desk Lamp", quantity: 2, unitPrice: 210, picture: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200", product: { _id: "p10", name: "LED Desk Lamp", code: ["LDL-010"], price: 210, picture: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200", relatedPictures: [], quantity: { inStock: 65, defective: 0, total: 65 }, details: [{ warehouse: "WH-SN", country: "SN", currency: "XOF", price: 210, quantity: { total: 65, inStock: 65, defective: 0, stockAll: 65, expedition: 0 } }] } }],
+  },
+  {
+    _id: "11", id: "ORD-011", customer: { fullName: "Kwame Asante", phone: "+233201234567", country: "GH", city: "Kumasi" },
+    status: { _id: "s3", name: "Confirmed", color: "#8b5cf6" }, date: "2026-05-31T09:30:00Z", createdAt: "2026-05-31T09:30:00Z", updatedAt: "2026-05-31T09:30:00Z",
+    totalPrice: 950, source: "website",
+    details: [{ _id: "d11", name: "Mechanical Keyboard", quantity: 1, unitPrice: 950, picture: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=200", product: { _id: "p11", name: "Mechanical Keyboard", code: ["MK-011"], price: 950, picture: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=200", relatedPictures: [], quantity: { inStock: 28, defective: 0, total: 28 }, details: [{ warehouse: "WH-GH", country: "GH", currency: "GHS", price: 950, quantity: { total: 28, inStock: 28, defective: 0, stockAll: 28, expedition: 0 } }] } }],
+  },
+  {
+    _id: "12", id: "ORD-012", customer: { fullName: "Leila Benjelloun", phone: "+212677889900", country: "MA", city: "Fes" },
+    status: { _id: "s6", name: "Out of Stock", color: "#6b7280" }, date: "2026-05-30T14:00:00Z", createdAt: "2026-05-30T14:00:00Z", updatedAt: "2026-05-30T14:00:00Z",
+    totalPrice: 1500, source: "tiktok",
+    details: [{ _id: "d12", name: "Drone Mini", quantity: 1, unitPrice: 1500, picture: "https://images.unsplash.com/photo-1507502284763-83e33ef8b1d5?w=200", product: { _id: "p12", name: "Drone Mini", code: ["DM-012"], price: 1500, picture: "https://images.unsplash.com/photo-1507502284763-83e33ef8b1d5?w=200", relatedPictures: [], quantity: { inStock: 0, defective: 0, total: 0 }, details: [{ warehouse: "WH-MA", country: "MA", currency: "MAD", price: 1500, quantity: { total: 0, inStock: 0, defective: 0, stockAll: 0, expedition: 0 } }] } }],
+  },
+  {
+    _id: "13", id: "ORD-013", customer: { fullName: "Ibrahim Keita", phone: "+22320123456", country: "ML", city: "Bamako" },
+    status: { _id: "s1", name: "Delivered", color: "#10b981" }, date: "2026-05-29T11:20:00Z", createdAt: "2026-05-29T11:20:00Z", updatedAt: "2026-05-29T11:20:00Z",
+    totalPrice: 550, source: "website",
+    details: [{ _id: "d13", name: "USB-C Hub", quantity: 2, unitPrice: 275, picture: "https://images.unsplash.com/photo-1625842268584-8f3296236761?w=200", product: { _id: "p13", name: "USB-C Hub", code: ["UC-013"], price: 275, picture: "https://images.unsplash.com/photo-1625842268584-8f3296236761?w=200", relatedPictures: [], quantity: { inStock: 150, defective: 0, total: 150 }, details: [{ warehouse: "WH-ML", country: "ML", currency: "XOF", price: 275, quantity: { total: 150, inStock: 150, defective: 0, stockAll: 150, expedition: 0 } }] } }],
+  },
+  {
+    _id: "14", id: "ORD-014", customer: { fullName: "Amina Hassan", phone: "+2348123456789", country: "NG", city: "Kano" },
+    status: { _id: "s7", name: "Double", color: "#ec4899" }, date: "2026-05-28T16:45:00Z", createdAt: "2026-05-28T16:45:00Z", updatedAt: "2026-05-28T16:45:00Z",
+    totalPrice: 680, source: "facebook",
+    details: [{ _id: "d14", name: "Smart Bulb Set", quantity: 4, unitPrice: 170, picture: "https://images.unsplash.com/photo-1550985543-49bee3167284?w=200", product: { _id: "p14", name: "Smart Bulb Set", code: ["SB-014"], price: 170, picture: "https://images.unsplash.com/photo-1550985543-49bee3167284?w=200", relatedPictures: [], quantity: { inStock: 95, defective: 0, total: 95 }, details: [{ warehouse: "WH-NG", country: "NG", currency: "NGN", price: 170, quantity: { total: 95, inStock: 95, defective: 0, stockAll: 95, expedition: 0 } }] } }],
+  },
+  {
+    _id: "15", id: "ORD-015", customer: { fullName: "Moussa Camara", phone: "+224621234567", country: "GN", city: "Conakry" },
+    status: { _id: "s8", name: "Transferred", color: "#06b6d4" }, date: "2026-05-27T10:10:00Z", createdAt: "2026-05-27T10:10:00Z", updatedAt: "2026-05-27T10:10:00Z",
+    totalPrice: 890, source: "instagram",
+    details: [{ _id: "d15", name: "Portable Projector", quantity: 1, unitPrice: 890, picture: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=200", product: { _id: "p15", name: "Portable Projector", code: ["PP-015"], price: 890, picture: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=200", relatedPictures: [], quantity: { inStock: 12, defective: 0, total: 12 }, details: [{ warehouse: "WH-GN", country: "GN", currency: "GNF", price: 890, quantity: { total: 12, inStock: 12, defective: 0, stockAll: 12, expedition: 0 } }] } }],
+  },
+];
+
+const MOCK_WAREHOUSES: CodinAfricaWarehouse[] = [
+  { _id: "wh1", name: "Morocco Warehouse", country: "MA", countryName: "Morocco", flag: "https://flagcdn.com/ma.png", currency: "MAD", is_primary: true },
+  { _id: "wh2", name: "Algeria Warehouse", country: "DZ", countryName: "Algeria", flag: "https://flagcdn.com/dz.png", currency: "DZD", is_primary: false },
+  { _id: "wh3", name: "Senegal Warehouse", country: "SN", countryName: "Senegal", flag: "https://flagcdn.com/sn.png", currency: "XOF", is_primary: false },
+  { _id: "wh4", name: "Ghana Warehouse", country: "GH", countryName: "Ghana", flag: "https://flagcdn.com/gh.png", currency: "GHS", is_primary: false },
+  { _id: "wh5", name: "Nigeria Warehouse", country: "NG", countryName: "Nigeria", flag: "https://flagcdn.com/ng.png", currency: "NGN", is_primary: true },
+  { _id: "wh6", name: "Ivory Coast Warehouse", country: "CI", countryName: "Ivory Coast", flag: "https://flagcdn.com/ci.png", currency: "XOF", is_primary: false },
+  { _id: "wh7", name: "Mali Warehouse", country: "ML", countryName: "Mali", flag: "https://flagcdn.com/ml.png", currency: "XOF", is_primary: false },
+  { _id: "wh8", name: "Guinea Warehouse", country: "GN", countryName: "Guinea", flag: "https://flagcdn.com/gn.png", currency: "GNF", is_primary: false },
+];
+
 function getStoredCredentials(): AuthCredentials | null {
   if (typeof window === "undefined") return null;
   try {
@@ -27,8 +131,8 @@ function getStoredCredentials(): AuthCredentials | null {
 export function getApiConfig(): AuthCredentials {
   const stored = getStoredCredentials();
   return {
-    apiUrl: stored?.apiUrl || process.env.NEXT_PUBLIC_CODINAFRICA_API_URL || DEFAULT_API_URL,
-    token: stored?.token || process.env.NEXT_PUBLIC_CODINAFRICA_TOKEN || "",
+    apiUrl: (stored?.apiUrl || process.env.NEXT_PUBLIC_CODINAFRICA_API_URL || DEFAULT_API_URL).trim(),
+    token: (stored?.token || process.env.NEXT_PUBLIC_CODINAFRICA_TOKEN || "").trim(),
   };
 }
 
@@ -49,8 +153,6 @@ function mapOrder(raw: CodinAfricaOrder): Order {
   const product = detail?.product;
   const rawStatusName = raw.status?.name || "unknown";
   const mappedStatus = STATUS_MAP[rawStatusName] || rawStatusName.toLowerCase();
-  
-  console.log("[DEBUG] Raw status:", rawStatusName, "→ Mapped:", mappedStatus);
   
   return {
     id: raw._id,
@@ -128,22 +230,23 @@ class ApiService {
   }
 
   async fetchAllOrders(): Promise<CodinAfricaOrder[]> {
+    if (!this.token) {
+      console.log("[API] No token, using mock data");
+      this.ordersCache = MOCK_ORDERS;
+      return MOCK_ORDERS;
+    }
     const data = await this.request<ApiResponse<CodinAfricaOrder>>("/orders/search?limit=500");
     const orders = data?.content?.results || [];
     this.ordersCache = orders;
-    
-    const statusCounts: Record<string, number> = {};
-    orders.forEach((o) => {
-      const name = o.status?.name || "unknown";
-      statusCounts[name] = (statusCounts[name] || 0) + 1;
-    });
-    console.log("[DEBUG] Raw API status counts:", statusCounts);
-    console.log("[DEBUG] Sample order status:", orders[0]?.status);
-    
     return orders;
   }
 
   async fetchWarehouses(): Promise<CodinAfricaWarehouse[]> {
+    if (!this.token) {
+      console.log("[API] No token, using mock warehouses");
+      this.warehousesCache = MOCK_WAREHOUSES;
+      return MOCK_WAREHOUSES;
+    }
     const data = await this.request<ApiResponse<CodinAfricaWarehouse>>("/warehouses/search?limit=50");
     const warehouses = data?.content?.results || [];
     this.warehousesCache = warehouses;
@@ -164,13 +267,6 @@ class ApiService {
 
     const mappedOrders = rawOrders.map(mapOrder);
     const allProducts = rawOrders.flatMap(mapProduct);
-    
-    const mappedStatusCounts: Record<string, number> = {};
-    mappedOrders.forEach((o) => {
-      mappedStatusCounts[o.status] = (mappedStatusCounts[o.status] || 0) + 1;
-    });
-    console.log("[DEBUG] Mapped status counts:", mappedStatusCounts);
-    
     const stats = this.computeStats(mappedOrders, allProducts);
     const countries = this.computeCountries(mappedOrders, warehouses);
     const revenueTrend = this.computeRevenueTrend(mappedOrders);
@@ -206,8 +302,7 @@ class ApiService {
       .filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping")
       .reduce((s, o) => s + o.amount, 0);
 
-    const deliverable = total - cancelled - outOfStock;
-    const deliveryRate = deliverable > 0 ? processedOrders / deliverable : 0;
+    const deliveryRate = total > 0 ? processedOrders / total : 0;
 
     let serviceFeesTotal = 0;
     for (const o of orders) {
@@ -280,7 +375,6 @@ class ApiService {
       const feePercent = getFeeForCountry(code);
       const serviceFees = computeServiceFees(data.processedRevenue, feePercent);
       const netRevenue = data.processedRevenue - serviceFees;
-      const deliverable = data.orders - data.cancelled - data.outOfStock;
       return {
         country: code,
         countryName: w?.countryName || COUNTRY_NAMES[code] || code,
@@ -292,7 +386,7 @@ class ApiService {
         serviceFees,
         netRevenue,
         confirmationRate: totalNonCancelled > 0 ? data.confirmed / totalNonCancelled : 0,
-        deliveryRate: deliverable > 0 ? data.processedOrders / deliverable : 0,
+        deliveryRate: data.orders > 0 ? data.processedOrders / data.orders : 0,
       };
     }).sort((a, b) => b.revenue - a.revenue);
   }

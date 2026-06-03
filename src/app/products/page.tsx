@@ -8,7 +8,7 @@ import { Pagination } from "@/components/ui/Pagination";
 import { PageWrapper } from "@/components/PageWrapper";
 import { DateFilter } from "@/components/DateFilter";
 import { useProducts, useDashboardData } from "@/hooks";
-import { formatCurrency, formatNumber, getImageUrl, filterOrdersByDate } from "@/utils";
+import { formatCurrency, formatNumber, getImageUrlOrFallback, filterOrdersByDate } from "@/utils";
 import { exportToCSV } from "@/utils/csv";
 import type { Product, Order } from "@/types";
 import type { DateFilterValue } from "@/utils/dates";
@@ -58,7 +58,7 @@ export default function ProductsPage() {
             countryName: o.countryName || o.country,
             currency: "XOF",
             price: o.quantity > 0 ? Math.round(o.amount / o.quantity) : 0,
-            image: o.productImage,
+            image: o.productImage || existingProduct?.image || "",
           });
         }
       }
@@ -74,6 +74,7 @@ export default function ProductsPage() {
         ex.totalSold += p.totalSold;
         ex.revenue += p.revenue;
         ex.stockQuantity = Math.max(ex.stockQuantity, p.stockQuantity);
+        if (!ex.image && p.image) ex.image = p.image;
       } else {
         map.set(key, { ...p });
       }
@@ -113,7 +114,17 @@ export default function ProductsPage() {
             <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-xl bg-[#1F1F1F] flex items-center justify-center shrink-0 overflow-hidden">
               {p.image ? (
-                <img src={getImageUrl(p.image)} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                <img 
+                  src={getImageUrlOrFallback(p.image)} 
+                  alt={p.name} 
+                  className="w-full h-full object-cover" 
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                  crossOrigin="anonymous"
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
+                />
               ) : (
                 <ImageIcon className="w-5 h-5 text-[#606060]" />
               )}
@@ -246,7 +257,7 @@ export default function ProductsPage() {
           <DataTable columns={columns} data={data?.products ?? []} keyExtractor={(p: Product) => p.id} loading={loading} emptyMessage="No products" />
         </div>
 
-        {data?.totalPages && data.totalPages > 1 && (
+        {data?.totalPages > 1 && (
           <Pagination page={page} totalPages={data.totalPages} onPageChange={setPage} />
         )}
       </div>

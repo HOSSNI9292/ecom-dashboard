@@ -151,7 +151,7 @@ export function useProducts(options?: UseApiOptions & {
   const result = useApi(fetcher, { refreshInterval: 60000, ...apiOpts });
 
   const processed = useMemo(() => {
-    if (!result.data?.products) return { products: [], totalPages: 0 };
+    if (!result.data?.products) return { products: [] as Product[], totalPages: 0 };
     const aggregated = new Map<string, Product>();
     for (const p of result.data.products) {
       const key = p.id;
@@ -160,6 +160,7 @@ export function useProducts(options?: UseApiOptions & {
         existing.totalSold += p.totalSold;
         existing.revenue += p.revenue;
         existing.stockQuantity = Math.max(existing.stockQuantity, p.stockQuantity);
+        if (!existing.image && p.image) existing.image = p.image;
       } else {
         aggregated.set(key, { ...p });
       }
@@ -185,7 +186,7 @@ export function useProducts(options?: UseApiOptions & {
     return { products: list, totalPages };
   }, [result.data?.products, search, country, sortBy, sortOrder, page, perPage]);
 
-  return { ...result, data: processed, rawData: result.data };
+  return { loading: result.loading, error: result.error, refetch: result.refetch, data: processed, rawData: result.data } as any;
 }
 
 export function useCountries(options?: UseApiOptions) {

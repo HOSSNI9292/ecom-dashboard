@@ -14,7 +14,7 @@ import { PageWrapper } from "@/components/PageWrapper";
 import { OrderModal } from "@/components/OrderModal";
 import { DateFilter } from "@/components/DateFilter";
 import { useDashboardData } from "@/hooks";
-import { formatCurrency, formatNumber, formatPercentage, formatDate, filterOrdersByDate, DATE_FILTER_LABELS } from "@/utils";
+import { formatCurrency, formatNumber, formatPercentage, formatDate, filterOrdersByDate, DATE_FILTER_LABELS, getImageUrlOrFallback } from "@/utils";
 import { exportToCSV } from "@/utils/csv";
 import type { DateFilterValue } from "@/utils/dates";
 import type { Order, Product } from "@/types";
@@ -240,9 +240,11 @@ export default function DashboardPage() {
               </CardHeader>
               <div className="flex items-center gap-4">
                 {bestProduct.image ? (
-                  <img src={bestProduct.image} alt={bestProduct.name} className="w-14 h-14 rounded-xl object-cover shadow-lg" />
+                  <div className="w-16 h-16 rounded-xl bg-[#1F1F1F] flex items-center justify-center shrink-0 overflow-hidden">
+                    <img src={getImageUrlOrFallback(bestProduct.image)} alt={bestProduct.name} className="w-full h-full object-contain p-1" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+                  </div>
                 ) : (
-                  <div className="w-14 h-14 rounded-xl bg-[#111111] flex items-center justify-center">
+                  <div className="w-16 h-16 rounded-xl bg-[#1F1F1F] flex items-center justify-center shrink-0">
                     <Package className="w-6 h-6 text-[#606060]" />
                   </div>
                 )}
