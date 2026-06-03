@@ -11,10 +11,18 @@ import {
   Sector,
 } from "recharts";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
-import type { DashboardStats } from "@/types";
+interface FilteredChartStats {
+  pendingOrders: number;
+  confirmedOrders: number;
+  deliveredOrders: number;
+  cancelledOrders: number;
+  outOfStockOrders: number;
+  doubleOrders: number;
+  transferredOrders: number;
+}
 
 interface OrdersStatusChartProps {
-  stats: DashboardStats | null;
+  stats: FilteredChartStats | null;
   loading?: boolean;
 }
 

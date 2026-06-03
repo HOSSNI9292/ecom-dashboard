@@ -47,6 +47,17 @@ export default function DashboardPage() {
 
   const filteredOrders = useMemo(() => filterOrdersByDate(orders, dateFilter), [orders, dateFilter]);
 
+  const filteredStats = useMemo(() => {
+    const pendingOrders = filteredOrders.filter((o) => o.status === "pending").length;
+    const confirmedOrders = filteredOrders.filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping").length;
+    const deliveredOrders = filteredOrders.filter((o) => o.status === "delivered" || o.status === "shipping").length;
+    const cancelledOrders = filteredOrders.filter((o) => o.status === "cancelled").length;
+    const outOfStockOrders = filteredOrders.filter((o) => o.status === "out_of_stock").length;
+    const doubleOrders = filteredOrders.filter((o) => o.status === "double").length;
+    const transferredOrders = filteredOrders.filter((o) => o.status === "transferred").length;
+    return { pendingOrders, confirmedOrders, deliveredOrders, cancelledOrders, outOfStockOrders, doubleOrders, transferredOrders };
+  }, [filteredOrders]);
+
   const filteredRevenue = filteredOrders.reduce((s, o) => s + o.amount, 0);
   const filteredPending = filteredOrders.filter((o) => o.status === "pending").length;
   const filteredConfirmed = filteredOrders.filter((o) => o.status === "confirmed").length;
@@ -132,7 +143,7 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <RevenueChart data={data?.revenueTrend ?? []} loading={isLoading} />
-          <OrdersStatusChart stats={stats ?? null} loading={isLoading} />
+          <OrdersStatusChart stats={filteredStats} loading={isLoading} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
