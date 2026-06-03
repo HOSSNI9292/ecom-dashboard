@@ -37,6 +37,20 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   unreached: { label: "Unreached", color: "#94A3B8" },
 };
 
+const RADIAN = Math.PI / 180;
+
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+
+  return percent > 0.05 ? (
+    <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600}>
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
+  ) : null;
+};
+
 export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
   const chartData = !stats
     ? []
@@ -94,9 +108,11 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
                 stroke="none"
                 activeShape={renderActiveShape}
                 activeIndex={undefined}
+                label={renderCustomizedLabel}
+                labelLine={false}
               >
                 {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} stroke="#0B0F19" strokeWidth={2} />
+                  <Cell key={`cell-${index}`} fill={entry.color} stroke="#111827" strokeWidth={3} />
                 ))}
               </Pie>
               <Tooltip
@@ -105,14 +121,14 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
                   const d = payload[0].payload;
                   const pct = total > 0 ? ((d.value / total) * 100).toFixed(1) : "0.0";
                   return (
-                    <div className="bg-[#1E293B] border border-[#334155] rounded-xl px-4 py-3 shadow-2xl">
+                    <div className="bg-[#111827] border border-[#334155] rounded-xl px-4 py-3 shadow-2xl backdrop-blur-xl">
                       <div className="flex items-center gap-2 mb-1.5">
-                        <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
+                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
                         <span className="text-white text-sm font-semibold">{d.label}</span>
                       </div>
-                      <div className="text-white/80 text-xs space-y-1">
-                        <p className="text-white font-medium">{d.value.toLocaleString()} orders</p>
-                        <p className="text-[#6366F1] font-semibold text-sm">{pct}%</p>
+                      <div className="space-y-1">
+                        <p className="text-white font-medium text-sm">{d.value.toLocaleString()} orders</p>
+                        <p className="text-[#6366F1] font-semibold">{pct}%</p>
                       </div>
                     </div>
                   );

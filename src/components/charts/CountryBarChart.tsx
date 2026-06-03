@@ -25,14 +25,14 @@ function CustomTooltip({ active, payload, label }: any) {
   const val = payload[0].value;
   const dataKey = payload[0].dataKey;
   return (
-    <div className="bg-[#111827] border border-[#1F2937] rounded-lg p-3 shadow-2xl">
-      <p className="text-[#64748B] text-xs mb-1">{label}</p>
-      <p className="text-white font-semibold text-sm">
+    <div className="bg-[#111827]/90 backdrop-blur-xl border border-[#334155] rounded-xl px-4 py-3 shadow-2xl">
+      <p className="text-[#94A3B8] text-xs mb-1.5 font-medium">{label}</p>
+      <p className="text-white font-bold text-sm">
         {dataKey === "revenue"
           ? formatCurrency(val)
           : dataKey === "confirmationRate"
             ? `${(val * 100).toFixed(1)}%`
-            : val}
+            : val.toLocaleString()}
       </p>
     </div>
   );
@@ -74,8 +74,8 @@ export function CountryBarChart({
             <BarChart data={chartData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
               <defs>
                 <linearGradient id={`barGradient-${dataKey}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={barColor} stopOpacity={0.8} />
-                  <stop offset="100%" stopColor={barColor} stopOpacity={0.4} />
+                  <stop offset="0%" stopColor={barColor} stopOpacity={0.9} />
+                  <stop offset="100%" stopColor={barColor} stopOpacity={0.3} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="4 4" stroke="#1F2937" vertical={false} />
@@ -99,8 +99,8 @@ export function CountryBarChart({
               <Bar
                 dataKey={dataKey}
                 fill={`url(#barGradient-${dataKey})`}
-                radius={[4, 4, 0, 0]}
-                maxBarSize={40}
+                radius={[6, 6, 0, 0]}
+                maxBarSize={44}
               />
             </BarChart>
           </ResponsiveContainer>

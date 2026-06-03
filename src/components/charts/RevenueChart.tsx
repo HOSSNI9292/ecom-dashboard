@@ -21,10 +21,13 @@ interface RevenueChartProps {
 function CustomTooltip({ active, payload, label }: any) {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-[#111827] border border-[#1F2937] rounded-lg p-3 shadow-2xl">
-      <p className="text-[#64748B] text-xs mb-1">{label}</p>
-      <p className="text-white font-semibold text-sm">{formatCurrency(payload[0].value)}</p>
-      <p className="text-[#64748B] text-[11px]">{payload[0]?.payload?.orders} orders</p>
+    <div className="bg-[#111827]/90 backdrop-blur-xl border border-[#334155] rounded-xl px-4 py-3 shadow-2xl">
+      <p className="text-[#94A3B8] text-xs mb-1.5 font-medium">{label}</p>
+      <p className="text-white font-bold text-base">{formatCurrency(payload[0].value)}</p>
+      <div className="flex items-center gap-1.5 mt-1">
+        <div className="w-1.5 h-1.5 rounded-full bg-[#6366F1]" />
+        <p className="text-[#64748B] text-xs">{payload[0]?.payload?.orders} orders</p>
+      </div>
     </div>
   );
 }
@@ -50,8 +53,8 @@ export function RevenueChart({ data, loading }: RevenueChartProps) {
             <AreaChart data={data} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
               <defs>
                 <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="#6366F1" stopOpacity={0.4} />
-                  <stop offset="50%" stopColor="#6366F1" stopOpacity={0.1} />
+                  <stop offset="0%" stopColor="#6366F1" stopOpacity={0.5} />
+                  <stop offset="60%" stopColor="#6366F1" stopOpacity={0.08} />
                   <stop offset="100%" stopColor="#6366F1" stopOpacity={0} />
                 </linearGradient>
               </defs>
@@ -78,7 +81,7 @@ export function RevenueChart({ data, loading }: RevenueChartProps) {
                 strokeWidth={2}
                 fill="url(#revenueGradient)"
                 dot={false}
-                activeDot={{ r: 4, fill: "#6366F1", stroke: "#111827", strokeWidth: 2 }}
+                activeDot={{ r: 5, fill: "#6366F1", stroke: "#111827", strokeWidth: 3 }}
               />
             </AreaChart>
           </ResponsiveContainer>

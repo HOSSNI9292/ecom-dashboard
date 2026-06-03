@@ -43,7 +43,7 @@ export function StatCard({ title, value, icon, trend, subtitle, color = "accent"
             )}
             {subtitle && <p className="text-[#64748B] text-xs mt-1.5">{subtitle}</p>}
           </div>
-          <div className={`p-3 rounded-lg ${c.bg} ${c.text} shrink-0 ml-3`}>
+          <div className={`p-3 rounded-xl ${c.bg} ${c.text} shrink-0 ml-3`}>
             {icon}
           </div>
         </div>
