@@ -71,22 +71,22 @@ export default function SettingsPage() {
     }
   }, [creds]);
 
-  const inputClass = "w-full bg-[#111111] border border-[#1F1F1F] rounded-lg text-white placeholder-[#606060] focus:outline-none focus:border-[#06B6D4]/50 focus:ring-1 focus:ring-[#06B6D4]/20 transition-all duration-200 text-sm px-3 py-2.5";
+  const inputClass = "w-full bg-[#141417] border border-[#27272A] rounded-xl text-[#FAFAFA] placeholder-[#3F3F46] focus:outline-none focus:border-[#10B981]/50 focus:ring-1 focus:ring-[#10B981]/20 transition-all duration-200 text-sm px-3 py-2.5";
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <Card hover={false}>
+      <Card>
         <CardHeader>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-[#06B6D4]/10">
-              <Shield className="w-5 h-5 text-[#22D3EE]" />
+            <div className="p-2 rounded-xl bg-[#10B981]/10">
+              <Shield className="w-5 h-5 text-[#34D399]" />
             </div>
             <CardTitle>API Credentials</CardTitle>
           </div>
         </CardHeader>
         <div className="space-y-5">
           <div>
-            <label className="block text-[#808080] text-sm font-medium mb-1.5">
+            <label className="block text-[#71717A] text-sm font-medium mb-1.5">
               <Globe className="w-4 h-4 inline mr-1.5" />
               API URL
             </label>
@@ -99,7 +99,7 @@ export default function SettingsPage() {
             />
           </div>
           <div>
-            <label className="block text-[#808080] text-sm font-medium mb-1.5">
+            <label className="block text-[#71717A] text-sm font-medium mb-1.5">
               <Key className="w-4 h-4 inline mr-1.5" />
               X-Auth-Token
             </label>
@@ -113,7 +113,7 @@ export default function SettingsPage() {
               />
               <button
                 onClick={() => setShowToken(!showToken)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#606060] hover:text-white transition-colors duration-200"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#71717A] hover:text-[#FAFAFA] transition-colors duration-200"
               >
                 {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -123,7 +123,7 @@ export default function SettingsPage() {
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <button
               onClick={handleSave}
-              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#06B6D4] hover:bg-[#0891B2] text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-[0_0_16px_rgba(6,182,212,0.2)] hover:shadow-[0_0_24px_rgba(6,182,212,0.3)]"
+              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#10B981] hover:bg-[#059669] text-white rounded-xl transition-all duration-200 text-sm font-medium shadow-lg shadow-[#10B981]/20 hover:shadow-[#10B981]/30"
             >
               {saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
               {saved ? "Saved!" : "Save Credentials"}
@@ -131,7 +131,7 @@ export default function SettingsPage() {
             <button
               onClick={handleTest}
               disabled={testing || !creds.token}
-              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#111111] border border-[#1F1F1F] hover:border-[#06B6D4]/30 text-white rounded-lg transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#141417] border border-[#27272A] hover:border-[#10B981]/30 text-[#FAFAFA] rounded-xl transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {testing ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -142,25 +142,25 @@ export default function SettingsPage() {
             </button>
             <button
               onClick={handleClear}
-              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#ef4444]/10 hover:bg-[#ef4444]/20 text-[#ef4444] rounded-lg transition-all duration-200 text-sm font-medium border border-[#ef4444]/20"
+              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#EF4444]/10 hover:bg-[#EF4444]/20 text-[#EF4444] rounded-xl transition-all duration-200 text-sm font-medium border border-[#EF4444]/20"
             >
               Clear
             </button>
           </div>
 
           {testResult && (
-            <div className={`flex items-start gap-3 p-4 rounded-lg border ${
-              testResult.success ? "bg-[#10b981]/5 border-[#10b981]/20" : "bg-[#ef4444]/5 border-[#ef4444]/20"
+            <div className={`flex items-start gap-3 p-4 rounded-xl border ${
+              testResult.success ? "bg-[#10B981]/5 border-[#10B981]/20" : "bg-[#EF4444]/5 border-[#EF4444]/20"
             }`}>
               {testResult.success
-                ? <CheckCircle className="w-5 h-5 text-[#10b981] mt-0.5 shrink-0" />
-                : <AlertCircle className="w-5 h-5 text-[#ef4444] mt-0.5 shrink-0" />
+                ? <CheckCircle className="w-5 h-5 text-[#10B981] mt-0.5 shrink-0" />
+                : <AlertCircle className="w-5 h-5 text-[#EF4444] mt-0.5 shrink-0" />
               }
               <div>
-                <p className={`text-sm font-medium ${testResult.success ? "text-[#10b981]" : "text-[#ef4444]"}`}>
+                <p className={`text-sm font-medium ${testResult.success ? "text-[#10B981]" : "text-[#EF4444]"}`}>
                   {testResult.success ? "Success" : "Error"}
                 </p>
-                <p className="text-[#808080] text-sm mt-0.5">{testResult.message}</p>
+                <p className="text-[#71717A] text-sm mt-0.5">{testResult.message}</p>
               </div>
             </div>
           )}
@@ -168,39 +168,39 @@ export default function SettingsPage() {
       </Card>
 
       <Link href="/settings/fees" className="block group">
-        <Card hover={false} className="hover:border-[#06B6D4]/30 transition-all duration-200">
+        <Card className="hover:border-[#10B981]/30 transition-all duration-200">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-[#10b981]/10">
-                  <DollarSign className="w-5 h-5 text-[#10b981]" />
+                <div className="p-2 rounded-xl bg-[#10B981]/10">
+                  <DollarSign className="w-5 h-5 text-[#10B981]" />
                 </div>
                 <CardTitle>Country Service Fees</CardTitle>
               </div>
-              <ChevronRight className="w-5 h-5 text-[#606060] group-hover:text-white transition-colors duration-200" />
+              <ChevronRight className="w-5 h-5 text-[#71717A] group-hover:text-[#FAFAFA] transition-colors duration-200" />
             </div>
           </CardHeader>
-          <p className="text-[#808080] text-sm">
+          <p className="text-[#71717A] text-sm">
             Configure CodinAfrica service fee percentages per country to calculate net revenue and track real profitability.
           </p>
         </Card>
       </Link>
 
-      <Card hover={false}>
+      <Card>
         <CardHeader>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-[#10b981]/10">
-              <Bot className="w-5 h-5 text-[#10b981]" />
+            <div className="p-2 rounded-xl bg-[#10B981]/10">
+              <Bot className="w-5 h-5 text-[#10B981]" />
             </div>
             <CardTitle>AI Agent - Groq API</CardTitle>
           </div>
         </CardHeader>
         <div className="space-y-5">
-          <p className="text-[#808080] text-sm">
-            AI Agent كيستعمل Groq API (مجاني) باش يجاوبك بحال ChatGPT. سجل ف <a href="https://console.groq.com" target="_blank" rel="noopener noreferrer" className="text-[#22D3EE] hover:underline">console.groq.com</a> باش تاخد API key مجاني.
+          <p className="text-[#71717A] text-sm">
+            AI Agent uses Groq API (free) to answer like ChatGPT. Sign up at <a href="https://console.groq.com" target="_blank" rel="noopener noreferrer" className="text-[#34D399] hover:underline">console.groq.com</a> to get a free API key.
           </p>
           <div>
-            <label className="block text-[#808080] text-sm font-medium mb-1.5">
+            <label className="block text-[#71717A] text-sm font-medium mb-1.5">
               <Key className="w-4 h-4 inline mr-1.5" />
               Groq API Key
             </label>
@@ -214,7 +214,7 @@ export default function SettingsPage() {
               />
               <button
                 onClick={() => setShowGroqKey(!showGroqKey)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#606060] hover:text-white transition-colors duration-200"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#71717A] hover:text-[#FAFAFA] transition-colors duration-200"
               >
                 {showGroqKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -222,7 +222,7 @@ export default function SettingsPage() {
           </div>
           <button
             onClick={handleSaveGroq}
-            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#10b981] hover:bg-[#059669] text-white rounded-lg transition-all duration-200 text-sm font-medium"
+            className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#10B981] hover:bg-[#059669] text-white rounded-xl transition-all duration-200 text-sm font-medium"
           >
             {groqSaved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
             {groqSaved ? "Saved!" : "Save Groq Key"}
@@ -230,20 +230,20 @@ export default function SettingsPage() {
         </div>
       </Card>
 
-      <Card hover={false}>
+      <Card>
         <CardHeader>
           <CardTitle>About COD Analytics</CardTitle>
         </CardHeader>
-        <div className="space-y-3 text-sm text-[#808080]">
+        <div className="space-y-3 text-sm text-[#71717A]">
           <p>
-            This dashboard connects to the <strong className="text-white">CodinAfrica API</strong> to provide real-time analytics
+            This dashboard connects to the <strong className="text-[#FAFAFA]">CodinAfrica API</strong> to provide real-time analytics
             for your Cash on Delivery e-commerce business across Africa.
           </p>
           <p>All data is fetched live. Credentials are stored locally in your browser only.</p>
-          <div className="bg-[#0A0A0A] rounded-lg p-4 space-y-1.5">
-            <p className="text-[#606060] text-xs font-medium uppercase tracking-wider">Available endpoints</p>
-            <code className="block text-[#22D3EE] text-xs font-mono">GET /orders/search?limit=500</code>
-            <code className="block text-[#22D3EE] text-xs font-mono">GET /warehouses/search?limit=50</code>
+          <div className="bg-[#0A0A0B] rounded-xl p-4 space-y-1.5">
+            <p className="text-[#3F3F46] text-xs font-medium uppercase tracking-wider">Available endpoints</p>
+            <code className="block text-[#34D399] text-xs font-mono">GET /orders/search?limit=500</code>
+            <code className="block text-[#34D399] text-xs font-mono">GET /warehouses/search?limit=50</code>
           </div>
         </div>
       </Card>

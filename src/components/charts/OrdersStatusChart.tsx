@@ -11,6 +11,7 @@ import {
   Sector,
 } from "recharts";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+
 interface FilteredChartStats {
   pendingOrders: number;
   confirmedOrders: number;
@@ -32,9 +33,9 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   confirmed: { label: "Confirmed", color: "#10B981" },
   cancelled: { label: "Cancelled", color: "#EF4444" },
   double: { label: "Double", color: "#EC4899" },
-  transferred: { label: "Transferred", color: "#8B5CF6" },
-  out_of_stock: { label: "Out of Stock", color: "#6B7280" },
-  unreached: { label: "Unreached", color: "#94A3B8" },
+  transferred: { label: "Transferred", color: "#0EA5E9" },
+  out_of_stock: { label: "Out of Stock", color: "#71717A" },
+  unreached: { label: "Unreached", color: "#A1A1AA" },
 };
 
 export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
@@ -59,26 +60,26 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
     const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill } = props;
     return (
       <g>
-        <Sector cx={cx} cy={cy} innerRadius={innerRadius - 2} outerRadius={outerRadius + 4} startAngle={startAngle} endAngle={endAngle} fill={fill} opacity={0.3} />
+        <Sector cx={cx} cy={cy} innerRadius={innerRadius - 2} outerRadius={outerRadius + 6} startAngle={startAngle} endAngle={endAngle} fill={fill} opacity={0.25} />
         <Sector cx={cx} cy={cy} innerRadius={innerRadius} outerRadius={outerRadius} startAngle={startAngle} endAngle={endAngle} fill={fill} />
       </g>
     );
   }, []);
 
   return (
-    <Card hover={false}>
+    <Card hover={false} glass>
       <CardHeader>
         <CardTitle>Orders by Status</CardTitle>
       </CardHeader>
       {loading ? (
         <div className="h-[300px] flex items-center justify-center">
           <div className="relative">
-            <div className="w-10 h-10 border-2 border-[#1F1F1F] rounded-full" />
-            <div className="w-10 h-10 border-2 border-transparent border-t-[#06B6D4] rounded-full animate-spin absolute inset-0" />
+            <div className="w-10 h-10 border-2 border-[#27272A] rounded-full" />
+            <div className="w-10 h-10 border-2 border-transparent border-t-[#10B981] rounded-full animate-spin absolute inset-0" />
           </div>
         </div>
       ) : chartData.length === 0 ? (
-        <div className="h-[300px] flex items-center justify-center text-[#606060] text-sm">No data</div>
+        <div className="h-[300px] flex items-center justify-center text-[#71717A] text-sm">No data</div>
       ) : (
         <div className="h-[340px] relative">
           <ResponsiveContainer width="100%" height="100%">
@@ -87,7 +88,7 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
                 data={chartData}
                 cx="50%"
                 cy="50%"
-                innerRadius={72}
+                innerRadius={70}
                 outerRadius={110}
                 paddingAngle={4}
                 dataKey="value"
@@ -96,7 +97,7 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
                 activeIndex={undefined}
               >
                 {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} stroke="#0A0A0A" strokeWidth={2} />
+                  <Cell key={`cell-${index}`} fill={entry.color} stroke="#0A0A0B" strokeWidth={2} />
                 ))}
               </Pie>
               <Tooltip
@@ -105,14 +106,14 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
                   const d = payload[0].payload;
                   const pct = total > 0 ? ((d.value / total) * 100).toFixed(1) : "0.0";
                   return (
-                    <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl px-4 py-3 shadow-2xl">
+                    <div className="bg-[#141417] border border-[#27272A] rounded-xl px-4 py-3 shadow-glass">
                       <div className="flex items-center gap-2 mb-1.5">
                         <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-                        <span className="text-white text-sm font-semibold">{d.label}</span>
+                        <span className="text-[#FAFAFA] text-sm font-semibold">{d.label}</span>
                       </div>
-                      <div className="text-white/80 text-xs space-y-1">
-                        <p className="text-white font-medium">{d.value.toLocaleString()} orders</p>
-                        <p className="text-[#06B6D4] font-semibold text-sm">{pct}%</p>
+                      <div className="text-[#A1A1AA] text-xs space-y-1">
+                        <p className="text-[#FAFAFA] font-medium">{d.value.toLocaleString()} orders</p>
+                        <p className="text-[#10B981] font-semibold text-sm">{pct}%</p>
                       </div>
                     </div>
                   );
@@ -124,14 +125,14 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
                 iconType="circle"
                 iconSize={10}
                 formatter={(value: string) => (
-                  <span className="text-[#c0c0c0] text-xs font-medium">{value}</span>
+                  <span className="text-[#A1A1AA] text-xs font-medium">{value}</span>
                 )}
               />
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none text-center">
-            <p className="text-2xl font-bold text-white">{total.toLocaleString()}</p>
-            <p className="text-[#606060] text-[11px] mt-0.5 leading-none">Total Orders</p>
+            <p className="text-3xl font-bold text-[#FAFAFA]">{total.toLocaleString()}</p>
+            <p className="text-[#71717A] text-[11px] mt-0.5 leading-none">Total Orders</p>
           </div>
         </div>
       )}

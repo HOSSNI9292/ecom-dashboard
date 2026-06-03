@@ -23,17 +23,17 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, color, size = "sm" }: StatusBadgeProps) {
-  const resolvedColor = color || STATUS_COLORS[status] || "#808080";
+  const resolvedColor = color || STATUS_COLORS[status] || "#71717A";
   const label = STATUS_LABELS[status] || status;
   const isSmall = size === "sm";
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full font-medium ${
+      className={`inline-flex items-center gap-1.5 rounded-lg font-medium ${
         isSmall ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-xs"
       }`}
       style={{
-        backgroundColor: `${resolvedColor}15`,
+        backgroundColor: `${resolvedColor}12`,
         color: resolvedColor,
         border: `1px solid ${resolvedColor}25`,
       }}

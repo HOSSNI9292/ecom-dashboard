@@ -12,7 +12,7 @@ import { formatCurrency, formatNumber, getImageUrlOrFallback, filterOrdersByDate
 import { exportToCSV } from "@/utils/csv";
 import type { Product, Order } from "@/types";
 import type { DateFilterValue } from "@/utils/dates";
-import { TrendingUp, TrendingDown, Minus, Download, Star, ImageIcon } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Download, Star, ImageIcon, Package } from "lucide-react";
 
 export default function ProductsPage() {
   const [page, setPage] = useState(1);
@@ -112,12 +112,12 @@ export default function ProductsPage() {
         const isTop = perfScore > 0.5;
         return (
             <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-[#1F1F1F] flex items-center justify-center shrink-0 overflow-hidden">
+            <div className="w-12 h-12 rounded-xl bg-[#27272A] flex items-center justify-center shrink-0 overflow-hidden border border-[#27272A]">
               {p.image ? (
                 <img 
                   src={getImageUrlOrFallback(p.image)} 
                   alt={p.name} 
-                  className="w-full h-full object-cover" 
+                  className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" 
                   loading="lazy"
                   referrerPolicy="no-referrer"
                   crossOrigin="anonymous"
@@ -126,19 +126,19 @@ export default function ProductsPage() {
                   }}
                 />
               ) : (
-                <ImageIcon className="w-5 h-5 text-[#606060]" />
+                <ImageIcon className="w-5 h-5 text-[#3F3F46]" />
               )}
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <p className="text-white font-medium text-sm truncate">{p.name}</p>
+                <p className="text-[#FAFAFA] font-medium text-sm truncate">{p.name}</p>
                 {isTop && (
-                  <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20">
+                  <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded-lg text-[10px] font-semibold bg-gradient-to-r from-[#F59E0B]/10 to-[#F59E0B]/5 text-[#F59E0B] border border-[#F59E0B]/20">
                     <Star className="w-2.5 h-2.5" /> Top
                   </span>
                 )}
               </div>
-              <p className="text-[#606060] text-xs">{p.code}</p>
+              <p className="text-[#71717A] text-xs">{p.code}</p>
             </div>
           </div>
         );
@@ -149,16 +149,16 @@ export default function ProductsPage() {
       header: "Stock",
       render: (p: Product) => (
         <div className="flex items-center gap-2">
-          <div className="w-16 h-1.5 rounded-full bg-[#1F1F1F] overflow-hidden">
+          <div className="w-16 h-1.5 rounded-full bg-[#27272A] overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-300 ${
-                p.stockQuantity === 0 ? "bg-[#ef4444]" : p.stockQuantity <= 10 ? "bg-[#f59e0b]" : "bg-[#10b981]"
+                p.stockQuantity === 0 ? "bg-[#EF4444]" : p.stockQuantity <= 10 ? "bg-[#F59E0B]" : "bg-[#10B981]"
               }`}
               style={{ width: `${Math.min((p.stockQuantity / 50) * 100, 100)}%` }}
             />
           </div>
           <span className={`text-sm font-medium ${
-            p.stockQuantity === 0 ? "text-[#ef4444]" : p.stockQuantity <= 10 ? "text-[#f59e0b]" : "text-white"
+            p.stockQuantity === 0 ? "text-[#EF4444]" : p.stockQuantity <= 10 ? "text-[#F59E0B]" : "text-[#FAFAFA]"
           }`}>
             {formatNumber(p.stockQuantity)}
           </span>
@@ -168,7 +168,7 @@ export default function ProductsPage() {
     {
       key: "totalSold",
       header: "Sold",
-      render: (p: Product) => <span className="text-white font-medium">{formatNumber(p.totalSold)}</span>,
+      render: (p: Product) => <span className="text-[#FAFAFA] font-medium">{formatNumber(p.totalSold)}</span>,
     },
     {
       key: "revenue",
@@ -177,9 +177,9 @@ export default function ProductsPage() {
         const share = p.revenue / maxRevenue;
         return (
           <div>
-            <span className="text-white font-semibold">{formatCurrency(p.revenue)}</span>
-            <div className="w-20 h-1 rounded-full bg-[#1F1F1F] mt-1 overflow-hidden">
-              <div className="h-full rounded-full bg-[#06B6D4]" style={{ width: `${share * 100}%` }} />
+            <span className="text-[#FAFAFA] font-semibold">{formatCurrency(p.revenue)}</span>
+            <div className="w-20 h-1 rounded-full bg-[#27272A] mt-1 overflow-hidden">
+              <div className="h-full rounded-full bg-gradient-to-r from-[#10B981] to-[#0EA5E9]" style={{ width: `${share * 100}%` }} />
             </div>
           </div>
         );
@@ -188,12 +188,12 @@ export default function ProductsPage() {
     {
       key: "price",
       header: "Price",
-      render: (p: Product) => <span className="text-[#c0c0c0]">{formatCurrency(p.price)}</span>,
+      render: (p: Product) => <span className="text-[#A1A1AA]">{formatCurrency(p.price)}</span>,
     },
     {
       key: "countryName",
       header: "Country",
-      render: (p: Product) => <span className="text-[#606060]">{p.countryName || p.country}</span>,
+      render: (p: Product) => <span className="text-[#71717A]">{p.countryName || p.country}</span>,
     },
     {
       key: "performance",
@@ -202,20 +202,20 @@ export default function ProductsPage() {
         const score = (p.revenue / maxRevenue) * 0.6 + (p.totalSold / maxSold) * 0.4;
         if (score > 0.6) return (
           <div className="flex items-center gap-1.5">
-            <TrendingUp className="w-4 h-4 text-[#10b981]" />
-            <span className="text-xs font-semibold text-[#10b981]">Excellent</span>
+            <TrendingUp className="w-4 h-4 text-[#10B981]" />
+            <span className="text-xs font-semibold text-[#10B981]">Excellent</span>
           </div>
         );
         if (score > 0.3) return (
           <div className="flex items-center gap-1.5">
-            <Minus className="w-4 h-4 text-[#f59e0b]" />
-            <span className="text-xs font-semibold text-[#f59e0b]">Average</span>
+            <Minus className="w-4 h-4 text-[#F59E0B]" />
+            <span className="text-xs font-semibold text-[#F59E0B]">Average</span>
           </div>
         );
         return (
           <div className="flex items-center gap-1.5">
-            <TrendingDown className="w-4 h-4 text-[#ef4444]" />
-            <span className="text-xs font-semibold text-[#ef4444]">Low</span>
+            <TrendingDown className="w-4 h-4 text-[#EF4444]" />
+            <span className="text-xs font-semibold text-[#EF4444]">Low</span>
           </div>
         );
       },
@@ -225,7 +225,9 @@ export default function ProductsPage() {
   return (
     <PageWrapper loading={loading && !rawData?.products?.length} error={error} onRetry={refetch} hasData={!!rawData?.products?.length}>
       <div className="space-y-4">
-        <DateFilter value={dateFilter} onChange={setDateFilter} />
+        <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-start">
+          <DateFilter value={dateFilter} onChange={setDateFilter} />
+        </div>
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1">
             <SearchInput value={search} onChange={handleSearch} placeholder="Search products..." />
@@ -247,13 +249,13 @@ export default function ProductsPage() {
           />
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#111111] border border-[#1F1F1F] hover:border-[#06B6D4]/30 text-white rounded-lg transition-all duration-200 text-sm hover:bg-[#1A1A1A]"
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#141417] border border-[#27272A] hover:border-[#10B981]/30 text-[#FAFAFA] rounded-xl transition-all duration-200 text-sm hover:bg-[#1C1C21]"
           >
             <Download className="w-4 h-4" /> Export CSV
           </button>
         </div>
 
-        <div className="bg-[#111111] border border-[#1F1F1F] rounded-xl overflow-hidden">
+        <div className="bg-[#141417] border border-[#27272A] rounded-2xl overflow-hidden">
           <DataTable columns={columns} data={data?.products ?? []} keyExtractor={(p: Product) => p.id} loading={loading} emptyMessage="No products" />
         </div>
 

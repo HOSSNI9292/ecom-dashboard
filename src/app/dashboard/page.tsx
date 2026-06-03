@@ -3,7 +3,8 @@
 import { useState, useMemo, useCallback } from "react";
 import {
   ShoppingCart, CheckCircle, DollarSign, TrendingUp,
-  Activity, Clock, Download, Eye, RefreshCw, Percent, Package
+  Activity, Clock, Download, RefreshCw, Percent, Package,
+  Globe, Zap, Shield
 } from "lucide-react";
 import { StatCard } from "@/components/ui/StatCard";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -30,15 +31,6 @@ export default function DashboardPage() {
 
   const filteredOrders = useMemo(() => filterOrdersByDate(orders, dateFilter), [orders, dateFilter]);
 
-  console.log(`[Dashboard] Period: ${dateFilter}, Filtered: ${filteredOrders.length}, All: ${orders.length}`);
-  if (orders.length > 0) {
-    const raw: Record<string, number> = {};
-    const mapped: Record<string, number> = {};
-    for (const o of orders) { raw[o.rawStatus] = (raw[o.rawStatus] || 0) + 1; mapped[o.status] = (mapped[o.status] || 0) + 1; }
-    console.log("[Dashboard] Raw statuses:", raw);
-    console.log("[Dashboard] Mapped statuses:", mapped);
-  }
-
   const filteredStats = useMemo(() => {
     const pendingOrders = filteredOrders.filter((o) => o.status === "pending").length;
     const confirmedOrders = filteredOrders.filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping").length;
@@ -57,7 +49,6 @@ export default function DashboardPage() {
   const filteredNonCancelled = filteredOrders.filter((o) => o.status !== "cancelled" && o.status !== "out_of_stock").length;
   const filteredConfRate = filteredNonCancelled > 0 ? filteredConfirmed / filteredNonCancelled : 0;
   const filteredProcessedOrders = filteredOrders.filter((o) => o.status === "confirmed").length;
-  console.log("[Dashboard] Processed (status=confirmed):", filteredProcessedOrders);
   const filteredProcessedRevenue = filteredOrders.filter((o) => o.status === "confirmed").reduce((s, o) => s + o.amount, 0);
   const filteredDeliveryRate = filteredOrders.length > 0 ? filteredProcessedOrders / filteredOrders.length : 0;
 
@@ -168,34 +159,37 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={refetch}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-[#71717A] hover:text-[#FAFAFA] hover:bg-[#141417] border border-[#27272A] transition-all duration-200"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </button>
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium text-[#71717A] hover:text-[#FAFAFA] hover:bg-[#141417] border border-[#27272A] transition-all duration-200"
             >
               <Download className="w-3.5 h-3.5" /> Export
             </button>
           </div>
         </div>
 
+        {/* Primary KPI Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title={dateFilter === "all" ? "Total Orders" : `${DATE_FILTER_LABELS[dateFilter]} Orders`} value={formatNumber(filteredOrders.length)} icon={<ShoppingCart className="w-5 h-5" />} color="primary" delay={0} />
-          <StatCard title={dateFilter === "all" ? "Total Revenue" : `${DATE_FILTER_LABELS[dateFilter]} Revenue`} value={formatCurrency(filteredRevenue)} icon={<DollarSign className="w-5 h-5" />} color="success" delay={50} />
-          <StatCard title="Processed Orders" value={formatNumber(filteredProcessedOrders)} icon={<CheckCircle className="w-5 h-5" />} color="info" delay={100} subtitle="Paid by CodinAfrica" />
-          <StatCard title="Processed Revenue" value={formatCurrency(filteredProcessedRevenue)} icon={<TrendingUp className="w-5 h-5" />} color="success" delay={150} subtitle="Real collected revenue" />
+          <StatCard title={dateFilter === "all" ? "Total Orders" : `${DATE_FILTER_LABELS[dateFilter]} Orders`} value={formatNumber(filteredOrders.length)} icon={<ShoppingCart className="w-5 h-5" />} color="primary" delay={0} glass />
+          <StatCard title={dateFilter === "all" ? "Total Revenue" : `${DATE_FILTER_LABELS[dateFilter]} Revenue`} value={formatCurrency(filteredRevenue)} icon={<DollarSign className="w-5 h-5" />} color="success" delay={50} glass />
+          <StatCard title="Processed Orders" value={formatNumber(filteredProcessedOrders)} icon={<CheckCircle className="w-5 h-5" />} color="info" delay={100} subtitle="Paid by CodinAfrica" glass />
+          <StatCard title="Processed Revenue" value={formatCurrency(filteredProcessedRevenue)} icon={<TrendingUp className="w-5 h-5" />} color="success" delay={150} subtitle="Real collected revenue" glass />
         </div>
 
+        {/* Secondary KPI Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Net Revenue" value={formatCurrency(filteredNetRevenue)} icon={<DollarSign className="w-5 h-5" />} color="success" delay={200} subtitle="After service fees" />
+          <StatCard title="Net Revenue" value={formatCurrency(filteredNetRevenue)} icon={<Shield className="w-5 h-5" />} color="success" delay={200} subtitle="After service fees" />
           <StatCard title="Service Fees" value={formatCurrency(filteredServiceFees)} icon={<Percent className="w-5 h-5" />} color="warning" delay={250} subtitle="CodinAfrica fees" />
           <StatCard title="Delivery Rate" value={formatPercentage(filteredDeliveryRate)} icon={<Activity className="w-5 h-5" />} color="info" delay={300} subtitle="Based on Processed" />
-          <StatCard title="Confirmation Rate" value={formatPercentage(filteredConfRate)} icon={<CheckCircle className="w-5 h-5" />} color="success" delay={350} />
+          <StatCard title="Confirmation Rate" value={formatPercentage(filteredConfRate)} icon={<Zap className="w-5 h-5" />} color="success" delay={350} />
         </div>
 
+        {/* Tertiary KPI Row */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard title="Average Order Value" value={formatCurrency(filteredOrders.length > 0 ? filteredRevenue / filteredOrders.length : 0)} icon={<TrendingUp className="w-5 h-5" />} color="info" delay={400} />
           <StatCard title="Products Sold" value={formatNumber(uniqueProductCount)} icon={<Package className="w-5 h-5" />} color="primary" delay={450} subtitle="Unique in period" />
@@ -203,97 +197,110 @@ export default function DashboardPage() {
           <StatCard title="Confirmed Orders" value={formatNumber(filteredConfirmed)} icon={<CheckCircle className="w-5 h-5" />} color="success" delay={550} />
         </div>
 
+        {/* Charts Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <RevenueChart data={filteredRevenueTrend} loading={isLoading} />
           <OrdersStatusChart stats={filteredStats} loading={isLoading} />
         </div>
 
+        {/* Rankings Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <Card gradient>
+          <Card glass>
             <CardHeader>
               <CardTitle>Best Selling</CardTitle>
-              <span className="text-[#606060] text-xs font-medium">Top 5</span>
+              <span className="text-[#71717A] text-xs font-medium">Top 5</span>
             </CardHeader>
             <div className="space-y-2">
               {topSelling.map((p, i) => (
-                <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[#1F1F1F]/50 transition-all duration-200">
+                <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-[#1C1C21] transition-all duration-200">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                      i === 0 ? "bg-[#f59e0b]/20 text-[#f59e0b]" : i === 1 ? "bg-[#808080]/20 text-[#808080]" : i === 2 ? "bg-[#8b5cf6]/20 text-[#8b5cf6]" : "bg-[#1F1F1F] text-[#606060]"
+                    <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${
+                      i === 0 ? "bg-gradient-to-br from-[#F59E0B]/20 to-[#F59E0B]/5 text-[#F59E0B]" :
+                      i === 1 ? "bg-gradient-to-br from-[#71717A]/20 to-[#71717A]/5 text-[#A1A1AA]" :
+                      i === 2 ? "bg-gradient-to-br from-[#0EA5E9]/20 to-[#0EA5E9]/5 text-[#0EA5E9]" :
+                      "bg-[#27272A] text-[#71717A]"
                     }`}>
                       {i + 1}
                     </div>
-                    <p className="text-white text-sm truncate">{p.name}</p>
+                    <p className="text-[#FAFAFA] text-sm truncate">{p.name}</p>
                   </div>
-                  <span className="text-white text-sm font-medium shrink-0 ml-2">{formatNumber(p.totalSold)}</span>
+                  <span className="text-[#FAFAFA] text-sm font-medium shrink-0 ml-2">{formatNumber(p.totalSold)}</span>
                 </div>
               ))}
-              {topSelling.length === 0 && <p className="text-[#606060] text-sm text-center py-4">No data</p>}
+              {topSelling.length === 0 && <p className="text-[#71717A] text-sm text-center py-4">No data</p>}
             </div>
           </Card>
-          <Card gradient>
+          <Card glass>
             <CardHeader>
               <CardTitle>Highest Revenue</CardTitle>
-              <span className="text-[#606060] text-xs font-medium">Top 5</span>
+              <span className="text-[#71717A] text-xs font-medium">Top 5</span>
             </CardHeader>
             <div className="space-y-2">
               {topRevenue.map((p, i) => (
-                <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[#1F1F1F]/50 transition-all duration-200">
+                <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-[#1C1C21] transition-all duration-200">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                      i === 0 ? "bg-[#10b981]/20 text-[#10b981]" : i === 1 ? "bg-[#808080]/20 text-[#808080]" : i === 2 ? "bg-[#06B6D4]/20 text-[#06B6D4]" : "bg-[#1F1F1F] text-[#606060]"
+                    <div className={`w-7 h-7 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${
+                      i === 0 ? "bg-gradient-to-br from-[#10B981]/20 to-[#10B981]/5 text-[#10B981]" :
+                      i === 1 ? "bg-gradient-to-br from-[#71717A]/20 to-[#71717A]/5 text-[#A1A1AA]" :
+                      i === 2 ? "bg-gradient-to-br from-[#10B981]/20 to-[#10B981]/5 text-[#34D399]" :
+                      "bg-[#27272A] text-[#71717A]"
                     }`}>
                       {i + 1}
                     </div>
-                    <p className="text-white text-sm truncate">{p.name}</p>
+                    <p className="text-[#FAFAFA] text-sm truncate">{p.name}</p>
                   </div>
-                  <span className="text-[#10b981] text-sm font-medium shrink-0 ml-2">{formatCurrency(p.revenue)}</span>
+                  <span className="text-[#10B981] text-sm font-medium shrink-0 ml-2">{formatCurrency(p.revenue)}</span>
                 </div>
               ))}
-              {topRevenue.length === 0 && <p className="text-[#606060] text-sm text-center py-4">No data</p>}
+              {topRevenue.length === 0 && <p className="text-[#71717A] text-sm text-center py-4">No data</p>}
             </div>
           </Card>
-          <Card gradient>
+          <Card glass>
             <CardHeader>
               <CardTitle>Lowest Stock</CardTitle>
-              <span className="text-[#606060] text-xs font-medium">Needs attention</span>
+              <span className="text-[#71717A] text-xs font-medium">Needs attention</span>
             </CardHeader>
             <div className="space-y-2">
               {lowestStock.map((p, i) => (
-                <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[#1F1F1F]/50 transition-all duration-200">
-                  <p className="text-white text-sm truncate">{p.name}</p>
-                  <span className={`text-sm font-medium shrink-0 ml-2 ${p.stockQuantity <= 3 ? "text-[#ef4444]" : "text-[#f59e0b]"}`}>
+                <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-xl hover:bg-[#1C1C21] transition-all duration-200">
+                  <p className="text-[#FAFAFA] text-sm truncate">{p.name}</p>
+                  <span className={`text-sm font-medium shrink-0 ml-2 ${p.stockQuantity <= 3 ? "text-[#EF4444]" : "text-[#F59E0B]"}`}>
                     {formatNumber(p.stockQuantity)}
                   </span>
                 </div>
               ))}
-              {lowestStock.length === 0 && <p className="text-[#606060] text-sm text-center py-4">All well stocked</p>}
+              {lowestStock.length === 0 && <p className="text-[#71717A] text-sm text-center py-4">All well stocked</p>}
             </div>
           </Card>
         </div>
 
+        {/* Bottom Section */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {bestCountry && (
-            <Card className="bg-gradient-to-br from-[#06B6D4]/10 via-[#111111] to-[#111111] border-[#06B6D4]/20" hover={false}>
+            <Card className="bg-gradient-to-br from-[#10B981]/10 via-[#141417] to-[#141417] border-[#10B981]/20 glow-primary" hover={false}>
               <CardHeader>
                 <CardTitle>Best Performing Country</CardTitle>
-                <span className="text-[#10b981] text-xs font-medium">By Net Revenue</span>
+                <span className="text-[#10B981] text-xs font-medium">By Net Revenue</span>
               </CardHeader>
               <div className="flex items-center gap-5">
-                {bestCountry.flag && (
-                  <img src={bestCountry.flag} alt={bestCountry.countryName} className="w-14 h-10 rounded-lg object-cover shadow-lg" />
+                {bestCountry.flag ? (
+                  <img src={bestCountry.flag} alt={bestCountry.countryName} className="w-14 h-10 rounded-xl object-cover shadow-lg shadow-[#10B981]/10" />
+                ) : (
+                  <div className="w-14 h-10 rounded-xl bg-gradient-to-br from-[#10B981]/20 to-[#0EA5E9]/20 flex items-center justify-center">
+                    <Globe className="w-6 h-6 text-[#34D399]" />
+                  </div>
                 )}
                 <div>
-                  <p className="text-2xl font-bold text-white">{bestCountry.countryName}</p>
+                  <p className="text-2xl font-bold text-[#FAFAFA]">{bestCountry.countryName}</p>
                   <div className="flex items-center gap-4 mt-2">
                     <div>
-                      <p className="text-[#10b981] text-sm font-semibold">{formatCurrency(bestCountry.netRevenue)}</p>
-                      <p className="text-[#606060] text-[11px]">Net Revenue</p>
+                      <p className="text-[#10B981] text-sm font-semibold">{formatCurrency(bestCountry.netRevenue)}</p>
+                      <p className="text-[#71717A] text-[11px]">Net Revenue</p>
                     </div>
-                    <div className="w-px h-8 bg-[#1F1F1F]" />
+                    <div className="w-px h-8 bg-[#27272A]" />
                     <div>
-                      <p className="text-white text-sm font-semibold">{formatNumber(bestCountry.processedOrders)}</p>
-                      <p className="text-[#606060] text-[11px]">Processed</p>
+                      <p className="text-[#FAFAFA] text-sm font-semibold">{formatNumber(bestCountry.processedOrders)}</p>
+                      <p className="text-[#71717A] text-[11px]">Processed</p>
                     </div>
                   </div>
                 </div>
@@ -301,64 +308,66 @@ export default function DashboardPage() {
             </Card>
           )}
           {bestProduct && (
-            <Card className="bg-gradient-to-br from-[#10b981]/10 via-[#111111] to-[#111111] border-[#10b981]/20" hover={false}>
+            <Card className="bg-gradient-to-br from-[#10B981]/10 via-[#141417] to-[#141417] border-[#10B981]/20" hover={false}>
               <CardHeader>
                 <CardTitle>Best Performing Product</CardTitle>
-                <span className="text-[#10b981] text-xs font-medium">By Revenue</span>
+                <span className="text-[#10B981] text-xs font-medium">By Revenue</span>
               </CardHeader>
               <div className="flex items-center gap-4">
                 {bestProduct.image ? (
-                  <div className="w-16 h-16 rounded-xl bg-[#1F1F1F] flex items-center justify-center shrink-0 overflow-hidden">
+                  <div className="w-16 h-16 rounded-xl bg-[#27272A] flex items-center justify-center shrink-0 overflow-hidden">
                     <img src={getImageUrlOrFallback(bestProduct.image)} alt={bestProduct.name} className="w-full h-full object-contain p-1" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
                 ) : (
-                  <div className="w-16 h-16 rounded-xl bg-[#1F1F1F] flex items-center justify-center shrink-0">
-                    <Package className="w-6 h-6 text-[#606060]" />
+                  <div className="w-16 h-16 rounded-xl bg-[#27272A] flex items-center justify-center shrink-0">
+                    <Package className="w-6 h-6 text-[#71717A]" />
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="text-lg font-bold text-white truncate">{bestProduct.name}</p>
+                  <p className="text-lg font-bold text-[#FAFAFA] truncate">{bestProduct.name}</p>
                   <div className="flex items-center gap-4 mt-1.5">
                     <div>
-                      <p className="text-[#10b981] text-sm font-semibold">{formatCurrency(bestProduct.revenue)}</p>
-                      <p className="text-[#606060] text-[11px]">Revenue</p>
+                      <p className="text-[#10B981] text-sm font-semibold">{formatCurrency(bestProduct.revenue)}</p>
+                      <p className="text-[#71717A] text-[11px]">Revenue</p>
                     </div>
-                    <div className="w-px h-7 bg-[#1F1F1F]" />
+                    <div className="w-px h-7 bg-[#27272A]" />
                     <div>
-                      <p className="text-white text-sm font-semibold">{formatNumber(bestProduct.totalSold)}</p>
-                      <p className="text-[#606060] text-[11px]">Sold</p>
+                      <p className="text-[#FAFAFA] text-sm font-semibold">{formatNumber(bestProduct.totalSold)}</p>
+                      <p className="text-[#71717A] text-[11px]">Sold</p>
                     </div>
                   </div>
                 </div>
               </div>
             </Card>
           )}
-          <Card gradient>
+          <Card glass>
             <CardHeader>
               <CardTitle>Recent Orders</CardTitle>
-              <span className="text-[#606060] text-xs">Latest 5</span>
+              <span className="text-[#71717A] text-xs">Latest 5</span>
             </CardHeader>
             <div className="space-y-2">
               {filteredOrders.slice(0, 5).map((order) => (
                 <div
                   key={order.id}
-                  className="flex items-center justify-between py-2.5 px-3 rounded-lg border border-[#1F1F1F]/50 hover:border-[#06B6D4]/20 hover:bg-[#1A1A1A] transition-all duration-200 cursor-pointer group"
+                  className="flex items-center justify-between py-2.5 px-3 rounded-xl border border-[#27272A]/50 hover:border-[#10B981]/20 hover:bg-[#1C1C21] transition-all duration-200 cursor-pointer group"
                   onClick={() => setSelectedOrder(order)}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <Eye className="w-3.5 h-3.5 text-[#606060] group-hover:text-[#22D3EE] shrink-0 transition-colors duration-200" />
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#10B981]/10 to-[#0EA5E9]/10 flex items-center justify-center shrink-0">
+                      <ShoppingCart className="w-3.5 h-3.5 text-[#34D399]" />
+                    </div>
                     <div className="min-w-0">
-                      <p className="text-white text-sm font-medium truncate">{order.customerName}</p>
-                      <p className="text-[#606060] text-xs">{formatDate(order.date)}</p>
+                      <p className="text-[#FAFAFA] text-sm font-medium truncate">{order.customerName}</p>
+                      <p className="text-[#71717A] text-xs">{formatDate(order.date)}</p>
                     </div>
                   </div>
                   <div className="text-right flex items-center gap-3 shrink-0 ml-3">
                     <StatusBadge status={order.status} color={order.statusColor} />
-                    <span className="text-white text-sm font-medium">{formatCurrency(order.amount)}</span>
+                    <span className="text-[#FAFAFA] text-sm font-medium">{formatCurrency(order.amount)}</span>
                   </div>
                 </div>
               ))}
-              {filteredOrders.length === 0 && <p className="text-[#606060] text-sm text-center py-4">No data</p>}
+              {filteredOrders.length === 0 && <p className="text-[#71717A] text-sm text-center py-4">No data</p>}
             </div>
           </Card>
         </div>

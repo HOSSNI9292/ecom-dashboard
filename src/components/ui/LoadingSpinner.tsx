@@ -5,8 +5,8 @@ export function LoadingSpinner({ size = "md" }: { size?: "sm" | "md" | "lg" }) {
   return (
     <div className="flex items-center justify-center py-24">
       <div className="relative">
-        <div className={`${sizeClasses[size]} border-2 border-[#1F1F1F] rounded-full`} />
-        <div className={`${sizeClasses[size]} border-2 border-transparent border-t-[#06B6D4] rounded-full animate-spin absolute inset-0`} />
+        <div className={`${sizeClasses[size]} border-2 border-[#27272A] rounded-full`} />
+        <div className={`${sizeClasses[size]} border-2 border-transparent border-t-[#10B981] rounded-full animate-spin absolute inset-0`} />
       </div>
     </div>
   );

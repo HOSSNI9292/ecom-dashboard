@@ -14,7 +14,7 @@ import { formatCurrency, formatDate, getImageUrlOrFallback, filterOrdersByDate }
 import { exportToCSV } from "@/utils/csv";
 import type { Order } from "@/types";
 import type { DateFilterValue } from "@/utils/dates";
-import { ShoppingCart, Download, Eye, Copy, MessageCircle, Phone } from "lucide-react";
+import { ShoppingCart, Download, Eye, Copy, MessageCircle } from "lucide-react";
 
 const statusOptions = [
   { label: "All Status", value: "" },
@@ -110,10 +110,10 @@ export default function OrdersPage() {
       header: "Order",
       render: (o: Order) => (
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-[#06B6D4]/5">
-            <ShoppingCart className="w-4 h-4 text-[#22D3EE]" />
+          <div className="p-2 rounded-xl bg-[#10B981]/5">
+            <ShoppingCart className="w-4 h-4 text-[#34D399]" />
           </div>
-          <span className="text-white font-mono text-xs">{o.orderId.substring(0, 12)}...</span>
+          <span className="text-[#FAFAFA] font-mono text-xs">{o.orderId.substring(0, 12)}...</span>
         </div>
       ),
     },
@@ -122,16 +122,16 @@ export default function OrdersPage() {
       header: "Customer",
       render: (o: Order) => (
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#06B6D4]/20 to-[#0891B2]/20 flex items-center justify-center text-[10px] font-bold text-[#22D3EE] shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#10B981]/20 to-[#0EA5E9]/20 flex items-center justify-center text-[10px] font-bold text-[#34D399] shrink-0">
             {o.customerName.charAt(0).toUpperCase()}
           </div>
           <div>
-            <p className="text-white text-sm font-medium leading-tight">{o.customerName}</p>
+            <p className="text-[#FAFAFA] text-sm font-medium leading-tight">{o.customerName}</p>
             <div className="flex items-center gap-1">
-              <span className="text-[#606060] text-xs">{o.phone}</span>
+              <span className="text-[#71717A] text-xs">{o.phone}</span>
               <button
                 onClick={(e) => handleCopyPhone(e, o.phone)}
-                className="text-[#404040] hover:text-[#22D3EE] transition-colors duration-200"
+                className="text-[#3F3F46] hover:text-[#34D399] transition-colors duration-200"
                 title="Copy phone"
               >
                 <Copy className="w-3 h-3" />
@@ -141,7 +141,7 @@ export default function OrdersPage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="text-[#404040] hover:text-[#25D366] transition-colors duration-200"
+                className="text-[#3F3F46] hover:text-[#25D366] transition-colors duration-200"
                 title="WhatsApp"
               >
                 <MessageCircle className="w-3 h-3" />
@@ -154,34 +154,33 @@ export default function OrdersPage() {
     {
       key: "countryName",
       header: "Country",
-      render: (o: Order) => <span className="text-[#c0c0c0]">{o.countryName || o.country}</span>,
+      render: (o: Order) => <span className="text-[#A1A1AA]">{o.countryName || o.country}</span>,
     },
     {
       key: "productName",
       header: "Product",
       render: (o: Order) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-[#1F1F1F] flex items-center justify-center shrink-0 overflow-hidden">
+          <div className="w-10 h-10 rounded-xl bg-[#27272A] flex items-center justify-center shrink-0 overflow-hidden border border-[#27272A]">
             {o.productImage ? (
               <img 
                 src={getImageUrlOrFallback(o.productImage)} 
                 alt={o.productName} 
-                className="w-full h-full object-cover" 
+                className="w-full h-full object-cover hover:scale-110 transition-transform duration-300" 
                 loading="lazy"
                 referrerPolicy="no-referrer"
                 crossOrigin="anonymous"
                 onError={(e) => {
                   e.currentTarget.style.display = 'none';
-                  e.currentTarget.parentElement!.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#606060" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>`;
                 }}
               />
             ) : (
-              <ShoppingCart className="w-4 h-4 text-[#606060]" />
+              <ShoppingCart className="w-4 h-4 text-[#3F3F46]" />
             )}
           </div>
           <div>
-            <p className="text-white text-sm">{o.productName}</p>
-            {o.productCode && <p className="text-[#606060] text-xs">{o.productCode}</p>}
+            <p className="text-[#FAFAFA] text-sm">{o.productName}</p>
+            {o.productCode && <p className="text-[#71717A] text-xs">{o.productCode}</p>}
           </div>
         </div>
       ),
@@ -189,7 +188,7 @@ export default function OrdersPage() {
     {
       key: "amount",
       header: "Amount",
-      render: (o: Order) => <span className="text-white font-semibold">{formatCurrency(o.amount)}</span>,
+      render: (o: Order) => <span className="text-[#FAFAFA] font-semibold">{formatCurrency(o.amount)}</span>,
     },
     {
       key: "status",
@@ -199,7 +198,7 @@ export default function OrdersPage() {
     {
       key: "date",
       header: "Date",
-      render: (o: Order) => <span className="text-[#606060] text-sm">{formatDate(o.date)}</span>,
+      render: (o: Order) => <span className="text-[#71717A] text-sm">{formatDate(o.date)}</span>,
     },
     {
       key: "actions",
@@ -207,7 +206,7 @@ export default function OrdersPage() {
       render: (o: Order) => (
         <button
           onClick={() => setSelectedOrder(o)}
-          className="p-2 rounded-lg text-[#606060] hover:text-white hover:bg-[#1F1F1F] transition-all duration-200 opacity-0 group-hover:opacity-100"
+          className="p-2 rounded-xl text-[#71717A] hover:text-[#FAFAFA] hover:bg-[#27272A] transition-all duration-200 opacity-0 group-hover:opacity-100"
           title="View details"
         >
           <Eye className="w-4 h-4" />
@@ -219,7 +218,9 @@ export default function OrdersPage() {
   return (
     <PageWrapper loading={loading && !rawData?.orders?.length} error={error} onRetry={refetch} hasData={!!rawData?.orders?.length}>
       <div className="space-y-4">
-        <DateFilter value={dateFilter} onChange={setDateFilter} />
+        <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-start">
+          <DateFilter value={dateFilter} onChange={setDateFilter} />
+        </div>
         <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-start">
           <div className="flex-1 min-w-[200px]">
             <SearchInput value={search} onChange={handleSearch} placeholder="Search orders..." />
@@ -228,13 +229,13 @@ export default function OrdersPage() {
           <Select value={country} onChange={handleCountry} options={[{ label: "All Countries", value: "" }, ...countries]} placeholder="Country" className="w-full sm:w-40" />
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#111111] border border-[#1F1F1F] hover:border-[#06B6D4]/30 text-white rounded-lg transition-all duration-200 text-sm hover:bg-[#1A1A1A]"
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#141417] border border-[#27272A] hover:border-[#10B981]/30 text-[#FAFAFA] rounded-xl transition-all duration-200 text-sm hover:bg-[#1C1C21]"
           >
             <Download className="w-4 h-4" /> Export CSV
           </button>
         </div>
 
-        <div className="bg-[#111111] border border-[#1F1F1F] rounded-xl overflow-hidden">
+        <div className="bg-[#141417] border border-[#27272A] rounded-2xl overflow-hidden">
           <DataTable columns={columns} data={paged} keyExtractor={(o: Order) => o.id} loading={loading && !rawData?.orders?.length} emptyMessage={`${filtered.length === 0 && rawData?.orders?.length ? "No orders match filters" : "No orders found"}`} />
         </div>
 
@@ -243,7 +244,7 @@ export default function OrdersPage() {
         )}
 
         {rawData && (
-          <p className="text-[#404040] text-xs text-center">
+          <p className="text-[#3F3F46] text-xs text-center">
             Showing {paged.length} of {filtered.length} orders
             {filtered.length < rawData.orders.length && ` (filtered from ${rawData.orders.length})`}
           </p>

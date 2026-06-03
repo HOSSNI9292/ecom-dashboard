@@ -44,17 +44,17 @@ export const COUNTRY_FLAGS: Record<string, string> = {
 };
 
 export const STATUS_COLORS: Record<string, string> = {
-  pending: "#f59e0b",
-  confirmed: "#3b82f6",
-  delivered: "#10b981",
-  shipped: "#14b8a6",
-  shipping: "#14b8a6",
-  cancelled: "#ef4444",
-  returned: "#8b5cf6",
-  double: "#ec4899",
-  transferred: "#06b6d4",
-  out_of_stock: "#6b7280",
-  unreached: "#94a3b8",
+  pending: "#F59E0B",
+  confirmed: "#10B981",
+  delivered: "#10B981",
+  shipped: "#0EA5E9",
+  shipping: "#0EA5E9",
+  cancelled: "#EF4444",
+  returned: "#0EA5E9",
+  double: "#F59E0B",
+  transferred: "#10B981",
+  out_of_stock: "#71717A",
+  unreached: "#A1A1AA",
 };
 
 export const STATUS_MAP: Record<string, string> = {
@@ -105,18 +105,18 @@ export const STATUS_MAP: Record<string, string> = {
 };
 
 export const COUNTRY_COLORS = [
-  "#6366f1",
   "#10b981",
+  "#0ea5e9",
   "#f59e0b",
   "#ef4444",
-  "#8b5cf6",
-  "#06b6d4",
-  "#ec4899",
-  "#84cc16",
-  "#14b8a6",
-  "#f97316",
-  "#a855f7",
-  "#22d3ee",
+  "#34d399",
+  "#38bdf8",
+  "#fbbf24",
+  "#fb923c",
+  "#a78bfa",
+  "#2dd4bf",
+  "#f472b6",
+  "#4ade80",
 ];
 
 export const DEFAULT_API_URL = "https://api.codinafrica.com/api";

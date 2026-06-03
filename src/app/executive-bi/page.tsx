@@ -173,23 +173,23 @@ export default function ExecutiveBIPage() {
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-[#06B6D4]/10">
-              <BarChart3 className="w-6 h-6 text-[#22D3EE]" />
+            <div className="p-2.5 rounded-xl bg-[#10B981]/10">
+              <BarChart3 className="w-6 h-6 text-[#34D399]" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">Executive BI</h1>
-              <p className="text-[#606060] text-xs">Comprehensive business intelligence & analytics</p>
+              <p className="text-[#71717A] text-xs">Comprehensive business intelligence & analytics</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={handleRefresh} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200">
+            <button onClick={handleRefresh} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#71717A] hover:text-white hover:bg-[#141417] border border-[#27272A] transition-all duration-200">
               <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
               Refresh
             </button>
-            <button onClick={handleExportCSV} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200">
+            <button onClick={handleExportCSV} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#71717A] hover:text-white hover:bg-[#141417] border border-[#27272A] transition-all duration-200">
               <Download className="w-3.5 h-3.5" /> CSV
             </button>
-            <button onClick={handleExportExcel} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200">
+            <button onClick={handleExportExcel} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#71717A] hover:text-white hover:bg-[#141417] border border-[#27272A] transition-all duration-200">
               <Download className="w-3.5 h-3.5" /> Excel
             </button>
           </div>
@@ -198,34 +198,34 @@ export default function ExecutiveBIPage() {
         {/* 1. Financial Analytics */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Wallet className="w-4 h-4 text-[#22D3EE]" />
+            <Wallet className="w-4 h-4 text-[#34D399]" />
             <h2 className="text-white text-sm font-semibold">Financial Analytics</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <div className="p-4 rounded-xl bg-[#111111] border border-[#1F1F1F]">
-              <p className="text-[#606060] text-xs mb-1">Gross Revenue</p>
+            <div className="p-4 rounded-xl bg-[#141417] border border-[#27272A]">
+              <p className="text-[#71717A] text-xs mb-1">Gross Revenue</p>
               <p className="text-white text-lg font-bold">{formatCurrency(finStats.grossRevenue)}</p>
-              <p className="text-[#606060] text-[10px] mt-1">All orders total</p>
+              <p className="text-[#71717A] text-[10px] mt-1">All orders total</p>
             </div>
-            <div className="p-4 rounded-xl bg-[#111111] border border-[#1F1F1F]">
-              <p className="text-[#606060] text-xs mb-1">Processed Revenue</p>
-              <p className="text-[#22D3EE] text-lg font-bold">{formatCurrency(finStats.processedRevenue)}</p>
-              <p className="text-[#606060] text-[10px] mt-1">{finStats.processedOrders} confirmed orders</p>
+            <div className="p-4 rounded-xl bg-[#141417] border border-[#27272A]">
+              <p className="text-[#71717A] text-xs mb-1">Processed Revenue</p>
+              <p className="text-[#34D399] text-lg font-bold">{formatCurrency(finStats.processedRevenue)}</p>
+              <p className="text-[#71717A] text-[10px] mt-1">{finStats.processedOrders} confirmed orders</p>
             </div>
-            <div className="p-4 rounded-xl bg-[#111111] border border-[#1F1F1F]">
-              <p className="text-[#606060] text-xs mb-1">Service Fees</p>
-              <p className="text-[#ef4444] text-lg font-bold">{formatCurrency(finStats.totalFees)}</p>
-              <p className="text-[#606060] text-[10px] mt-1">CodinAfrica fees</p>
+            <div className="p-4 rounded-xl bg-[#141417] border border-[#27272A]">
+              <p className="text-[#71717A] text-xs mb-1">Service Fees</p>
+              <p className="text-[#EF4444] text-lg font-bold">{formatCurrency(finStats.totalFees)}</p>
+              <p className="text-[#71717A] text-[10px] mt-1">CodinAfrica fees</p>
             </div>
-            <div className="p-4 rounded-xl bg-[#111111] border border-[#1F1F1F]">
-              <p className="text-[#606060] text-xs mb-1">Net Revenue</p>
-              <p className="text-[#10b981] text-lg font-bold">{formatCurrency(finStats.netRevenue)}</p>
-              <p className="text-[#606060] text-[10px] mt-1">After service fees</p>
+            <div className="p-4 rounded-xl bg-[#141417] border border-[#27272A]">
+              <p className="text-[#71717A] text-xs mb-1">Net Revenue</p>
+              <p className="text-[#10B981] text-lg font-bold">{formatCurrency(finStats.netRevenue)}</p>
+              <p className="text-[#71717A] text-[10px] mt-1">After service fees</p>
             </div>
-            <div className="p-4 rounded-xl bg-[#111111] border border-[#1F1F1F]">
-              <p className="text-[#606060] text-xs mb-1">Profit Margin</p>
-              <p className={`text-lg font-bold ${finStats.margin >= 0.85 ? "text-[#10b981]" : finStats.margin >= 0.75 ? "text-[#f59e0b]" : "text-[#ef4444]"}`}>{formatPercentage(finStats.margin)}</p>
-              <p className="text-[#606060] text-[10px] mt-1">Net / Processed</p>
+            <div className="p-4 rounded-xl bg-[#141417] border border-[#27272A]">
+              <p className="text-[#71717A] text-xs mb-1">Profit Margin</p>
+              <p className={`text-lg font-bold ${finStats.margin >= 0.85 ? "text-[#10B981]" : finStats.margin >= 0.75 ? "text-[#F59E0B]" : "text-[#EF4444]"}`}>{formatPercentage(finStats.margin)}</p>
+              <p className="text-[#71717A] text-[10px] mt-1">Net / Processed</p>
             </div>
           </div>
         </div>
@@ -233,34 +233,34 @@ export default function ExecutiveBIPage() {
         {/* 4. Advanced KPIs */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Activity className="w-4 h-4 text-[#22D3EE]" />
+            <Activity className="w-4 h-4 text-[#34D399]" />
             <h2 className="text-white text-sm font-semibold">Advanced KPIs</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <div className="p-3 rounded-xl bg-[#111111] border border-[#1F1F1F]">
-              <p className="text-[#606060] text-[10px] mb-1">Avg Revenue / Day</p>
+            <div className="p-3 rounded-xl bg-[#141417] border border-[#27272A]">
+              <p className="text-[#71717A] text-[10px] mb-1">Avg Revenue / Day</p>
               <p className="text-white text-sm font-bold">{formatCurrency(kpi.avgRevenuePerDay)}</p>
             </div>
-            <div className="p-3 rounded-xl bg-[#111111] border border-[#1F1F1F]">
-              <p className="text-[#606060] text-[10px] mb-1">Avg Orders / Day</p>
+            <div className="p-3 rounded-xl bg-[#141417] border border-[#27272A]">
+              <p className="text-[#71717A] text-[10px] mb-1">Avg Orders / Day</p>
               <p className="text-white text-sm font-bold">{kpi.avgOrdersPerDay.toFixed(1)}</p>
             </div>
-            <div className="p-3 rounded-xl bg-[#111111] border border-[#1F1F1F]">
-              <p className="text-[#606060] text-[10px] mb-1">Avg Order Value</p>
+            <div className="p-3 rounded-xl bg-[#141417] border border-[#27272A]">
+              <p className="text-[#71717A] text-[10px] mb-1">Avg Order Value</p>
               <p className="text-white text-sm font-bold">{formatCurrency(kpi.avgOrderValue)}</p>
             </div>
-            <div className="p-3 rounded-xl bg-[#111111] border border-[#1F1F1F]">
-              <p className="text-[#606060] text-[10px] mb-1">Revenue Growth</p>
+            <div className="p-3 rounded-xl bg-[#141417] border border-[#27272A]">
+              <p className="text-[#71717A] text-[10px] mb-1">Revenue Growth</p>
               <div className="flex items-center gap-1">
-                {kpi.revenueGrowth > 0 ? <ArrowUp className="w-3.5 h-3.5 text-[#10b981]" /> : kpi.revenueGrowth < 0 ? <ArrowDown className="w-3.5 h-3.5 text-[#ef4444]" /> : <Minus className="w-3.5 h-3.5 text-[#606060]" />}
-                <span className={`text-sm font-bold ${kpi.revenueGrowth > 0 ? "text-[#10b981]" : kpi.revenueGrowth < 0 ? "text-[#ef4444]" : "text-white"}`}>{formatPercentage(kpi.revenueGrowth)}</span>
+                {kpi.revenueGrowth > 0 ? <ArrowUp className="w-3.5 h-3.5 text-[#10B981]" /> : kpi.revenueGrowth < 0 ? <ArrowDown className="w-3.5 h-3.5 text-[#EF4444]" /> : <Minus className="w-3.5 h-3.5 text-[#71717A]" />}
+                <span className={`text-sm font-bold ${kpi.revenueGrowth > 0 ? "text-[#10B981]" : kpi.revenueGrowth < 0 ? "text-[#EF4444]" : "text-white"}`}>{formatPercentage(kpi.revenueGrowth)}</span>
               </div>
             </div>
-            <div className="p-3 rounded-xl bg-[#111111] border border-[#1F1F1F]">
-              <p className="text-[#606060] text-[10px] mb-1">Order Growth</p>
+            <div className="p-3 rounded-xl bg-[#141417] border border-[#27272A]">
+              <p className="text-[#71717A] text-[10px] mb-1">Order Growth</p>
               <div className="flex items-center gap-1">
-                {kpi.orderGrowth > 0 ? <ArrowUp className="w-3.5 h-3.5 text-[#10b981]" /> : kpi.orderGrowth < 0 ? <ArrowDown className="w-3.5 h-3.5 text-[#ef4444]" /> : <Minus className="w-3.5 h-3.5 text-[#606060]" />}
-                <span className={`text-sm font-bold ${kpi.orderGrowth > 0 ? "text-[#10b981]" : kpi.orderGrowth < 0 ? "text-[#ef4444]" : "text-white"}`}>{formatPercentage(kpi.orderGrowth)}</span>
+                {kpi.orderGrowth > 0 ? <ArrowUp className="w-3.5 h-3.5 text-[#10B981]" /> : kpi.orderGrowth < 0 ? <ArrowDown className="w-3.5 h-3.5 text-[#EF4444]" /> : <Minus className="w-3.5 h-3.5 text-[#71717A]" />}
+                <span className={`text-sm font-bold ${kpi.orderGrowth > 0 ? "text-[#10B981]" : kpi.orderGrowth < 0 ? "text-[#EF4444]" : "text-white"}`}>{formatPercentage(kpi.orderGrowth)}</span>
               </div>
             </div>
           </div>
@@ -270,50 +270,50 @@ export default function ExecutiveBIPage() {
         <Card hover={false}>
           <CardHeader>
             <div className="flex items-center gap-2">
-              <Globe className="w-4 h-4 text-[#22D3EE]" />
+              <Globe className="w-4 h-4 text-[#34D399]" />
               <CardTitle>Country Performance Ranking</CardTitle>
             </div>
-            <span className="text-[#606060] text-xs">{countryStats.length} countries</span>
+            <span className="text-[#71717A] text-xs">{countryStats.length} countries</span>
           </CardHeader>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#1F1F1F]">
-                  <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3 px-3">#</th>
-                  <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3 px-3">Country</th>
-                  <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3 px-3">Revenue</th>
-                  <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3 px-3">Orders</th>
-                  <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3 px-3">Proc. Revenue</th>
-                  <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3 px-3">Net Revenue</th>
-                  <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3 px-3">Conf. Rate</th>
-                  <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3 px-3">Del. Rate</th>
+                <tr className="border-b border-[#27272A]">
+                  <th className="text-left text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3 px-3">#</th>
+                  <th className="text-left text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3 px-3">Country</th>
+                  <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3 px-3">Revenue</th>
+                  <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3 px-3">Orders</th>
+                  <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3 px-3">Proc. Revenue</th>
+                  <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3 px-3">Net Revenue</th>
+                  <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3 px-3">Conf. Rate</th>
+                  <th className="text-right text-[#71717A] text-xs font-semibold uppercase tracking-wider py-3 px-3">Del. Rate</th>
                 </tr>
               </thead>
               <tbody>
                 {countryStats.map((c, i) => (
-                  <tr key={c.country} className="border-b border-[#1F1F1F]/50 hover:bg-[#1A1A1A] transition-all duration-150">
-                    <td className="py-3 px-3 text-[#606060] text-sm">{i + 1}</td>
+                  <tr key={c.country} className="border-b border-[#27272A]/50 hover:bg-[#1A1A1A] transition-all duration-150">
+                    <td className="py-3 px-3 text-[#71717A] text-sm">{i + 1}</td>
                     <td className="py-3 px-3"><span className="text-white font-medium text-sm">{c.countryName}</span></td>
                     <td className="py-3 px-3 text-right text-white text-sm">{formatCurrency(c.revenue)}</td>
-                    <td className="py-3 px-3 text-right text-[#c0c0c0] text-sm">{formatNumber(c.orders)}</td>
-                    <td className="py-3 px-3 text-right text-[#22D3EE] text-sm">{formatCurrency(c.processedRevenue)}</td>
-                    <td className="py-3 px-3 text-right text-[#10b981] text-sm font-medium">{formatCurrency(c.netRevenue)}</td>
+                    <td className="py-3 px-3 text-right text-[#A1A1AA] text-sm">{formatNumber(c.orders)}</td>
+                    <td className="py-3 px-3 text-right text-[#34D399] text-sm">{formatCurrency(c.processedRevenue)}</td>
+                    <td className="py-3 px-3 text-right text-[#10B981] text-sm font-medium">{formatCurrency(c.netRevenue)}</td>
                     <td className="py-3 px-3 text-right">
                       <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full ${
-                        c.confirmationRate >= 0.5 ? "bg-[#10b981]/20 text-[#10b981]" :
-                        c.confirmationRate >= 0.2 ? "bg-[#f59e0b]/20 text-[#f59e0b]" : "bg-[#ef4444]/20 text-[#ef4444]"
+                        c.confirmationRate >= 0.5 ? "bg-[#10B981]/20 text-[#10B981]" :
+                        c.confirmationRate >= 0.2 ? "bg-[#F59E0B]/20 text-[#F59E0B]" : "bg-[#EF4444]/20 text-[#EF4444]"
                       }`}>{formatPercentage(c.confirmationRate)}</span>
                     </td>
                     <td className="py-3 px-3 text-right">
                       <span className={`text-xs font-semibold px-1.5 py-0.5 rounded-full ${
-                        c.deliveryRate >= 0.5 ? "bg-[#10b981]/20 text-[#10b981]" :
-                        c.deliveryRate >= 0.2 ? "bg-[#f59e0b]/20 text-[#f59e0b]" : "bg-[#ef4444]/20 text-[#ef4444]"
+                        c.deliveryRate >= 0.5 ? "bg-[#10B981]/20 text-[#10B981]" :
+                        c.deliveryRate >= 0.2 ? "bg-[#F59E0B]/20 text-[#F59E0B]" : "bg-[#EF4444]/20 text-[#EF4444]"
                       }`}>{formatPercentage(c.deliveryRate)}</span>
                     </td>
                   </tr>
                 ))}
                 {countryStats.length === 0 && (
-                  <tr><td colSpan={8} className="text-center py-12 text-[#606060]">No country data</td></tr>
+                  <tr><td colSpan={8} className="text-center py-12 text-[#71717A]">No country data</td></tr>
                 )}
               </tbody>
             </table>
@@ -323,30 +323,30 @@ export default function ExecutiveBIPage() {
         {/* 3. Product Analytics */}
         <div>
           <div className="flex items-center gap-2 mb-3">
-            <Package className="w-4 h-4 text-[#22D3EE]" />
+            <Package className="w-4 h-4 text-[#34D399]" />
             <h2 className="text-white text-sm font-semibold">Product Analytics</h2>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card hover={false}>
-              <CardHeader><CardTitle>Top 10 Selling Products</CardTitle><span className="text-[#22D3EE] text-xs">{topSelling.length} products</span></CardHeader>
+              <CardHeader><CardTitle>Top 10 Selling Products</CardTitle><span className="text-[#34D399] text-xs">{topSelling.length} products</span></CardHeader>
               <div className="space-y-1.5">
                 {topSelling.map((p, i) => (
                   <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[#1A1A1A] transition-all duration-150">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <span className="text-[#606060] text-xs w-4 shrink-0">{i + 1}</span>
-                      <div className="w-8 h-8 rounded-lg bg-[#1F1F1F] flex items-center justify-center shrink-0 overflow-hidden">
-                        {p.image ? <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" crossOrigin="anonymous" onError={(e) => { e.currentTarget.style.display = 'none'; }} /> : <Package className="w-4 h-4 text-[#606060]" />}
+                      <span className="text-[#71717A] text-xs w-4 shrink-0">{i + 1}</span>
+                      <div className="w-8 h-8 rounded-lg bg-[#27272A] flex items-center justify-center shrink-0 overflow-hidden">
+                        {p.image ? <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" crossOrigin="anonymous" onError={(e) => { e.currentTarget.style.display = 'none'; }} /> : <Package className="w-4 h-4 text-[#71717A]" />}
                       </div>
                       <p className="text-white text-xs truncate">{p.name}</p>
                     </div>
                     <span className="text-white text-xs font-semibold shrink-0 ml-2">{formatNumber(p.totalSold)}</span>
                   </div>
                 ))}
-                {topSelling.length === 0 && <p className="text-center py-6 text-[#606060] text-sm">No data</p>}
+                {topSelling.length === 0 && <p className="text-center py-6 text-[#71717A] text-sm">No data</p>}
               </div>
             </Card>
             <Card hover={false}>
-              <CardHeader><CardTitle>Top 10 Revenue Products</CardTitle><span className="text-[#22D3EE] text-xs">{topRevenue.length} products</span></CardHeader>
+              <CardHeader><CardTitle>Top 10 Revenue Products</CardTitle><span className="text-[#34D399] text-xs">{topRevenue.length} products</span></CardHeader>
               <div className="space-y-1.5">
                 {topRevenue.map((p, i) => {
                   const maxR = topRevenue[0]?.revenue || 1;
@@ -354,53 +354,53 @@ export default function ExecutiveBIPage() {
                     <div key={p.id} className="py-2 px-3 rounded-lg hover:bg-[#1A1A1A] transition-all duration-150">
                       <div className="flex items-center justify-between mb-1">
                         <div className="flex items-center gap-3 min-w-0 flex-1">
-                          <span className="text-[#606060] text-xs w-4 shrink-0">{i + 1}</span>
-                          <div className="w-8 h-8 rounded-lg bg-[#1F1F1F] flex items-center justify-center shrink-0 overflow-hidden">
-                            {p.image ? <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" crossOrigin="anonymous" onError={(e) => { e.currentTarget.style.display = 'none'; }} /> : <Package className="w-4 h-4 text-[#606060]" />}
+                          <span className="text-[#71717A] text-xs w-4 shrink-0">{i + 1}</span>
+                          <div className="w-8 h-8 rounded-lg bg-[#27272A] flex items-center justify-center shrink-0 overflow-hidden">
+                            {p.image ? <img src={p.image} alt={p.name} className="w-full h-full object-cover" loading="lazy" referrerPolicy="no-referrer" crossOrigin="anonymous" onError={(e) => { e.currentTarget.style.display = 'none'; }} /> : <Package className="w-4 h-4 text-[#71717A]" />}
                           </div>
                           <p className="text-white text-xs truncate">{p.name}</p>
                         </div>
                         <span className="text-white text-xs font-semibold shrink-0 ml-2">{formatCurrency(p.revenue)}</span>
                       </div>
-                      <div className="w-full h-1 bg-[#1F1F1F] rounded-full overflow-hidden">
-                        <div className="h-full rounded-full bg-[#06B6D4]" style={{ width: `${(p.revenue / maxR) * 100}%` }} />
+                      <div className="w-full h-1 bg-[#27272A] rounded-full overflow-hidden">
+                        <div className="h-full rounded-full bg-[#10B981]" style={{ width: `${(p.revenue / maxR) * 100}%` }} />
                       </div>
                     </div>
                   );
                 })}
-                {topRevenue.length === 0 && <p className="text-center py-6 text-[#606060] text-sm">No data</p>}
+                {topRevenue.length === 0 && <p className="text-center py-6 text-[#71717A] text-sm">No data</p>}
               </div>
             </Card>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
             <Card hover={false}>
-              <CardHeader><CardTitle>Low Stock Products</CardTitle><span className="text-[#f59e0b] text-xs">{lowStockProducts.length} items</span></CardHeader>
+              <CardHeader><CardTitle>Low Stock Products</CardTitle><span className="text-[#F59E0B] text-xs">{lowStockProducts.length} items</span></CardHeader>
               <div className="space-y-1.5">
                 {lowStockProducts.slice(0, 8).map((p) => (
-                  <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-[#f59e0b]/5 border border-[#f59e0b]/10">
+                  <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-[#F59E0B]/5 border border-[#F59E0B]/10">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <AlertTriangle className="w-4 h-4 text-[#f59e0b] shrink-0" />
+                      <AlertTriangle className="w-4 h-4 text-[#F59E0B] shrink-0" />
                       <p className="text-white text-xs truncate">{p.name}</p>
                     </div>
-                    <span className="text-[#f59e0b] text-xs font-bold">{formatNumber(p.stockQuantity)}</span>
+                    <span className="text-[#F59E0B] text-xs font-bold">{formatNumber(p.stockQuantity)}</span>
                   </div>
                 ))}
-                {lowStockProducts.length === 0 && <p className="text-center py-6 text-[#10b981] text-sm">All products well stocked</p>}
+                {lowStockProducts.length === 0 && <p className="text-center py-6 text-[#10B981] text-sm">All products well stocked</p>}
               </div>
             </Card>
             <Card hover={false}>
-              <CardHeader><CardTitle>Out of Stock Products</CardTitle><span className="text-[#ef4444] text-xs">{outOfStockProducts.length} items</span></CardHeader>
+              <CardHeader><CardTitle>Out of Stock Products</CardTitle><span className="text-[#EF4444] text-xs">{outOfStockProducts.length} items</span></CardHeader>
               <div className="space-y-1.5">
                 {outOfStockProducts.slice(0, 8).map((p) => (
-                  <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-[#ef4444]/5 border border-[#ef4444]/10">
+                  <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-[#EF4444]/5 border border-[#EF4444]/10">
                     <div className="flex items-center gap-3 min-w-0 flex-1">
-                      <XCircle className="w-4 h-4 text-[#ef4444] shrink-0" />
+                      <XCircle className="w-4 h-4 text-[#EF4444] shrink-0" />
                       <p className="text-white text-xs truncate">{p.name}</p>
                     </div>
-                    <span className="text-[#ef4444] text-xs font-bold">0</span>
+                    <span className="text-[#EF4444] text-xs font-bold">0</span>
                   </div>
                 ))}
-                {outOfStockProducts.length === 0 && <p className="text-center py-6 text-[#10b981] text-sm">No out of stock products</p>}
+                {outOfStockProducts.length === 0 && <p className="text-center py-6 text-[#10B981] text-sm">No out of stock products</p>}
               </div>
             </Card>
           </div>
@@ -410,23 +410,23 @@ export default function ExecutiveBIPage() {
         {alerts.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <AlertCircle className="w-4 h-4 text-[#f59e0b]" />
+              <AlertCircle className="w-4 h-4 text-[#F59E0B]" />
               <h2 className="text-white text-sm font-semibold">Smart Alerts ({alerts.length})</h2>
             </div>
             <div className="space-y-2">
               {alerts.slice(0, 10).map((alert, i) => (
                 <div key={i} className={`flex items-start gap-3 p-3 rounded-xl border ${
-                  alert.type === "danger" ? "bg-[#ef4444]/5 border-[#ef4444]/20" :
-                  alert.type === "warning" ? "bg-[#f59e0b]/5 border-[#f59e0b]/20" :
-                  "bg-[#22D3EE]/5 border-[#22D3EE]/20"
+                  alert.type === "danger" ? "bg-[#EF4444]/5 border-[#EF4444]/20" :
+                  alert.type === "warning" ? "bg-[#F59E0B]/5 border-[#F59E0B]/20" :
+                  "bg-[#34D399]/5 border-[#34D399]/20"
                 }`}>
                   <alert.icon className={`w-5 h-5 mt-0.5 shrink-0 ${
-                    alert.type === "danger" ? "text-[#ef4444]" :
-                    alert.type === "warning" ? "text-[#f59e0b]" : "text-[#22D3EE]"
+                    alert.type === "danger" ? "text-[#EF4444]" :
+                    alert.type === "warning" ? "text-[#F59E0B]" : "text-[#34D399]"
                   }`} />
                   <div className="min-w-0">
                     <p className="text-white text-sm font-medium">{alert.title}</p>
-                    <p className="text-[#606060] text-xs mt-0.5">{alert.message}</p>
+                    <p className="text-[#71717A] text-xs mt-0.5">{alert.message}</p>
                   </div>
                 </div>
               ))}
