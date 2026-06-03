@@ -75,7 +75,7 @@ const config: Config = {
         success: "#10B981",
         warning: "#F59E0B",
         error: "#EF4444",
-        info: "#06B6D4",
+        info: "#6366F1",
       },
       borderRadius: {
         "2xl": "16px",

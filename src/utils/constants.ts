@@ -52,7 +52,7 @@ export const STATUS_COLORS: Record<string, string> = {
   cancelled: "#EF4444",
   returned: "#8B5CF6",
   double: "#8B5CF6",
-  transferred: "#06B6D4",
+  transferred: "#8B5CF6",
   out_of_stock: "#64748B",
   unreached: "#94A3B8",
 };
@@ -110,13 +110,13 @@ export const COUNTRY_COLORS = [
   "#f59e0b",
   "#ef4444",
   "#8b5cf6",
-  "#06b6d4",
+  "#8b5cf6",
   "#ec4899",
   "#84cc16",
   "#a78bfa",
   "#f97316",
-  "#a855f7",
-  "#22d3ee",
+  "#f472b6",
+  "#2dd4bf",
 ];
 
 export const DEFAULT_API_URL = "https://api.codinafrica.com/api";

@@ -159,7 +159,7 @@ export default function CountriesPage() {
           <StatCard title="Total Revenue" value={formatCurrency(totalRevenue)} icon={<DollarSign className="w-5 h-5" />} color="primary" delay={0} />
           <StatCard title="Net Revenue" value={formatCurrency(totalNetRevenue)} icon={<DollarSign className="w-5 h-5" />} color="success" delay={50} subtitle="After fees" />
           <StatCard title="Service Fees" value={formatCurrency(totalFees)} icon={<Percent className="w-5 h-5" />} color="warning" delay={100} />
-          <StatCard title="Total Orders" value={formatNumber(totalOrders)} icon={<ShoppingCart className="w-5 h-5" />} color="info" delay={150} />
+          <StatCard title="Total Orders" value={formatNumber(totalOrders)} icon={<ShoppingCart className="w-5 h-5" />} color="primary" delay={150} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

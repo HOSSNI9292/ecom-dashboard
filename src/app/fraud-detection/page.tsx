@@ -260,7 +260,7 @@ export default function FraudDetectionPage() {
           <StatCard title="High Risk Products" value={formatNumber(stats.highRisk)} icon={<ShieldAlert className="w-5 h-5" />} color="error" delay={50} subtitle="50%+ fake rate" />
           <StatCard title="Flagged Products" value={formatNumber(stats.flagged)} icon={<Flag className="w-5 h-5" />} color="warning" delay={100} subtitle="Stop ads for these" />
           <StatCard title="Fake Revenue Lost" value={formatCurrency(stats.totalFakeRevenue)} icon={<TrendingDown className="w-5 h-5" />} color="error" delay={150} subtitle="From fake orders" />
-          <StatCard title="Products Analyzed" value={formatNumber(productAnalysis.length)} icon={<Eye className="w-5 h-5" />} color="info" delay={200} />
+          <StatCard title="Products Analyzed" value={formatNumber(productAnalysis.length)} icon={<Eye className="w-5 h-5" />} color="primary" delay={200} />
         </div>
 
         <Card hover={false}>

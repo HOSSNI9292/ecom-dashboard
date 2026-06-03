@@ -23,7 +23,7 @@ const DELIVERY_STATUS_COLORS: Record<string, string> = {
   returned: "#EF4444",
   double: "#8B5CF6",
   out_of_stock: "#64748B",
-  transferred: "#06B6D4",
+  transferred: "#8B5CF6",
 };
 
 const DELIVERY_STATUS_LABELS: Record<string, string> = {
@@ -252,7 +252,7 @@ export default function DeliveredPage() {
             title="Countries"
             value={formatNumber(stats.countriesCount)}
             icon={<Globe className="w-5 h-5" />}
-            color="info"
+            color="primary"
             delay={250}
             subtitle="With deliveries"
           />

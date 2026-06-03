@@ -82,13 +82,13 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 onClick={onClose}
                 className={`flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
                   isActive
-                    ? "bg-[#6366F1]/10 text-[#8B5CF6]"
+                    ? "bg-[#6366F1]/10 text-[#6366F1]"
                     : "text-[#64748B] hover:text-white hover:bg-[#111827]"
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <item.icon className={`w-5 h-5 transition-colors duration-200 ${
-                    isActive ? "text-[#8B5CF6]" : "text-[#64748B] group-hover:text-white"
+                    isActive ? "text-[#6366F1]" : "text-[#64748B] group-hover:text-white"
                   }`} />
                   {item.label}
                 </div>

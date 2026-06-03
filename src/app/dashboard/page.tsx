@@ -185,19 +185,19 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard title={dateFilter === "all" ? "Total Orders" : `${DATE_FILTER_LABELS[dateFilter]} Orders`} value={formatNumber(filteredOrders.length)} icon={<ShoppingCart className="w-5 h-5" />} color="primary" delay={0} />
           <StatCard title={dateFilter === "all" ? "Total Revenue" : `${DATE_FILTER_LABELS[dateFilter]} Revenue`} value={formatCurrency(filteredRevenue)} icon={<DollarSign className="w-5 h-5" />} color="success" delay={50} />
-          <StatCard title="Processed Orders" value={formatNumber(filteredProcessedOrders)} icon={<CheckCircle className="w-5 h-5" />} color="info" delay={100} subtitle="Paid by CodinAfrica" />
+          <StatCard title="Processed Orders" value={formatNumber(filteredProcessedOrders)} icon={<CheckCircle className="w-5 h-5" />} color="primary" delay={100} subtitle="Paid by CodinAfrica" />
           <StatCard title="Processed Revenue" value={formatCurrency(filteredProcessedRevenue)} icon={<TrendingUp className="w-5 h-5" />} color="success" delay={150} subtitle="Real collected revenue" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard title="Net Revenue" value={formatCurrency(filteredNetRevenue)} icon={<DollarSign className="w-5 h-5" />} color="success" delay={200} subtitle="After service fees" />
           <StatCard title="Service Fees" value={formatCurrency(filteredServiceFees)} icon={<Percent className="w-5 h-5" />} color="warning" delay={250} subtitle="CodinAfrica fees" />
-          <StatCard title="Delivery Rate" value={formatPercentage(filteredDeliveryRate)} icon={<Activity className="w-5 h-5" />} color="info" delay={300} subtitle="Based on Processed" />
+          <StatCard title="Delivery Rate" value={formatPercentage(filteredDeliveryRate)} icon={<Activity className="w-5 h-5" />} color="primary" delay={300} subtitle="Based on Processed" />
           <StatCard title="Confirmation Rate" value={formatPercentage(filteredConfRate)} icon={<CheckCircle className="w-5 h-5" />} color="success" delay={350} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Average Order Value" value={formatCurrency(filteredOrders.length > 0 ? filteredRevenue / filteredOrders.length : 0)} icon={<TrendingUp className="w-5 h-5" />} color="info" delay={400} />
+          <StatCard title="Average Order Value" value={formatCurrency(filteredOrders.length > 0 ? filteredRevenue / filteredOrders.length : 0)} icon={<TrendingUp className="w-5 h-5" />} color="primary" delay={400} />
           <StatCard title="Products Sold" value={formatNumber(uniqueProductCount)} icon={<Package className="w-5 h-5" />} color="primary" delay={450} subtitle="Unique in period" />
           <StatCard title="Pending" value={formatNumber(filteredPending)} icon={<Clock className="w-5 h-5" />} color="warning" delay={500} subtitle={`${filteredOrders.length > 0 ? ((filteredPending / filteredOrders.length) * 100).toFixed(1) : 0}% of total`} />
           <StatCard title="Confirmed Orders" value={formatNumber(filteredConfirmed)} icon={<CheckCircle className="w-5 h-5" />} color="success" delay={550} />

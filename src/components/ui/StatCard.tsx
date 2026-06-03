@@ -19,7 +19,7 @@ const colorMap = {
   success: { bg: "bg-[#10b981]/10", text: "text-[#10b981]" },
   warning: { bg: "bg-[#f59e0b]/10", text: "text-[#f59e0b]" },
   error: { bg: "bg-[#ef4444]/10", text: "text-[#ef4444]" },
-  info: { bg: "bg-[#06b6d4]/10", text: "text-[#06b6d4]" },
+  info: { bg: "bg-[#6366F1]/10", text: "text-[#6366F1]" },
 };
 
 export function StatCard({ title, value, icon, trend, subtitle, color = "accent", delay = 0 }: StatCardProps) {
