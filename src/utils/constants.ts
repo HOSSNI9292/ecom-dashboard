@@ -113,19 +113,12 @@ export const DEFAULT_API_URL = "https://api.codinafrica.com/api";
 
 export const COUNTRY_FEES_STORAGE_KEY = "cod_dashboard_fees";
 
-export const DEFAULT_COUNTRY_FEES: Record<string, number> = {
-  GA: 8,
-  ML: 7,
-  CG: 8,
-  CI: 7,
-  BF: 7,
-  TG: 7,
-  NE: 7,
-  BJ: 8,
-  SN: 7,
-  TD: 8,
-  GN: 7,
-  CD: 10,
+export const FIXED_COUNTRY_FEES: Record<string, number> = {
+  GA: 6500,
+  CG: 5000,
+  CI: 5000,
+  ML: 5000,
+  BF: 5000,
 };
 
-export const OTHER_COUNTRY_FEE = 8;
+export const DEFAULT_FIXED_FEE = 5000;

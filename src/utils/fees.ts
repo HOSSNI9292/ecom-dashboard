@@ -1,13 +1,13 @@
-import { COUNTRY_FEES_STORAGE_KEY, DEFAULT_COUNTRY_FEES, OTHER_COUNTRY_FEE } from "./constants";
+import { COUNTRY_FEES_STORAGE_KEY, FIXED_COUNTRY_FEES, DEFAULT_FIXED_FEE } from "./constants";
 import type { CountryFeeConfig } from "@/types";
 
 export function getCountryFees(): CountryFeeConfig {
-  if (typeof window === "undefined") return DEFAULT_COUNTRY_FEES;
+  if (typeof window === "undefined") return FIXED_COUNTRY_FEES;
   try {
     const stored = localStorage.getItem(COUNTRY_FEES_STORAGE_KEY);
-    return stored ? JSON.parse(stored) : DEFAULT_COUNTRY_FEES;
+    return stored ? JSON.parse(stored) : FIXED_COUNTRY_FEES;
   } catch {
-    return DEFAULT_COUNTRY_FEES;
+    return FIXED_COUNTRY_FEES;
   }
 }
 
@@ -21,13 +21,13 @@ export function resetCountryFees(): void {
 
 export function getFeeForCountry(countryCode: string): number {
   const fees = getCountryFees();
-  return fees[countryCode] ?? OTHER_COUNTRY_FEE;
+  return fees[countryCode] ?? DEFAULT_FIXED_FEE;
 }
 
-export function computeServiceFees(revenue: number, feePercent: number): number {
-  return Math.round(revenue * (feePercent / 100));
+export function computeServiceFees(processedCount: number, feePerOrder: number): number {
+  return processedCount * feePerOrder;
 }
 
-export function computeNetRevenue(revenue: number, feePercent: number): number {
-  return revenue - computeServiceFees(revenue, feePercent);
+export function computeNetRevenue(revenue: number, feePerOrder: number, processedCount: number): number {
+  return revenue - computeServiceFees(processedCount, feePerOrder);
 }

@@ -47,15 +47,15 @@ export default function ExecutiveBIPage() {
       if (o.status === "confirmed") { e.processedOrders += 1; e.processedRevenue += o.amount; }
     }
     return Array.from(map.entries()).map(([code, d]) => {
-      const feePercent = getFeeForCountry(code);
-      const serviceFees = computeServiceFees(d.processedRevenue, feePercent);
+      const feePerOrder = getFeeForCountry(code);
+      const serviceFees = computeServiceFees(d.processedOrders, feePerOrder);
       const nonCancelled = d.orders - d.cancelled - d.outOfStock;
       return {
         country: code, countryName: COUNTRY_NAMES[code] || code, flag: "", currency: "XOF",
         revenue: d.revenue, orders: d.orders, confirmed: d.confirmed, pending: d.pending,
         cancelled: d.cancelled, outOfStock: d.outOfStock,
         processedOrders: d.processedOrders, processedRevenue: d.processedRevenue,
-        grossRevenue: d.processedRevenue, feePercent, serviceFees,
+        grossRevenue: d.processedRevenue, feePerOrder, serviceFees,
         netRevenue: d.processedRevenue - serviceFees,
         confirmationRate: nonCancelled > 0 ? d.confirmed / nonCancelled : 0,
         deliveryRate: d.orders > 0 ? d.processedOrders / d.orders : 0,

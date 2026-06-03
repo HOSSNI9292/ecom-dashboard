@@ -305,11 +305,16 @@ class ApiService {
     const deliveryRate = total > 0 ? processedOrders / total : 0;
 
     let serviceFeesTotal = 0;
+    const processedByCountry = new Map<string, number>();
     for (const o of orders) {
       if (o.status === "confirmed") {
-        const feePercent = getFeeForCountry(o.country);
-        serviceFeesTotal += computeServiceFees(o.amount, feePercent);
+        const c = o.country || "XX";
+        processedByCountry.set(c, (processedByCountry.get(c) || 0) + 1);
       }
+    }
+    for (const [country, count] of processedByCountry) {
+      const feePerOrder = getFeeForCountry(country);
+      serviceFeesTotal += computeServiceFees(count, feePerOrder);
     }
     const netRevenue = processedRevenue - serviceFeesTotal;
 
@@ -372,8 +377,8 @@ class ApiService {
     return Array.from(map.entries()).map(([code, data]) => {
       const w = warehouseMap.get(code);
       const totalNonCancelled = data.orders - data.cancelled - data.outOfStock;
-      const feePercent = getFeeForCountry(code);
-      const serviceFees = computeServiceFees(data.processedRevenue, feePercent);
+      const feePerOrder = getFeeForCountry(code);
+      const serviceFees = computeServiceFees(data.processedOrders, feePerOrder);
       const netRevenue = data.processedRevenue - serviceFees;
       return {
         country: code,
@@ -382,7 +387,7 @@ class ApiService {
         currency: w?.currency || COUNTRY_CURRENCIES[code] || "USD",
         ...data,
         grossRevenue: data.processedRevenue,
-        feePercent,
+        feePerOrder,
         serviceFees,
         netRevenue,
         confirmationRate: totalNonCancelled > 0 ? data.confirmed / totalNonCancelled : 0,

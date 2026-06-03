@@ -135,7 +135,7 @@ export interface CountryStats {
   processedOrders: number;
   processedRevenue: number;
   grossRevenue: number;
-  feePercent: number;
+  feePerOrder: number;
   serviceFees: number;
   netRevenue: number;
 }

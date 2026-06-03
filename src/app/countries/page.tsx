@@ -47,8 +47,8 @@ export default function CountriesPage() {
     }
 
     return Array.from(map.entries()).map(([code, d]) => {
-      const feePercent = getFeeForCountry(code);
-      const serviceFees = computeServiceFees(d.processedRevenue, feePercent);
+      const feePerOrder = getFeeForCountry(code);
+      const serviceFees = computeServiceFees(d.processedOrders, feePerOrder);
       const nonCancelled = d.orders - d.cancelled - d.outOfStock;
       return {
         ...d,
@@ -56,7 +56,7 @@ export default function CountriesPage() {
         flag: "",
         currency: "XOF",
         grossRevenue: d.processedRevenue,
-        feePercent,
+        feePerOrder,
         serviceFees,
         netRevenue: d.processedRevenue - serviceFees,
         confirmationRate: nonCancelled > 0 ? d.confirmed / nonCancelled : 0,
@@ -90,7 +90,7 @@ export default function CountriesPage() {
         revenue: c.revenue,
         processedRevenue: c.processedRevenue,
         netRevenue: c.netRevenue,
-        feePercent: `${c.feePercent}%`,
+        feePerOrder: c.feePerOrder,
         serviceFees: c.serviceFees,
         orders: c.orders,
         confirmed: c.confirmed,
@@ -106,7 +106,7 @@ export default function CountriesPage() {
         revenue: "Revenue (XOF)",
         processedRevenue: "Processed Revenue (XOF)",
         netRevenue: "Net Revenue (XOF)",
-        feePercent: "Fee %",
+        feePerOrder: "Fee/Order (XOF)",
         serviceFees: "Service Fees (XOF)",
         orders: "Orders",
         confirmed: "Confirmed",
@@ -185,7 +185,7 @@ export default function CountriesPage() {
                     <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
                     <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
                     <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Net Revenue</th>
-                    <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fee</th>
+                    <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fee/Order</th>
                     <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Processed</th>
                     <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Conf. Rate</th>
                   </tr>
@@ -225,7 +225,7 @@ export default function CountriesPage() {
                           </div>
                         </td>
                         <td className="py-3.5 px-4 text-right text-[#10b981] font-semibold">{formatCurrency(country.netRevenue)}</td>
-                        <td className="py-3.5 px-4 text-right text-[#f59e0b]">{country.feePercent}%</td>
+                        <td className="py-3.5 px-4 text-right text-[#f59e0b] font-mono text-sm">{formatCurrency(country.feePerOrder)}</td>
                         <td className="py-3.5 px-4 text-right text-white font-medium">{formatNumber(country.processedOrders)}</td>
                         <td className="py-3.5 px-4 text-right">
                           <span className={`text-sm font-medium ${

@@ -78,8 +78,8 @@ export default function BusinessIntelligencePage() {
       }
     }
     return Array.from(map.entries()).map(([code, d]) => {
-      const feePercent = getFeeForCountry(code);
-      const serviceFees = computeServiceFees(d.processedRevenue, feePercent);
+      const feePerOrder = getFeeForCountry(code);
+      const serviceFees = computeServiceFees(d.processedOrders, feePerOrder);
       const nonCancelled = d.orders - d.cancelled - d.outOfStock;
       return {
         ...d,
@@ -87,7 +87,7 @@ export default function BusinessIntelligencePage() {
         flag: "",
         currency: "XOF",
         grossRevenue: d.processedRevenue,
-        feePercent,
+        feePerOrder,
         serviceFees,
         netRevenue: d.processedRevenue - serviceFees,
         confirmationRate: nonCancelled > 0 ? d.confirmed / nonCancelled : 0,
@@ -192,7 +192,7 @@ export default function BusinessIntelligencePage() {
       { key: "processedRevenue", label: "Processed Revenue (XOF)" },
       { key: "netRevenue", label: "Net Revenue (XOF)" },
       { key: "serviceFees", label: "Service Fees (XOF)" },
-      { key: "feePercent", label: "Fee %" },
+      { key: "feePerOrder", label: "Fee/Order (XOF)" },
       { key: "orders", label: "Orders" },
       { key: "processedOrders", label: "Processed Orders" },
       { key: "confirmationRate", label: "Confirmation Rate" },
@@ -354,7 +354,7 @@ export default function BusinessIntelligencePage() {
                                 </td>
                                 <td className="py-3.5 px-4 text-right text-[#c0c0c0]">{formatNumber(c.processedOrders)}</td>
                                 <td className="py-3.5 px-4 text-right text-white">{formatCurrency(c.processedRevenue)}</td>
-                                <td className="py-3.5 px-4 text-right text-[#f59e0b] font-medium">{c.feePercent}%</td>
+                                <td className="py-3.5 px-4 text-right text-[#f59e0b] font-mono text-sm">{formatCurrency(c.feePerOrder)}</td>
                                 <td className="py-3.5 px-4 text-right text-[#ef4444]">{formatCurrency(c.serviceFees)}</td>
                                 <td className="py-3.5 px-4 text-right text-[#10b981] font-semibold">{formatCurrency(c.netRevenue)}</td>
                                 <td className="py-3.5 px-4 text-right">
@@ -456,7 +456,7 @@ export default function BusinessIntelligencePage() {
                           </div>
                         </td>
                         <td className="py-3.5 px-4 text-right text-[#c0c0c0]">{formatCurrency(c.processedRevenue)}</td>
-                        <td className="py-3.5 px-4 text-right text-[#f59e0b] font-medium">{c.feePercent}%</td>
+                        <td className="py-3.5 px-4 text-right text-[#f59e0b] font-mono text-sm">{formatCurrency(c.feePerOrder)}</td>
                         <td className="py-3.5 px-4 text-right text-[#ef4444]">{formatCurrency(c.serviceFees)}</td>
                         <td className="py-3.5 px-4 text-right text-[#10b981] font-semibold">{formatCurrency(c.netRevenue)}</td>
                       </tr>
