@@ -31,6 +31,13 @@ export default function DashboardPage() {
   const filteredOrders = useMemo(() => filterOrdersByDate(orders, dateFilter), [orders, dateFilter]);
 
   console.log(`[Dashboard] Period: ${dateFilter}, Filtered: ${filteredOrders.length}, All: ${orders.length}`);
+  if (orders.length > 0) {
+    const raw: Record<string, number> = {};
+    const mapped: Record<string, number> = {};
+    for (const o of orders) { raw[o.rawStatus] = (raw[o.rawStatus] || 0) + 1; mapped[o.status] = (mapped[o.status] || 0) + 1; }
+    console.log("[Dashboard] Raw statuses:", raw);
+    console.log("[Dashboard] Mapped statuses:", mapped);
+  }
 
   const filteredStats = useMemo(() => {
     const pendingOrders = filteredOrders.filter((o) => o.status === "pending").length;
@@ -49,6 +56,7 @@ export default function DashboardPage() {
   const filteredNonCancelled = filteredOrders.filter((o) => o.status !== "cancelled" && o.status !== "out_of_stock").length;
   const filteredConfRate = filteredNonCancelled > 0 ? filteredConfirmed / filteredNonCancelled : 0;
   const filteredProcessedOrders = filteredOrders.filter((o) => o.status === "confirmed").length;
+  console.log("[Dashboard] Processed (status=confirmed):", filteredProcessedOrders);
   const filteredProcessedRevenue = filteredOrders.filter((o) => o.status === "confirmed").reduce((s, o) => s + o.amount, 0);
   const filteredDeliverable = filteredOrders.filter((o) => o.status !== "cancelled" && o.status !== "out_of_stock").length;
   const filteredDeliveryRate = filteredDeliverable > 0 ? filteredConfirmed / filteredDeliverable : 0;
