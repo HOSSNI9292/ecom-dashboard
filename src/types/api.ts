@@ -79,7 +79,7 @@ export interface CodinAfricaWarehouse {
 }
 
 export interface ApiResponse<T> {
-  content: { results: T[] };
+  content: { results: T[]; total?: number; per_page?: number; current_page?: number; last_page?: number };
   status: number;
 }
 

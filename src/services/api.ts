@@ -235,10 +235,27 @@ class ApiService {
       this.ordersCache = MOCK_ORDERS;
       return MOCK_ORDERS;
     }
-    const data = await this.request<ApiResponse<CodinAfricaOrder>>("/orders/search?limit=500");
-    const orders = data?.content?.results || [];
-    this.ordersCache = orders;
-    return orders;
+    const perPage = 1000;
+    const first = await this.request<ApiResponse<CodinAfricaOrder>>(`/orders/search?limit=${perPage}&page=1`);
+    const firstResults = first?.content?.results || [];
+    const lastPage = first?.content?.last_page || 1;
+    const total = first?.content?.total || firstResults.length;
+    console.log(`[API] Orders: ${total} total, ${lastPage} pages, fetching...`);
+
+    if (lastPage <= 1) {
+      this.ordersCache = firstResults;
+      return firstResults;
+    }
+
+    const pagePromises: Promise<ApiResponse<CodinAfricaOrder>>[] = [];
+    for (let p = 2; p <= lastPage; p++) {
+      pagePromises.push(this.request<ApiResponse<CodinAfricaOrder>>(`/orders/search?limit=${perPage}&page=${p}`));
+    }
+    const rest = await Promise.all(pagePromises);
+    const allOrders = [firstResults, ...rest.map((r) => r?.content?.results || [])].flat();
+    console.log(`[API] Fetched ${allOrders.length} orders total`);
+    this.ordersCache = allOrders;
+    return allOrders;
   }
 
   async fetchWarehouses(): Promise<CodinAfricaWarehouse[]> {
