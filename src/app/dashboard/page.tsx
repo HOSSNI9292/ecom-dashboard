@@ -14,38 +14,23 @@ import { PageWrapper } from "@/components/PageWrapper";
 import { OrderModal } from "@/components/OrderModal";
 import { DateFilter } from "@/components/DateFilter";
 import { useDashboardData } from "@/hooks";
-import { formatCurrency, formatNumber, formatPercentage, formatDate, filterOrdersByDate, DATE_FILTER_LABELS, getImageUrlOrFallback } from "@/utils";
+import { formatCurrency, formatNumber, formatPercentage, formatDate, filterOrdersByDate, DATE_FILTER_LABELS, getImageUrlOrFallback, getFeeForCountry, computeServiceFees, COUNTRY_NAMES, COUNTRY_FLAGS } from "@/utils";
 import { exportToCSV } from "@/utils/csv";
 import type { DateFilterValue } from "@/utils/dates";
 import type { Order, Product } from "@/types";
-
-function aggregateProducts(products: Product[]) {
-  const map = new Map<string, Product>();
-  for (const p of products) {
-    const key = p.id;
-    if (map.has(key)) {
-      const ex = map.get(key)!;
-      ex.totalSold += p.totalSold;
-      ex.revenue += p.revenue;
-    } else {
-      map.set(key, { ...p });
-    }
-  }
-  return Array.from(map.values());
-}
 
 export default function DashboardPage() {
   const { data, loading, error, refetch } = useDashboardData();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilterValue>("all");
 
-  const stats = data?.stats;
   const orders = data?.orders ?? [];
   const allProducts = data?.products ?? [];
-  const aggregated = useMemo(() => aggregateProducts(allProducts), [allProducts]);
   const isLoading = loading && !data;
 
   const filteredOrders = useMemo(() => filterOrdersByDate(orders, dateFilter), [orders, dateFilter]);
+
+  console.log(`[Dashboard] Period: ${dateFilter}, Filtered: ${filteredOrders.length}, All: ${orders.length}`);
 
   const filteredStats = useMemo(() => {
     const pendingOrders = filteredOrders.filter((o) => o.status === "pending").length;
@@ -63,23 +48,92 @@ export default function DashboardPage() {
   const filteredConfirmed = filteredOrders.filter((o) => o.status === "confirmed").length;
   const filteredNonCancelled = filteredOrders.filter((o) => o.status !== "cancelled" && o.status !== "out_of_stock").length;
   const filteredConfRate = filteredNonCancelled > 0 ? filteredConfirmed / filteredNonCancelled : 0;
+  const filteredProcessedOrders = filteredOrders.filter((o) => o.status === "confirmed").length;
   const filteredProcessedRevenue = filteredOrders.filter((o) => o.status === "confirmed").reduce((s, o) => s + o.amount, 0);
   const filteredDeliverable = filteredOrders.filter((o) => o.status !== "cancelled" && o.status !== "out_of_stock").length;
   const filteredDeliveryRate = filteredDeliverable > 0 ? filteredConfirmed / filteredDeliverable : 0;
 
-  const topSelling = useMemo(() => [...aggregated].sort((a, b) => b.totalSold - a.totalSold).slice(0, 5), [aggregated]);
-  const topRevenue = useMemo(() => [...aggregated].sort((a, b) => b.revenue - a.revenue).slice(0, 5), [aggregated]);
-  const lowestStock = useMemo(() => [...aggregated].filter((p) => p.stockQuantity > 0).sort((a, b) => a.stockQuantity - b.stockQuantity).slice(0, 5), [aggregated]);
+  const filteredServiceFees = useMemo(() => {
+    const byCountry = new Map<string, number>();
+    for (const o of filteredOrders) {
+      if (o.status === "confirmed") {
+        const c = o.country || "XX";
+        byCountry.set(c, (byCountry.get(c) || 0) + 1);
+      }
+    }
+    let total = 0;
+    for (const [country, count] of byCountry) {
+      total += computeServiceFees(count, getFeeForCountry(country));
+    }
+    return total;
+  }, [filteredOrders]);
 
-  const bestCountry = useMemo(() => {
-    if (!data?.countries?.length) return null;
-    return [...data.countries].sort((a, b) => b.netRevenue - a.netRevenue)[0];
-  }, [data?.countries]);
+  const filteredNetRevenue = filteredProcessedRevenue - filteredServiceFees;
 
-  const bestProduct = useMemo(() => {
-    if (!aggregated.length) return null;
-    return [...aggregated].sort((a, b) => b.revenue - a.revenue)[0];
-  }, [aggregated]);
+  const filteredRevenueTrend = useMemo(() => {
+    const dayMap = new Map<string, { revenue: number; orders: number }>();
+    for (const o of filteredOrders) {
+      const day = o.date?.substring(0, 10);
+      if (!day) continue;
+      if (!dayMap.has(day)) dayMap.set(day, { revenue: 0, orders: 0 });
+      const entry = dayMap.get(day)!;
+      entry.revenue += o.amount;
+      entry.orders += 1;
+    }
+    return Array.from(dayMap.entries())
+      .map(([date, d]) => ({ date, ...d }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  }, [filteredOrders]);
+
+  const productSales = useMemo(() => {
+    const map = new Map<string, { id: string; name: string; totalSold: number; revenue: number; image?: string }>();
+    for (const o of filteredOrders) {
+      const key = o.productCode || o.productName;
+      if (!key) continue;
+      if (!map.has(key)) {
+        const fromAll = allProducts.find((p) => (o.productCode && p.code === o.productCode) || p.name === o.productName);
+        map.set(key, { id: o.productCode || key, name: o.productName, totalSold: 0, revenue: 0, image: fromAll?.image || o.productImage });
+      }
+      const entry = map.get(key)!;
+      entry.totalSold += 1;
+      entry.revenue += o.amount;
+    }
+    return Array.from(map.values());
+  }, [filteredOrders, allProducts]);
+
+  const topSelling = useMemo(() => [...productSales].sort((a, b) => b.totalSold - a.totalSold).slice(0, 5), [productSales]);
+  const topRevenue = useMemo(() => [...productSales].sort((a, b) => b.revenue - a.revenue).slice(0, 5), [productSales]);
+
+  const bestProduct = useMemo(() => productSales.length > 0 ? [...productSales].sort((a, b) => b.revenue - a.revenue)[0] : null, [productSales]);
+
+  const lowestStock = useMemo(() => [...allProducts].filter((p) => p.stockQuantity > 0).sort((a, b) => a.stockQuantity - b.stockQuantity).slice(0, 5), [allProducts]);
+
+  const countryStats = useMemo(() => {
+    const map = new Map<string, { orders: number; revenue: number; processedOrders: number; processedRevenue: number }>();
+    for (const o of filteredOrders) {
+      const c = o.country || "XX";
+      if (!map.has(c)) map.set(c, { orders: 0, revenue: 0, processedOrders: 0, processedRevenue: 0 });
+      const e = map.get(c)!;
+      e.orders += 1;
+      e.revenue += o.amount;
+      if (o.status === "confirmed") {
+        e.processedOrders += 1;
+        e.processedRevenue += o.amount;
+      }
+    }
+    return Array.from(map.entries()).map(([code, e]) => {
+      const feePerOrder = getFeeForCountry(code);
+      const serviceFees = computeServiceFees(e.processedOrders, feePerOrder);
+      return { country: code, countryName: COUNTRY_NAMES[code] || code, flag: COUNTRY_FLAGS[code] || "", netRevenue: e.processedRevenue - serviceFees, processedOrders: e.processedOrders, revenue: e.processedRevenue, deliveryRate: e.orders > 0 ? e.processedOrders / e.orders : 0 };
+    }).sort((a, b) => b.netRevenue - a.netRevenue);
+  }, [filteredOrders]);
+
+  const bestCountry = useMemo(() => countryStats.length > 0 ? countryStats[0] : null, [countryStats]);
+
+  const uniqueProductCount = useMemo(() => {
+    const ids = new Set(filteredOrders.map((o) => o.productCode || o.productName).filter(Boolean));
+    return ids.size;
+  }, [filteredOrders]);
 
   const handleExport = useCallback(() => {
     exportToCSV(
@@ -123,26 +177,26 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard title={dateFilter === "all" ? "Total Orders" : `${DATE_FILTER_LABELS[dateFilter]} Orders`} value={formatNumber(filteredOrders.length)} icon={<ShoppingCart className="w-5 h-5" />} color="primary" delay={0} />
           <StatCard title={dateFilter === "all" ? "Total Revenue" : `${DATE_FILTER_LABELS[dateFilter]} Revenue`} value={formatCurrency(filteredRevenue)} icon={<DollarSign className="w-5 h-5" />} color="success" delay={50} />
-          <StatCard title="Processed Orders" value={formatNumber(filteredConfirmed)} icon={<CheckCircle className="w-5 h-5" />} color="info" delay={100} subtitle="Paid by CodinAfrica" />
+          <StatCard title="Processed Orders" value={formatNumber(filteredProcessedOrders)} icon={<CheckCircle className="w-5 h-5" />} color="info" delay={100} subtitle="Paid by CodinAfrica" />
           <StatCard title="Processed Revenue" value={formatCurrency(filteredProcessedRevenue)} icon={<TrendingUp className="w-5 h-5" />} color="success" delay={150} subtitle="Real collected revenue" />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Net Revenue" value={formatCurrency(stats?.netRevenue ?? 0)} icon={<DollarSign className="w-5 h-5" />} color="success" delay={200} subtitle="After service fees" />
-          <StatCard title="Service Fees" value={formatCurrency(stats?.serviceFeesTotal ?? 0)} icon={<Percent className="w-5 h-5" />} color="warning" delay={250} subtitle="CodinAfrica fees" />
+          <StatCard title="Net Revenue" value={formatCurrency(filteredNetRevenue)} icon={<DollarSign className="w-5 h-5" />} color="success" delay={200} subtitle="After service fees" />
+          <StatCard title="Service Fees" value={formatCurrency(filteredServiceFees)} icon={<Percent className="w-5 h-5" />} color="warning" delay={250} subtitle="CodinAfrica fees" />
           <StatCard title="Delivery Rate" value={formatPercentage(filteredDeliveryRate)} icon={<Activity className="w-5 h-5" />} color="info" delay={300} subtitle="Based on Processed" />
           <StatCard title="Confirmation Rate" value={formatPercentage(filteredConfRate)} icon={<CheckCircle className="w-5 h-5" />} color="success" delay={350} />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard title="Average Order Value" value={formatCurrency(filteredOrders.length > 0 ? filteredRevenue / filteredOrders.length : 0)} icon={<TrendingUp className="w-5 h-5" />} color="info" delay={400} />
-          <StatCard title="Total Products" value={formatNumber(stats?.totalProducts ?? 0)} icon={<Package className="w-5 h-5" />} color="primary" delay={450} subtitle="Unique items" />
+          <StatCard title="Products Sold" value={formatNumber(uniqueProductCount)} icon={<Package className="w-5 h-5" />} color="primary" delay={450} subtitle="Unique in period" />
           <StatCard title="Pending" value={formatNumber(filteredPending)} icon={<Clock className="w-5 h-5" />} color="warning" delay={500} subtitle={`${filteredOrders.length > 0 ? ((filteredPending / filteredOrders.length) * 100).toFixed(1) : 0}% of total`} />
-          <StatCard title="Confirmed Orders" value={formatNumber(stats?.confirmedOrders ?? 0)} icon={<CheckCircle className="w-5 h-5" />} color="success" delay={550} />
+          <StatCard title="Confirmed Orders" value={formatNumber(filteredConfirmed)} icon={<CheckCircle className="w-5 h-5" />} color="success" delay={550} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <RevenueChart data={data?.revenueTrend ?? []} loading={isLoading} />
+          <RevenueChart data={filteredRevenueTrend} loading={isLoading} />
           <OrdersStatusChart stats={filteredStats} loading={isLoading} />
         </div>
 
@@ -232,11 +286,6 @@ export default function DashboardPage() {
                     <div>
                       <p className="text-white text-sm font-semibold">{formatNumber(bestCountry.processedOrders)}</p>
                       <p className="text-[#606060] text-[11px]">Processed</p>
-                    </div>
-                    <div className="w-px h-8 bg-[#1F1F1F]" />
-                    <div>
-                      <p className="text-[#22D3EE] text-sm font-semibold">{formatPercentage(bestCountry.deliveryRate)}</p>
-                      <p className="text-[#606060] text-[11px]">Delivery Rate</p>
                     </div>
                   </div>
                 </div>
