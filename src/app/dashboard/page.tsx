@@ -168,14 +168,14 @@ export default function DashboardPage() {
           <div className="flex items-center gap-2">
             <button
               onClick={refetch}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </button>
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200"
             >
               <Download className="w-3.5 h-3.5" /> Export
             </button>
@@ -212,14 +212,14 @@ export default function DashboardPage() {
           <Card gradient>
             <CardHeader>
               <CardTitle>Best Selling</CardTitle>
-              <span className="text-[#606060] text-xs font-medium">Top 5</span>
+              <span className="text-[#64748B] text-xs font-medium">Top 5</span>
             </CardHeader>
             <div className="space-y-2">
               {topSelling.map((p, i) => (
-                <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[#1F1F1F]/50 transition-all duration-200">
+                <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[#1F2937]/50 transition-all duration-200">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                      i === 0 ? "bg-[#f59e0b]/20 text-[#f59e0b]" : i === 1 ? "bg-[#808080]/20 text-[#808080]" : i === 2 ? "bg-[#8b5cf6]/20 text-[#8b5cf6]" : "bg-[#1F1F1F] text-[#606060]"
+                      i === 0 ? "bg-[#f59e0b]/20 text-[#f59e0b]" : i === 1 ? "bg-[#94A3B8]/20 text-[#94A3B8]" : i === 2 ? "bg-[#8b5cf6]/20 text-[#8b5cf6]" : "bg-[#1F2937] text-[#64748B]"
                     }`}>
                       {i + 1}
                     </div>
@@ -228,20 +228,20 @@ export default function DashboardPage() {
                   <span className="text-white text-sm font-medium shrink-0 ml-2">{formatNumber(p.totalSold)}</span>
                 </div>
               ))}
-              {topSelling.length === 0 && <p className="text-[#606060] text-sm text-center py-4">No data</p>}
+              {topSelling.length === 0 && <p className="text-[#64748B] text-sm text-center py-4">No data</p>}
             </div>
           </Card>
           <Card gradient>
             <CardHeader>
               <CardTitle>Highest Revenue</CardTitle>
-              <span className="text-[#606060] text-xs font-medium">Top 5</span>
+              <span className="text-[#64748B] text-xs font-medium">Top 5</span>
             </CardHeader>
             <div className="space-y-2">
               {topRevenue.map((p, i) => (
-                <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[#1F1F1F]/50 transition-all duration-200">
+                <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[#1F2937]/50 transition-all duration-200">
                   <div className="flex items-center gap-3 min-w-0">
                     <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${
-                      i === 0 ? "bg-[#10b981]/20 text-[#10b981]" : i === 1 ? "bg-[#808080]/20 text-[#808080]" : i === 2 ? "bg-[#06B6D4]/20 text-[#06B6D4]" : "bg-[#1F1F1F] text-[#606060]"
+                      i === 0 ? "bg-[#10b981]/20 text-[#10b981]" : i === 1 ? "bg-[#94A3B8]/20 text-[#94A3B8]" : i === 2 ? "bg-[#6366F1]/20 text-[#6366F1]" : "bg-[#1F2937] text-[#64748B]"
                     }`}>
                       {i + 1}
                     </div>
@@ -250,31 +250,31 @@ export default function DashboardPage() {
                   <span className="text-[#10b981] text-sm font-medium shrink-0 ml-2">{formatCurrency(p.revenue)}</span>
                 </div>
               ))}
-              {topRevenue.length === 0 && <p className="text-[#606060] text-sm text-center py-4">No data</p>}
+              {topRevenue.length === 0 && <p className="text-[#64748B] text-sm text-center py-4">No data</p>}
             </div>
           </Card>
           <Card gradient>
             <CardHeader>
               <CardTitle>Lowest Stock</CardTitle>
-              <span className="text-[#606060] text-xs font-medium">Needs attention</span>
+              <span className="text-[#64748B] text-xs font-medium">Needs attention</span>
             </CardHeader>
             <div className="space-y-2">
               {lowestStock.map((p, i) => (
-                <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[#1F1F1F]/50 transition-all duration-200">
+                <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[#1F2937]/50 transition-all duration-200">
                   <p className="text-white text-sm truncate">{p.name}</p>
                   <span className={`text-sm font-medium shrink-0 ml-2 ${p.stockQuantity <= 3 ? "text-[#ef4444]" : "text-[#f59e0b]"}`}>
                     {formatNumber(p.stockQuantity)}
                   </span>
                 </div>
               ))}
-              {lowestStock.length === 0 && <p className="text-[#606060] text-sm text-center py-4">All well stocked</p>}
+              {lowestStock.length === 0 && <p className="text-[#64748B] text-sm text-center py-4">All well stocked</p>}
             </div>
           </Card>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {bestCountry && (
-            <Card className="bg-gradient-to-br from-[#06B6D4]/10 via-[#111111] to-[#111111] border-[#06B6D4]/20" hover={false}>
+            <Card className="bg-gradient-to-br from-[#6366F1]/10 via-[#111827] to-[#111827] border-[#6366F1]/20" hover={false}>
               <CardHeader>
                 <CardTitle>Best Performing Country</CardTitle>
                 <span className="text-[#10b981] text-xs font-medium">By Net Revenue</span>
@@ -288,12 +288,12 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-4 mt-2">
                     <div>
                       <p className="text-[#10b981] text-sm font-semibold">{formatCurrency(bestCountry.netRevenue)}</p>
-                      <p className="text-[#606060] text-[11px]">Net Revenue</p>
+                      <p className="text-[#64748B] text-[11px]">Net Revenue</p>
                     </div>
-                    <div className="w-px h-8 bg-[#1F1F1F]" />
+                    <div className="w-px h-8 bg-[#1F2937]" />
                     <div>
                       <p className="text-white text-sm font-semibold">{formatNumber(bestCountry.processedOrders)}</p>
-                      <p className="text-[#606060] text-[11px]">Processed</p>
+                      <p className="text-[#64748B] text-[11px]">Processed</p>
                     </div>
                   </div>
                 </div>
@@ -301,19 +301,19 @@ export default function DashboardPage() {
             </Card>
           )}
           {bestProduct && (
-            <Card className="bg-gradient-to-br from-[#10b981]/10 via-[#111111] to-[#111111] border-[#10b981]/20" hover={false}>
+            <Card className="bg-gradient-to-br from-[#10b981]/10 via-[#111827] to-[#111827] border-[#10b981]/20" hover={false}>
               <CardHeader>
                 <CardTitle>Best Performing Product</CardTitle>
                 <span className="text-[#10b981] text-xs font-medium">By Revenue</span>
               </CardHeader>
               <div className="flex items-center gap-4">
                 {bestProduct.image ? (
-                  <div className="w-16 h-16 rounded-xl bg-[#1F1F1F] flex items-center justify-center shrink-0 overflow-hidden">
+                  <div className="w-16 h-16 rounded-xl bg-[#1F2937] flex items-center justify-center shrink-0 overflow-hidden">
                     <img src={getImageUrlOrFallback(bestProduct.image)} alt={bestProduct.name} className="w-full h-full object-contain p-1" loading="lazy" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
                   </div>
                 ) : (
-                  <div className="w-16 h-16 rounded-xl bg-[#1F1F1F] flex items-center justify-center shrink-0">
-                    <Package className="w-6 h-6 text-[#606060]" />
+                  <div className="w-16 h-16 rounded-xl bg-[#1F2937] flex items-center justify-center shrink-0">
+                    <Package className="w-6 h-6 text-[#64748B]" />
                   </div>
                 )}
                 <div className="min-w-0 flex-1">
@@ -321,12 +321,12 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-4 mt-1.5">
                     <div>
                       <p className="text-[#10b981] text-sm font-semibold">{formatCurrency(bestProduct.revenue)}</p>
-                      <p className="text-[#606060] text-[11px]">Revenue</p>
+                      <p className="text-[#64748B] text-[11px]">Revenue</p>
                     </div>
-                    <div className="w-px h-7 bg-[#1F1F1F]" />
+                    <div className="w-px h-7 bg-[#1F2937]" />
                     <div>
                       <p className="text-white text-sm font-semibold">{formatNumber(bestProduct.totalSold)}</p>
-                      <p className="text-[#606060] text-[11px]">Sold</p>
+                      <p className="text-[#64748B] text-[11px]">Sold</p>
                     </div>
                   </div>
                 </div>
@@ -336,20 +336,20 @@ export default function DashboardPage() {
           <Card gradient>
             <CardHeader>
               <CardTitle>Recent Orders</CardTitle>
-              <span className="text-[#606060] text-xs">Latest 5</span>
+              <span className="text-[#64748B] text-xs">Latest 5</span>
             </CardHeader>
             <div className="space-y-2">
               {filteredOrders.slice(0, 5).map((order) => (
                 <div
                   key={order.id}
-                  className="flex items-center justify-between py-2.5 px-3 rounded-lg border border-[#1F1F1F]/50 hover:border-[#06B6D4]/20 hover:bg-[#1A1A1A] transition-all duration-200 cursor-pointer group"
+                  className="flex items-center justify-between py-2.5 px-3 rounded-lg border border-[#1F2937]/50 hover:border-[#6366F1]/20 hover:bg-[#1E293B] transition-all duration-200 cursor-pointer group"
                   onClick={() => setSelectedOrder(order)}
                 >
                   <div className="flex items-center gap-3 min-w-0">
-                    <Eye className="w-3.5 h-3.5 text-[#606060] group-hover:text-[#22D3EE] shrink-0 transition-colors duration-200" />
+                    <Eye className="w-3.5 h-3.5 text-[#64748B] group-hover:text-[#8B5CF6] shrink-0 transition-colors duration-200" />
                     <div className="min-w-0">
                       <p className="text-white text-sm font-medium truncate">{order.customerName}</p>
-                      <p className="text-[#606060] text-xs">{formatDate(order.date)}</p>
+                      <p className="text-[#64748B] text-xs">{formatDate(order.date)}</p>
                     </div>
                   </div>
                   <div className="text-right flex items-center gap-3 shrink-0 ml-3">
@@ -358,7 +358,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))}
-              {filteredOrders.length === 0 && <p className="text-[#606060] text-sm text-center py-4">No data</p>}
+              {filteredOrders.length === 0 && <p className="text-[#64748B] text-sm text-center py-4">No data</p>}
             </div>
           </Card>
         </div>

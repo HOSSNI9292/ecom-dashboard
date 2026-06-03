@@ -14,8 +14,8 @@ interface StatCardProps {
 }
 
 const colorMap = {
-  primary: { bg: "bg-[#06B6D4]/10", text: "text-[#06B6D4]" },
-  accent: { bg: "bg-[#06B6D4]/10", text: "text-[#06B6D4]" },
+  primary: { bg: "bg-[#6366F1]/10", text: "text-[#6366F1]" },
+  accent: { bg: "bg-[#8B5CF6]/10", text: "text-[#8B5CF6]" },
   success: { bg: "bg-[#10b981]/10", text: "text-[#10b981]" },
   warning: { bg: "bg-[#f59e0b]/10", text: "text-[#f59e0b]" },
   error: { bg: "bg-[#ef4444]/10", text: "text-[#ef4444]" },
@@ -33,7 +33,7 @@ export function StatCard({ title, value, icon, trend, subtitle, color = "accent"
       <Card hover={false}>
         <div className="flex items-start justify-between">
           <div className="flex-1 min-w-0">
-            <p className="text-[#808080] text-xs font-medium uppercase tracking-wider">{title}</p>
+            <p className="text-[#94A3B8] text-xs font-medium uppercase tracking-wider">{title}</p>
             <p className="text-3xl sm:text-4xl font-bold text-white mt-2 tracking-tight">{value}</p>
             {trend && (
               <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trend.isUp ? "text-[#10b981]" : "text-[#ef4444]"}`}>
@@ -41,7 +41,7 @@ export function StatCard({ title, value, icon, trend, subtitle, color = "accent"
                 <span>{Math.abs(trend.value)}% vs last period</span>
               </div>
             )}
-            {subtitle && <p className="text-[#606060] text-xs mt-1.5">{subtitle}</p>}
+            {subtitle && <p className="text-[#64748B] text-xs mt-1.5">{subtitle}</p>}
           </div>
           <div className={`p-3 rounded-lg ${c.bg} ${c.text} shrink-0 ml-3`}>
             {icon}

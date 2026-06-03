@@ -26,7 +26,7 @@ function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      className="p-2 rounded-lg text-[#606060] hover:text-white hover:bg-[#111111] transition-all duration-200"
+      className="p-2 rounded-lg text-[#64748B] hover:text-white hover:bg-[#111827] transition-all duration-200"
       title={`Switch to ${dark ? "light" : "dark"} mode`}
     >
       {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -38,7 +38,7 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen bg-[#0A0A0A] text-[#e0e0e0]">
+    <div className="flex min-h-screen bg-[#0B0F19] text-[#F8FAFC]">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar

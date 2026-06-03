@@ -23,7 +23,7 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, color, size = "sm" }: StatusBadgeProps) {
-  const resolvedColor = color || STATUS_COLORS[status] || "#808080";
+  const resolvedColor = color || STATUS_COLORS[status] || "#94A3B8";
   const label = STATUS_LABELS[status] || status;
   const isSmall = size === "sm";
 

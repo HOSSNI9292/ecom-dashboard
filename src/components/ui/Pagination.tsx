@@ -24,7 +24,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
       <button
         onClick={() => onPageChange(page - 1)}
         disabled={page <= 1}
-        className="p-2 rounded-lg text-[#606060] hover:text-white hover:bg-[#1F1F1F] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+        className="p-2 rounded-lg text-[#64748B] hover:text-white hover:bg-[#1F2937] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
       >
         <ChevronLeft className="w-4 h-4" />
       </button>
@@ -32,11 +32,11 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
         <>
           <button
             onClick={() => onPageChange(1)}
-            className="w-8 h-8 rounded-lg text-[#606060] hover:text-white hover:bg-[#1F1F1F] text-sm transition-all duration-200"
+            className="w-8 h-8 rounded-lg text-[#64748B] hover:text-white hover:bg-[#1F2937] text-sm transition-all duration-200"
           >
             1
           </button>
-          {start > 2 && <span className="text-[#404040] px-1 select-none">...</span>}
+          {start > 2 && <span className="text-[#475569] px-1 select-none">...</span>}
         </>
       )}
       {pages.map((p) => (
@@ -45,8 +45,8 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
           onClick={() => onPageChange(p)}
           className={`w-8 h-8 rounded-lg text-sm font-medium transition-all duration-200 ${
             p === page
-              ? "bg-[#06B6D4] text-white shadow-[0_0_12px_rgba(6,182,212,0.3)]"
-              : "text-[#606060] hover:text-white hover:bg-[#1F1F1F]"
+              ? "bg-[#6366F1] text-white shadow-[0_0_12px_rgba(99,102,241,0.3)]"
+              : "text-[#64748B] hover:text-white hover:bg-[#1F2937]"
           }`}
         >
           {p}
@@ -54,10 +54,10 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
       ))}
       {end < totalPages && (
         <>
-          {end < totalPages - 1 && <span className="text-[#404040] px-1 select-none">...</span>}
+          {end < totalPages - 1 && <span className="text-[#475569] px-1 select-none">...</span>}
           <button
             onClick={() => onPageChange(totalPages)}
-            className="w-8 h-8 rounded-lg text-[#606060] hover:text-white hover:bg-[#1F1F1F] text-sm transition-all duration-200"
+            className="w-8 h-8 rounded-lg text-[#64748B] hover:text-white hover:bg-[#1F2937] text-sm transition-all duration-200"
           >
             {totalPages}
           </button>
@@ -66,7 +66,7 @@ export function Pagination({ page, totalPages, onPageChange }: PaginationProps) 
       <button
         onClick={() => onPageChange(page + 1)}
         disabled={page >= totalPages}
-        className="p-2 rounded-lg text-[#606060] hover:text-white hover:bg-[#1F1F1F] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
+        className="p-2 rounded-lg text-[#64748B] hover:text-white hover:bg-[#1F2937] disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200"
       >
         <ChevronRight className="w-4 h-4" />
       </button>

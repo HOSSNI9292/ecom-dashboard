@@ -14,16 +14,16 @@ import { exportToCSV } from "@/utils/csv";
 import type { DateFilterValue } from "@/utils/dates";
 
 const DELIVERY_STATUS_COLORS: Record<string, string> = {
-  processed: "#10b981",
-  delivered: "#10b981",
-  shipped: "#3b82f6",
-  confirmed: "#8b5cf6",
-  pending: "#f59e0b",
-  cancelled: "#6b7280",
-  returned: "#ef4444",
-  double: "#ec4899",
-  out_of_stock: "#6b7280",
-  transferred: "#06b6d4",
+  processed: "#10B981",
+  delivered: "#10B981",
+  shipped: "#8B5CF6",
+  confirmed: "#6366F1",
+  pending: "#F59E0B",
+  cancelled: "#64748B",
+  returned: "#EF4444",
+  double: "#8B5CF6",
+  out_of_stock: "#64748B",
+  transferred: "#06B6D4",
 };
 
 const DELIVERY_STATUS_LABELS: Record<string, string> = {
@@ -139,7 +139,7 @@ export default function DeliveredPage() {
 
   const getStatusBadge = (status: string) => {
     const normalizedStatus = status.toLowerCase().replace(/\s+/g, "_");
-    const color = DELIVERY_STATUS_COLORS[normalizedStatus] || "#6b7280";
+    const color = DELIVERY_STATUS_COLORS[normalizedStatus] || "#64748B";
     const label = DELIVERY_STATUS_LABELS[normalizedStatus] || status;
     
     return (
@@ -166,20 +166,20 @@ export default function DeliveredPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">Deliveries</h1>
-              <p className="text-[#606060] text-xs">Track delivery status and performance</p>
+              <p className="text-[#64748B] text-xs">Track delivery status and performance</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button
               onClick={refetch}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </button>
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200"
             >
               <Download className="w-3.5 h-3.5" /> Export
             </button>
@@ -266,19 +266,19 @@ export default function DeliveredPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#1F1F1F]">
-                  <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Tracking</th>
-                  <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Product</th>
-                  <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
-                  <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Date</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Qty</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Status</th>
-                  <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
+                <tr className="border-b border-[#1F2937]">
+                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Tracking</th>
+                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Product</th>
+                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
+                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Date</th>
+                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Qty</th>
+                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Status</th>
+                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredByStatus.map((o) => (
-                  <tr key={o.id} className="border-b border-[#1F1F1F]/50 transition-all duration-150 hover:bg-[#1A1A1A] group">
+                  <tr key={o.id} className="border-b border-[#1F2937]/50 transition-all duration-150 hover:bg-[#1E293B] group">
                     <td className="py-3.5 px-4">
                       <span className="text-white font-mono text-xs">{o.orderId.substring(0, 12)}...</span>
                     </td>
@@ -288,7 +288,7 @@ export default function DeliveredPage() {
                           <img 
                             src={getImageUrlOrFallback(o.productImage)} 
                             alt={o.productName} 
-                            className="w-10 h-10 rounded-lg object-cover bg-[#1F1F1F]"
+                            className="w-10 h-10 rounded-lg object-cover bg-[#1F2937]"
                             referrerPolicy="no-referrer"
                             crossOrigin="anonymous"
                             onError={(e) => {
@@ -296,8 +296,8 @@ export default function DeliveredPage() {
                             }}
                           />
                         ) : (
-                          <div className="w-10 h-10 rounded-lg bg-[#1F1F1F] flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#606060" strokeWidth="2">
+                          <div className="w-10 h-10 rounded-lg bg-[#1F2937] flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2">
                               <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
                               <circle cx="9" cy="9" r="2"/>
                               <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
@@ -306,7 +306,7 @@ export default function DeliveredPage() {
                         )}
                         <div className="min-w-0">
                           <p className="text-white text-sm font-medium truncate max-w-[200px]">{o.productName}</p>
-                          <p className="text-[#606060] text-xs">{o.productCode}</p>
+                          <p className="text-[#64748B] text-xs">{o.productCode}</p>
                         </div>
                       </div>
                     </td>
@@ -319,7 +319,7 @@ export default function DeliveredPage() {
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="text-[#c0c0c0] text-sm">{new Date(o.date).toLocaleDateString()}</span>
+                      <span className="text-[#94A3B8] text-sm">{new Date(o.date).toLocaleDateString()}</span>
                     </td>
                     <td className="py-3.5 px-4 text-center">
                       <span className="text-white font-semibold">{o.quantity}</span>
@@ -334,7 +334,7 @@ export default function DeliveredPage() {
                 ))}
                 {filteredByStatus.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-[#606060]">
+                    <td colSpan={7} className="text-center py-12 text-[#64748B]">
                       No deliveries found
                     </td>
                   </tr>

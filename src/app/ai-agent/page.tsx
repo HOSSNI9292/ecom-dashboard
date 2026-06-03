@@ -491,19 +491,19 @@ ${found.fakeRate >= 0.5 ? "⛔ **خطير! وقف الإعلانات فوراً!
       <div className="flex flex-col h-[calc(100vh-10rem)]">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#06B6D4]/20 to-[#0891B2]/20">
-              <Bot className="w-6 h-6 text-[#22D3EE]" />
+            <div className="p-2.5 rounded-xl bg-gradient-to-br from-[#6366F1]/20 to-[#4F46E5]/20">
+              <Bot className="w-6 h-6 text-[#8B5CF6]" />
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">AI Agent</h1>
-              <p className="text-[#606060] text-xs">
+              <p className="text-[#64748B] text-xs">
                 {groqKey ? "🟢 Groq AI (Advanced)" : "🟢 Smart AI (Ready)"}
               </p>
             </div>
           </div>
           <button
             onClick={handleClear}
-            className="p-2 rounded-lg text-[#606060] hover:text-white hover:bg-[#1F1F1F] transition-all"
+            className="p-2 rounded-lg text-[#64748B] hover:text-white hover:bg-[#1F2937] transition-all"
             title="Clear chat"
           >
             <Trash2 className="w-4 h-4" />
@@ -518,39 +518,39 @@ ${found.fakeRate >= 0.5 ? "⛔ **خطير! وقف الإعلانات فوراً!
                 className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
               >
                 {msg.role === "assistant" && (
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#06B6D4]/20 to-[#0891B2]/20 flex items-center justify-center shrink-0">
-                    <Bot className="w-4 h-4 text-[#22D3EE]" />
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#6366F1]/20 to-[#4F46E5]/20 flex items-center justify-center shrink-0">
+                    <Bot className="w-4 h-4 text-[#8B5CF6]" />
                   </div>
                 )}
                 <div
                   className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                     msg.role === "user"
-                      ? "bg-[#06B6D4] text-white"
-                      : "bg-[#1F1F1F] text-[#e0e0e0]"
+                      ? "bg-[#6366F1] text-white"
+                      : "bg-[#1F2937] text-[#F8FAFC]"
                   }`}
                 >
                   <div className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</div>
-                  <div className={`text-xs mt-1 ${msg.role === "user" ? "text-white/70" : "text-[#606060]"}`}>
+                  <div className={`text-xs mt-1 ${msg.role === "user" ? "text-white/70" : "text-[#64748B]"}`}>
                     {msg.timestamp.toLocaleTimeString("ar-MA", { hour: "2-digit", minute: "2-digit" })}
                   </div>
                 </div>
                 {msg.role === "user" && (
-                  <div className="w-8 h-8 rounded-lg bg-[#1F1F1F] flex items-center justify-center shrink-0">
-                    <User className="w-4 h-4 text-[#e0e0e0]" />
+                  <div className="w-8 h-8 rounded-lg bg-[#1F2937] flex items-center justify-center shrink-0">
+                    <User className="w-4 h-4 text-[#F8FAFC]" />
                   </div>
                 )}
               </div>
             ))}
             {isTyping && (
               <div className="flex gap-3">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#06B6D4]/20 to-[#0891B2]/20 flex items-center justify-center shrink-0">
-                  <Bot className="w-4 h-4 text-[#22D3EE]" />
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#6366F1]/20 to-[#4F46E5]/20 flex items-center justify-center shrink-0">
+                  <Bot className="w-4 h-4 text-[#8B5CF6]" />
                 </div>
-                <div className="bg-[#1F1F1F] rounded-2xl px-4 py-3">
+                <div className="bg-[#1F2937] rounded-2xl px-4 py-3">
                   <div className="flex gap-1">
-                    <div className="w-2 h-2 bg-[#606060] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                    <div className="w-2 h-2 bg-[#606060] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                    <div className="w-2 h-2 bg-[#606060] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                    <div className="w-2 h-2 bg-[#64748B] rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <div className="w-2 h-2 bg-[#64748B] rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <div className="w-2 h-2 bg-[#64748B] rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                   </div>
                 </div>
               </div>
@@ -558,20 +558,20 @@ ${found.fakeRate >= 0.5 ? "⛔ **خطير! وقف الإعلانات فوراً!
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="border-t border-[#1F1F1F] p-4">
+          <div className="border-t border-[#1F2937] p-4">
             <div className="flex gap-2">
               <textarea
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
                 placeholder="سولني على المنتجات، الستوك، النصائح..."
-                className="flex-1 px-4 py-3 bg-[#0A0A0A] border border-[#1F1F1F] rounded-xl text-white text-sm placeholder:text-[#404040] focus:outline-none focus:border-[#06B6D4]/50 resize-none"
+                className="flex-1 px-4 py-3 bg-[#0B0F19] border border-[#1F2937] rounded-xl text-white text-sm placeholder:text-[#475569] focus:outline-none focus:border-[#6366F1]/50 resize-none"
                 rows={1}
               />
               <button
                 onClick={handleSend}
                 disabled={!input.trim() || isTyping}
-                className="px-4 py-3 bg-[#06B6D4] hover:bg-[#0891B2] disabled:bg-[#1F1F1F] disabled:text-[#404040] text-white rounded-xl transition-all duration-200 disabled:cursor-not-allowed"
+                className="px-4 py-3 bg-[#6366F1] hover:bg-[#4F46E5] disabled:bg-[#1F2937] disabled:text-[#475569] text-white rounded-xl transition-all duration-200 disabled:cursor-not-allowed"
               >
                 <Send className="w-5 h-5" />
               </button>
@@ -579,35 +579,35 @@ ${found.fakeRate >= 0.5 ? "⛔ **خطير! وقف الإعلانات فوراً!
             <div className="flex gap-2 mt-3 flex-wrap">
               <button
                 onClick={() => setInput("شنو أحسن منتج عندي؟")}
-                className="px-3 py-1.5 bg-[#1F1F1F] hover:bg-[#2a2a2a] text-[#e0e0e0] text-xs rounded-lg transition-all"
+                className="px-3 py-1.5 bg-[#1F2937] hover:bg-[#334155] text-[#F8FAFC] text-xs rounded-lg transition-all"
               >
                 <Sparkles className="w-3 h-3 inline mr-1" />
                 أحسن منتج
               </button>
               <button
                 onClick={() => setInput("شنو المنتجات اللي خاصني نوقف الإعلانات ديالهم؟")}
-                className="px-3 py-1.5 bg-[#1F1F1F] hover:bg-[#2a2a2a] text-[#e0e0e0] text-xs rounded-lg transition-all"
+                className="px-3 py-1.5 bg-[#1F2937] hover:bg-[#334155] text-[#F8FAFC] text-xs rounded-lg transition-all"
               >
                 <TrendingDown className="w-3 h-3 inline mr-1" />
                 نوقف الإعلانات
               </button>
               <button
                 onClick={() => setInput("شحال باقي ف الستوك؟ شنو خاصني نعاود نطلب؟")}
-                className="px-3 py-1.5 bg-[#1F1F1F] hover:bg-[#2a2a2a] text-[#e0e0e0] text-xs rounded-lg transition-all"
+                className="px-3 py-1.5 bg-[#1F2937] hover:bg-[#334155] text-[#F8FAFC] text-xs rounded-lg transition-all"
               >
                 <Package className="w-3 h-3 inline mr-1" />
                 الستوك
               </button>
               <button
                 onClick={() => setInput("عطيني ملخص كامل على البيزنس ديالي")}
-                className="px-3 py-1.5 bg-[#1F1F1F] hover:bg-[#2a2a2a] text-[#e0e0e0] text-xs rounded-lg transition-all"
+                className="px-3 py-1.5 bg-[#1F2937] hover:bg-[#334155] text-[#F8FAFC] text-xs rounded-lg transition-all"
               >
                 <BarChart3 className="w-3 h-3 inline mr-1" />
                 ملخص
               </button>
               <button
                 onClick={() => setInput("شنو النصائح اللي عندك ليا باش نزيد الربح؟")}
-                className="px-3 py-1.5 bg-[#1F1F1F] hover:bg-[#2a2a2a] text-[#e0e0e0] text-xs rounded-lg transition-all"
+                className="px-3 py-1.5 bg-[#1F2937] hover:bg-[#334155] text-[#F8FAFC] text-xs rounded-lg transition-all"
               >
                 <AlertTriangle className="w-3 h-3 inline mr-1" />
                 نصائح

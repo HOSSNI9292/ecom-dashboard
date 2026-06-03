@@ -44,17 +44,17 @@ export const COUNTRY_FLAGS: Record<string, string> = {
 };
 
 export const STATUS_COLORS: Record<string, string> = {
-  pending: "#f59e0b",
-  confirmed: "#3b82f6",
-  delivered: "#10b981",
-  shipped: "#14b8a6",
-  shipping: "#14b8a6",
-  cancelled: "#ef4444",
-  returned: "#8b5cf6",
-  double: "#ec4899",
-  transferred: "#06b6d4",
-  out_of_stock: "#6b7280",
-  unreached: "#94a3b8",
+  pending: "#F59E0B",
+  confirmed: "#10B981",
+  delivered: "#10B981",
+  shipped: "#8B5CF6",
+  shipping: "#8B5CF6",
+  cancelled: "#EF4444",
+  returned: "#8B5CF6",
+  double: "#8B5CF6",
+  transferred: "#06B6D4",
+  out_of_stock: "#64748B",
+  unreached: "#94A3B8",
 };
 
 export const STATUS_MAP: Record<string, string> = {
@@ -113,7 +113,7 @@ export const COUNTRY_COLORS = [
   "#06b6d4",
   "#ec4899",
   "#84cc16",
-  "#14b8a6",
+  "#a78bfa",
   "#f97316",
   "#a855f7",
   "#22d3ee",

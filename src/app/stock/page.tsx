@@ -106,7 +106,7 @@ export default function StockPage() {
           </CardHeader>
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="flex-1 h-3 bg-[#1F1F1F] rounded-full overflow-hidden flex">
+              <div className="flex-1 h-3 bg-[#1F2937] rounded-full overflow-hidden flex">
                 <div
                   className="h-full bg-[#10b981] transition-all duration-500"
                   style={{ width: `${stockHealth.healthyPct}%` }}
@@ -127,17 +127,17 @@ export default function StockPage() {
             <div className="grid grid-cols-3 gap-4 text-center">
               <div className="p-3 rounded-xl bg-[#10b981]/5 border border-[#10b981]/10">
                 <p className="text-[#10b981] text-2xl font-bold">{stockHealth.healthy}</p>
-                <p className="text-[#606060] text-xs mt-0.5">Healthy</p>
+                <p className="text-[#64748B] text-xs mt-0.5">Healthy</p>
                 <p className="text-[#10b981] text-xs">{stockHealth.healthyPct.toFixed(0)}%</p>
               </div>
               <div className="p-3 rounded-xl bg-[#f59e0b]/5 border border-[#f59e0b]/10">
                 <p className="text-[#f59e0b] text-2xl font-bold">{stockHealth.low}</p>
-                <p className="text-[#606060] text-xs mt-0.5">Low Stock</p>
+                <p className="text-[#64748B] text-xs mt-0.5">Low Stock</p>
                 <p className="text-[#f59e0b] text-xs">{stockHealth.lowPct.toFixed(0)}%</p>
               </div>
               <div className="p-3 rounded-xl bg-[#ef4444]/5 border border-[#ef4444]/10">
                 <p className="text-[#ef4444] text-2xl font-bold">{stockHealth.out}</p>
-                <p className="text-[#606060] text-xs mt-0.5">Out of Stock</p>
+                <p className="text-[#64748B] text-xs mt-0.5">Out of Stock</p>
                 <p className="text-[#ef4444] text-xs">{stockHealth.outPct.toFixed(0)}%</p>
               </div>
             </div>
@@ -153,7 +153,7 @@ export default function StockPage() {
             {lowStock.loading && !lowStock.data ? (
               <div className="py-12 flex justify-center">
                 <div className="relative">
-                  <div className="w-8 h-8 border-2 border-[#1F1F1F] rounded-full" />
+                  <div className="w-8 h-8 border-2 border-[#1F2937] rounded-full" />
                   <div className="w-8 h-8 border-2 border-transparent border-t-[#f59e0b] rounded-full animate-spin absolute inset-0" />
                 </div>
               </div>
@@ -163,13 +163,13 @@ export default function StockPage() {
                   <div key={p.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-[#f59e0b]/5 border border-[#f59e0b]/10 hover:bg-[#f59e0b]/10 transition-all duration-200">
                     <div className="min-w-0 flex-1">
                       <p className="text-white text-sm font-medium truncate">{p.name}</p>
-                      <p className="text-[#606060] text-xs">{p.code}</p>
+                      <p className="text-[#64748B] text-xs">{p.code}</p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0 ml-3">
                       <span className="text-[#f59e0b] font-bold text-lg">{formatNumber(p.stockQuantity)}</span>
                       <div className="flex flex-col items-end">
-                        <span className="text-[#c0c0c0] text-xs">{formatNumber(p.totalSold)} sold</span>
-                        <span className="text-[#606060] text-xs">{formatCurrency(p.revenue)}</span>
+                        <span className="text-[#94A3B8] text-xs">{formatNumber(p.totalSold)} sold</span>
+                        <span className="text-[#64748B] text-xs">{formatCurrency(p.revenue)}</span>
                       </div>
                     </div>
                   </div>
@@ -191,7 +191,7 @@ export default function StockPage() {
             {outOfStock.loading && !outOfStock.data ? (
               <div className="py-12 flex justify-center">
                 <div className="relative">
-                  <div className="w-8 h-8 border-2 border-[#1F1F1F] rounded-full" />
+                  <div className="w-8 h-8 border-2 border-[#1F2937] rounded-full" />
                   <div className="w-8 h-8 border-2 border-transparent border-t-[#ef4444] rounded-full animate-spin absolute inset-0" />
                 </div>
               </div>
@@ -201,13 +201,13 @@ export default function StockPage() {
                   <div key={p.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-[#ef4444]/5 border border-[#ef4444]/10 hover:bg-[#ef4444]/10 transition-all duration-200">
                     <div className="min-w-0 flex-1">
                       <p className="text-white text-sm font-medium truncate">{p.name}</p>
-                      <p className="text-[#606060] text-xs">{p.code}</p>
+                      <p className="text-[#64748B] text-xs">{p.code}</p>
                     </div>
                     <div className="flex items-center gap-3 shrink-0 ml-3">
                       <span className="text-[#ef4444] font-bold text-lg">0</span>
                       <div className="flex flex-col items-end">
-                        <span className="text-[#c0c0c0] text-xs">{formatNumber(p.totalSold)} sold</span>
-                        <span className="text-[#606060] text-xs">{formatCurrency(p.revenue)}</span>
+                        <span className="text-[#94A3B8] text-xs">{formatNumber(p.totalSold)} sold</span>
+                        <span className="text-[#64748B] text-xs">{formatCurrency(p.revenue)}</span>
                       </div>
                     </div>
                   </div>
@@ -232,24 +232,24 @@ export default function StockPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#1F1F1F]">
-                  <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111111]">Product</th>
-                  <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111111]">Stock</th>
-                  <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111111]">Sold</th>
-                  <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111111]">Revenue</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111111]">Status</th>
+                <tr className="border-b border-[#1F2937]">
+                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111827]">Product</th>
+                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111827]">Stock</th>
+                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111827]">Sold</th>
+                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111827]">Revenue</th>
+                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111827]">Status</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredInventory.map((p: Product) => (
-                  <tr key={p.id} className="border-b border-[#1F1F1F]/50 transition-all duration-150 hover:bg-[#1A1A1A] group">
+                  <tr key={p.id} className="border-b border-[#1F2937]/50 transition-all duration-150 hover:bg-[#1E293B] group">
                     <td className="py-3.5 px-4">
                       <p className="text-white text-sm font-medium">{p.name}</p>
-                      <p className="text-[#606060] text-xs">{p.code}</p>
+                      <p className="text-[#64748B] text-xs">{p.code}</p>
                     </td>
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex items-center justify-end gap-2">
-                        <div className="w-16 h-1.5 rounded-full bg-[#1F1F1F] overflow-hidden">
+                        <div className="w-16 h-1.5 rounded-full bg-[#1F2937] overflow-hidden">
                           <div
                             className={`h-full rounded-full ${
                               p.stockQuantity === 0 ? "bg-[#ef4444]" :
@@ -266,7 +266,7 @@ export default function StockPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 text-right text-[#c0c0c0]">{formatNumber(p.totalSold)}</td>
+                    <td className="py-3.5 px-4 text-right text-[#94A3B8]">{formatNumber(p.totalSold)}</td>
                     <td className="py-3.5 px-4 text-right text-white font-medium">{formatCurrency(p.revenue)}</td>
                     <td className="py-3.5 px-4 text-center">
                       {p.stockQuantity === 0 ? (
@@ -286,7 +286,7 @@ export default function StockPage() {
                   </tr>
                 ))}
                 {filteredInventory.length === 0 && (
-                  <tr><td colSpan={5} className="text-center py-12 text-[#606060]">No products match search</td></tr>
+                  <tr><td colSpan={5} className="text-center py-12 text-[#64748B]">No products match search</td></tr>
                 )}
               </tbody>
             </table>

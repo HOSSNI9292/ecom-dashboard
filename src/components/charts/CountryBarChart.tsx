@@ -25,8 +25,8 @@ function CustomTooltip({ active, payload, label }: any) {
   const val = payload[0].value;
   const dataKey = payload[0].dataKey;
   return (
-    <div className="bg-[#111111] border border-[#1F1F1F] rounded-lg p-3 shadow-2xl">
-      <p className="text-[#606060] text-xs mb-1">{label}</p>
+    <div className="bg-[#111827] border border-[#1F2937] rounded-lg p-3 shadow-2xl">
+      <p className="text-[#64748B] text-xs mb-1">{label}</p>
       <p className="text-white font-semibold text-sm">
         {dataKey === "revenue"
           ? formatCurrency(val)
@@ -49,7 +49,7 @@ export function CountryBarChart({
     .slice(0, 10);
 
   const barColor = dataKey === "revenue"
-    ? "#06B6D4"
+    ? "#6366F1"
     : dataKey === "orders"
       ? "#10b981"
       : "#f59e0b";
@@ -62,12 +62,12 @@ export function CountryBarChart({
       {loading ? (
         <div className="h-[300px] flex items-center justify-center">
           <div className="relative">
-            <div className="w-10 h-10 border-2 border-[#1F1F1F] rounded-full" />
-            <div className="w-10 h-10 border-2 border-transparent border-t-[#06B6D4] rounded-full animate-spin absolute inset-0" />
+            <div className="w-10 h-10 border-2 border-[#1F2937] rounded-full" />
+            <div className="w-10 h-10 border-2 border-transparent border-t-[#6366F1] rounded-full animate-spin absolute inset-0" />
           </div>
         </div>
       ) : chartData.length === 0 ? (
-        <div className="h-[300px] flex items-center justify-center text-[#606060] text-sm">No data</div>
+        <div className="h-[300px] flex items-center justify-center text-[#64748B] text-sm">No data</div>
       ) : (
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
@@ -78,24 +78,24 @@ export function CountryBarChart({
                   <stop offset="100%" stopColor={barColor} stopOpacity={0.4} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="4 4" stroke="#1F1F1F" vertical={false} />
+              <CartesianGrid strokeDasharray="4 4" stroke="#1F2937" vertical={false} />
               <XAxis
                 dataKey="countryName"
-                stroke="#404040"
-                tick={{ fontSize: 11, fill: "#606060" }}
+                stroke="#475569"
+                tick={{ fontSize: 11, fill: "#64748B" }}
                 tickLine={false}
                 axisLine={false}
               />
               <YAxis
-                stroke="#404040"
-                tick={{ fontSize: 11, fill: "#606060" }}
+                stroke="#475569"
+                tick={{ fontSize: 11, fill: "#64748B" }}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(v) =>
                   dataKey === "revenue" ? `${(v / 1000).toFixed(0)}k` : String(v)
                 }
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "#1F1F1F" }} />
+              <Tooltip content={<CustomTooltip />} cursor={{ fill: "#1F2937" }} />
               <Bar
                 dataKey={dataKey}
                 fill={`url(#barGradient-${dataKey})`}

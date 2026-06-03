@@ -11,13 +11,13 @@ interface CardProps {
 export function Card({ children, className = "", onClick, hover = true, gradient = false }: CardProps) {
   return (
     <div
-      className={`bg-[#111111] border border-[#1F1F1F] rounded-xl p-5 transition-all duration-200 ${
+      className={`bg-[#111827] border border-[#1F2937] rounded-xl p-5 transition-all duration-200 ${
         hover && onClick
-          ? "cursor-pointer hover:border-[#06B6D4]/30 hover:shadow-[0_0_20px_rgba(6,182,212,0.05)]"
+          ? "cursor-pointer hover:border-[#6366F1]/30 hover:shadow-[0_0_20px_rgba(99,102,241,0.05)]"
           : hover
-            ? "hover:border-[#2a2a2a]"
+            ? "hover:border-[#334155]"
             : ""
-      } ${gradient ? "bg-gradient-to-br from-[#111111] to-[#0A0A0A]" : ""} ${className}`}
+      } ${gradient ? "bg-gradient-to-br from-[#111827] to-[#0B0F19]" : ""} ${className}`}
       onClick={onClick}
     >
       {children}

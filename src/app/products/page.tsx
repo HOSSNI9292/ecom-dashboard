@@ -112,7 +112,7 @@ export default function ProductsPage() {
         const isTop = perfScore > 0.5;
         return (
             <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-[#1F1F1F] flex items-center justify-center shrink-0 overflow-hidden">
+            <div className="w-12 h-12 rounded-xl bg-[#1F2937] flex items-center justify-center shrink-0 overflow-hidden">
               {p.image ? (
                 <img 
                   src={getImageUrlOrFallback(p.image)} 
@@ -126,7 +126,7 @@ export default function ProductsPage() {
                   }}
                 />
               ) : (
-                <ImageIcon className="w-5 h-5 text-[#606060]" />
+                <ImageIcon className="w-5 h-5 text-[#64748B]" />
               )}
             </div>
             <div className="min-w-0">
@@ -138,7 +138,7 @@ export default function ProductsPage() {
                   </span>
                 )}
               </div>
-              <p className="text-[#606060] text-xs">{p.code}</p>
+              <p className="text-[#64748B] text-xs">{p.code}</p>
             </div>
           </div>
         );
@@ -149,7 +149,7 @@ export default function ProductsPage() {
       header: "Stock",
       render: (p: Product) => (
         <div className="flex items-center gap-2">
-          <div className="w-16 h-1.5 rounded-full bg-[#1F1F1F] overflow-hidden">
+          <div className="w-16 h-1.5 rounded-full bg-[#1F2937] overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-300 ${
                 p.stockQuantity === 0 ? "bg-[#ef4444]" : p.stockQuantity <= 10 ? "bg-[#f59e0b]" : "bg-[#10b981]"
@@ -178,8 +178,8 @@ export default function ProductsPage() {
         return (
           <div>
             <span className="text-white font-semibold">{formatCurrency(p.revenue)}</span>
-            <div className="w-20 h-1 rounded-full bg-[#1F1F1F] mt-1 overflow-hidden">
-              <div className="h-full rounded-full bg-[#06B6D4]" style={{ width: `${share * 100}%` }} />
+            <div className="w-20 h-1 rounded-full bg-[#1F2937] mt-1 overflow-hidden">
+              <div className="h-full rounded-full bg-[#6366F1]" style={{ width: `${share * 100}%` }} />
             </div>
           </div>
         );
@@ -188,12 +188,12 @@ export default function ProductsPage() {
     {
       key: "price",
       header: "Price",
-      render: (p: Product) => <span className="text-[#c0c0c0]">{formatCurrency(p.price)}</span>,
+      render: (p: Product) => <span className="text-[#94A3B8]">{formatCurrency(p.price)}</span>,
     },
     {
       key: "countryName",
       header: "Country",
-      render: (p: Product) => <span className="text-[#606060]">{p.countryName || p.country}</span>,
+      render: (p: Product) => <span className="text-[#64748B]">{p.countryName || p.country}</span>,
     },
     {
       key: "performance",
@@ -247,13 +247,13 @@ export default function ProductsPage() {
           />
           <button
             onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2.5 bg-[#111111] border border-[#1F1F1F] hover:border-[#06B6D4]/30 text-white rounded-lg transition-all duration-200 text-sm hover:bg-[#1A1A1A]"
+            className="flex items-center gap-2 px-4 py-2.5 bg-[#111827] border border-[#1F2937] hover:border-[#6366F1]/30 text-white rounded-lg transition-all duration-200 text-sm hover:bg-[#1E293B]"
           >
             <Download className="w-4 h-4" /> Export CSV
           </button>
         </div>
 
-        <div className="bg-[#111111] border border-[#1F1F1F] rounded-xl overflow-hidden">
+        <div className="bg-[#111827] border border-[#1F2937] rounded-xl overflow-hidden">
           <DataTable columns={columns} data={data?.products ?? []} keyExtractor={(p: Product) => p.id} loading={loading} emptyMessage="No products" />
         </div>
 

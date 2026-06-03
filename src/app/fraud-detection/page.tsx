@@ -232,14 +232,14 @@ export default function FraudDetectionPage() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-white">Fraud Detection</h1>
-              <p className="text-[#606060] text-xs">Identify products with fake orders</p>
+              <p className="text-[#64748B] text-xs">Identify products with fake orders</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <button onClick={refetch} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200">
+            <button onClick={refetch} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200">
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
             </button>
-            <button onClick={handleExport} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#111111] border border-[#1F1F1F] transition-all duration-200">
+            <button onClick={handleExport} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200">
               <Download className="w-3.5 h-3.5" /> Export
             </button>
           </div>
@@ -277,13 +277,13 @@ export default function FraudDetectionPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-white text-sm font-medium truncate">{p.productName}</p>
-                    <p className="text-[#606060] text-xs">{p.productCode}</p>
+                    <p className="text-[#64748B] text-xs">{p.productCode}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-4 shrink-0 ml-3">
                   <div className="text-right">
                     <p className="text-[#ef4444] text-lg font-bold">{formatPercentage(p.fakeRate)}</p>
-                    <p className="text-[#606060] text-xs">{p.fakeOrders}/{p.totalOrders} fake</p>
+                    <p className="text-[#64748B] text-xs">{p.fakeOrders}/{p.totalOrders} fake</p>
                   </div>
                   {p.isFlagged ? (
                     <button onClick={() => handleUnflag(p.productCode)} className="p-2 rounded-lg bg-[#10b981]/10 text-[#10b981] hover:bg-[#10b981]/20 transition-all" title="Unflag - Resume ads">
@@ -338,39 +338,39 @@ export default function FraudDetectionPage() {
         <Card hover={false}>
           <CardHeader>
             <CardTitle>All Products Analysis</CardTitle>
-            <span className="text-[#606060] text-xs">{filtered.length} products</span>
+            <span className="text-[#64748B] text-xs">{filtered.length} products</span>
           </CardHeader>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#1F1F1F]">
-                  <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Product</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Total</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fake</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Cancelled</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Double</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Confirmed</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fake Rate</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Risk</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Status</th>
-                  <th className="text-center text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Action</th>
+                <tr className="border-b border-[#1F2937]">
+                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Product</th>
+                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Total</th>
+                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fake</th>
+                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Cancelled</th>
+                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Double</th>
+                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Confirmed</th>
+                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fake Rate</th>
+                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Risk</th>
+                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Status</th>
+                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((p) => (
-                  <tr key={p.productCode} className="border-b border-[#1F1F1F]/50 transition-all duration-150 hover:bg-[#1A1A1A] group">
+                  <tr key={p.productCode} className="border-b border-[#1F2937]/50 transition-all duration-150 hover:bg-[#1E293B] group">
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-[#1F1F1F] flex items-center justify-center shrink-0 overflow-hidden">
+                        <div className="w-10 h-10 rounded-lg bg-[#1F2937] flex items-center justify-center shrink-0 overflow-hidden">
                           {p.productImage ? (
                             <img src={p.productImage} alt={p.productName} className="w-full h-full object-cover" loading="lazy" />
                           ) : (
-                            <ShieldAlert className="w-4 h-4 text-[#606060]" />
+                            <ShieldAlert className="w-4 h-4 text-[#64748B]" />
                           )}
                         </div>
                         <div className="min-w-0">
                           <p className="text-white text-sm font-medium truncate max-w-[200px]">{p.productName}</p>
-                          <p className="text-[#606060] text-xs">{p.productCode}</p>
+                          <p className="text-[#64748B] text-xs">{p.productCode}</p>
                         </div>
                       </div>
                     </td>
@@ -394,7 +394,7 @@ export default function FraudDetectionPage() {
                           <Flag className="w-3 h-3" /> Flagged
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-[#1F1F1F] text-[#606060] border border-[#1F1F1F]">
+                        <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-[#1F2937] text-[#64748B] border border-[#1F2937]">
                           Active
                         </span>
                       )}
@@ -413,7 +413,7 @@ export default function FraudDetectionPage() {
                   </tr>
                 ))}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={10} className="text-center py-12 text-[#606060]">No products found</td></tr>
+                  <tr><td colSpan={10} className="text-center py-12 text-[#64748B]">No products found</td></tr>
                 )}
               </tbody>
             </table>
@@ -426,30 +426,30 @@ export default function FraudDetectionPage() {
           <div className="space-y-4">
             <div className="p-4 rounded-xl bg-[#ef4444]/5 border border-[#ef4444]/20">
               <p className="text-white font-medium">{selectedProduct.productName}</p>
-              <p className="text-[#606060] text-xs mt-1">{selectedProduct.productCode}</p>
+              <p className="text-[#64748B] text-xs mt-1">{selectedProduct.productCode}</p>
               <div className="flex items-center gap-4 mt-3">
                 <div>
                   <p className="text-[#ef4444] text-lg font-bold">{formatPercentage(selectedProduct.fakeRate)}</p>
-                  <p className="text-[#606060] text-xs">Fake Rate</p>
+                  <p className="text-[#64748B] text-xs">Fake Rate</p>
                 </div>
                 <div>
                   <p className="text-white text-lg font-bold">{selectedProduct.fakeOrders}</p>
-                  <p className="text-[#606060] text-xs">Fake Orders</p>
+                  <p className="text-[#64748B] text-xs">Fake Orders</p>
                 </div>
                 <div>
                   <p className="text-[#f59e0b] text-lg font-bold">{formatCurrency(selectedProduct.fakeRevenue)}</p>
-                  <p className="text-[#606060] text-xs">Lost Revenue</p>
+                  <p className="text-[#64748B] text-xs">Lost Revenue</p>
                 </div>
               </div>
             </div>
             <div>
-              <label className="text-[#c0c0c0] text-sm font-medium block mb-2">Reason (optional)</label>
+              <label className="text-[#94A3B8] text-sm font-medium block mb-2">Reason (optional)</label>
               <input
                 type="text"
                 value={flagReason}
                 onChange={(e) => setFlagReason(e.target.value)}
                 placeholder="e.g., Too many cancellations, fake leads..."
-                className="w-full px-4 py-2.5 bg-[#0A0A0A] border border-[#1F1F1F] rounded-lg text-white text-sm placeholder:text-[#404040] focus:outline-none focus:border-[#ef4444]/50"
+                className="w-full px-4 py-2.5 bg-[#0B0F19] border border-[#1F2937] rounded-lg text-white text-sm placeholder:text-[#475569] focus:outline-none focus:border-[#ef4444]/50"
               />
             </div>
             <div className="flex items-center gap-3 pt-2">
@@ -461,7 +461,7 @@ export default function FraudDetectionPage() {
               </button>
               <button
                 onClick={() => setShowFlagModal(false)}
-                className="px-4 py-2.5 bg-[#1F1F1F] hover:bg-[#2a2a2a] text-white rounded-lg transition-all duration-200 text-sm"
+                className="px-4 py-2.5 bg-[#1F2937] hover:bg-[#334155] text-white rounded-lg transition-all duration-200 text-sm"
               >
                 Cancel
               </button>

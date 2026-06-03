@@ -29,7 +29,7 @@ const MOCK_ORDERS: CodinAfricaOrder[] = [
   },
   {
     _id: "3", id: "ORD-003", customer: { fullName: "Mohamed Amine", phone: "+213555123456", country: "DZ", city: "Algiers" },
-    status: { _id: "s2", name: "Shipping", color: "#3b82f6" }, date: "2026-06-02T09:15:00Z", createdAt: "2026-06-02T09:15:00Z", updatedAt: "2026-06-02T09:15:00Z",
+    status: { _id: "s2", name: "Shipping", color: "#6366F1" }, date: "2026-06-02T09:15:00Z", createdAt: "2026-06-02T09:15:00Z", updatedAt: "2026-06-02T09:15:00Z",
     totalPrice: 899, source: "facebook",
     details: [{ _id: "d3", name: "Fitness Tracker", quantity: 1, unitPrice: 899, picture: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=200", product: { _id: "p3", name: "Fitness Tracker", code: ["FT-003"], price: 899, picture: "https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?w=200", relatedPictures: [], quantity: { inStock: 30, defective: 0, total: 30 }, details: [{ warehouse: "WH-DZ", country: "DZ", currency: "DZD", price: 899, quantity: { total: 30, inStock: 30, defective: 0, stockAll: 30, expedition: 0 } }] } }],
   },
@@ -65,7 +65,7 @@ const MOCK_ORDERS: CodinAfricaOrder[] = [
   },
   {
     _id: "9", id: "ORD-009", customer: { fullName: "Grace Okafor", phone: "+2347098765432", country: "NG", city: "Abuja" },
-    status: { _id: "s2", name: "Shipping", color: "#3b82f6" }, date: "2026-06-03T15:45:00Z", createdAt: "2026-06-03T15:45:00Z", updatedAt: "2026-06-03T15:45:00Z",
+    status: { _id: "s2", name: "Shipping", color: "#6366F1" }, date: "2026-06-03T15:45:00Z", createdAt: "2026-06-03T15:45:00Z", updatedAt: "2026-06-03T15:45:00Z",
     totalPrice: 1850, source: "instagram",
     details: [{ _id: "d9", name: "Wireless Charger", quantity: 1, unitPrice: 1850, picture: "https://images.unsplash.com/photo-1586953208270-767889fa9b0f?w=200", product: { _id: "p9", name: "Wireless Charger", code: ["WC-009"], price: 1850, picture: "https://images.unsplash.com/photo-1586953208270-767889fa9b0f?w=200", relatedPictures: [], quantity: { inStock: 42, defective: 0, total: 42 }, details: [{ warehouse: "WH-NG", country: "NG", currency: "NGN", price: 1850, quantity: { total: 42, inStock: 42, defective: 0, stockAll: 42, expedition: 0 } }] } }],
   },
@@ -83,7 +83,7 @@ const MOCK_ORDERS: CodinAfricaOrder[] = [
   },
   {
     _id: "12", id: "ORD-012", customer: { fullName: "Leila Benjelloun", phone: "+212677889900", country: "MA", city: "Fes" },
-    status: { _id: "s6", name: "Out of Stock", color: "#6b7280" }, date: "2026-05-30T14:00:00Z", createdAt: "2026-05-30T14:00:00Z", updatedAt: "2026-05-30T14:00:00Z",
+    status: { _id: "s6", name: "Out of Stock", color: "#64748B" }, date: "2026-05-30T14:00:00Z", createdAt: "2026-05-30T14:00:00Z", updatedAt: "2026-05-30T14:00:00Z",
     totalPrice: 1500, source: "tiktok",
     details: [{ _id: "d12", name: "Drone Mini", quantity: 1, unitPrice: 1500, picture: "https://images.unsplash.com/photo-1507502284763-83e33ef8b1d5?w=200", product: { _id: "p12", name: "Drone Mini", code: ["DM-012"], price: 1500, picture: "https://images.unsplash.com/photo-1507502284763-83e33ef8b1d5?w=200", relatedPictures: [], quantity: { inStock: 0, defective: 0, total: 0 }, details: [{ warehouse: "WH-MA", country: "MA", currency: "MAD", price: 1500, quantity: { total: 0, inStock: 0, defective: 0, stockAll: 0, expedition: 0 } }] } }],
   },
@@ -163,7 +163,7 @@ function mapOrder(raw: CodinAfricaOrder): Order {
     countryName: COUNTRY_NAMES[raw.customer?.country] || raw.customer?.country || "",
     status: mappedStatus,
     rawStatus: rawStatusName,
-    statusColor: raw.status?.color || "#808080",
+    statusColor: raw.status?.color || "#94A3B8",
     date: raw.date || raw.createdAt,
     amount: Math.round(raw.totalPrice || 0),
     productName: detail?.name || product?.name || "Unknown",

@@ -71,22 +71,22 @@ export default function SettingsPage() {
     }
   }, [creds]);
 
-  const inputClass = "w-full bg-[#111111] border border-[#1F1F1F] rounded-lg text-white placeholder-[#606060] focus:outline-none focus:border-[#06B6D4]/50 focus:ring-1 focus:ring-[#06B6D4]/20 transition-all duration-200 text-sm px-3 py-2.5";
+  const inputClass = "w-full bg-[#111827] border border-[#1F2937] rounded-lg text-white placeholder-[#64748B] focus:outline-none focus:border-[#6366F1]/50 focus:ring-1 focus:ring-[#6366F1]/20 transition-all duration-200 text-sm px-3 py-2.5";
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
       <Card hover={false}>
         <CardHeader>
           <div className="flex items-center gap-2.5">
-            <div className="p-2 rounded-lg bg-[#06B6D4]/10">
-              <Shield className="w-5 h-5 text-[#22D3EE]" />
+            <div className="p-2 rounded-lg bg-[#6366F1]/10">
+              <Shield className="w-5 h-5 text-[#8B5CF6]" />
             </div>
             <CardTitle>API Credentials</CardTitle>
           </div>
         </CardHeader>
         <div className="space-y-5">
           <div>
-            <label className="block text-[#808080] text-sm font-medium mb-1.5">
+            <label className="block text-[#94A3B8] text-sm font-medium mb-1.5">
               <Globe className="w-4 h-4 inline mr-1.5" />
               API URL
             </label>
@@ -99,7 +99,7 @@ export default function SettingsPage() {
             />
           </div>
           <div>
-            <label className="block text-[#808080] text-sm font-medium mb-1.5">
+            <label className="block text-[#94A3B8] text-sm font-medium mb-1.5">
               <Key className="w-4 h-4 inline mr-1.5" />
               X-Auth-Token
             </label>
@@ -113,7 +113,7 @@ export default function SettingsPage() {
               />
               <button
                 onClick={() => setShowToken(!showToken)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#606060] hover:text-white transition-colors duration-200"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-white transition-colors duration-200"
               >
                 {showToken ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -123,7 +123,7 @@ export default function SettingsPage() {
           <div className="flex flex-col sm:flex-row gap-3 pt-2">
             <button
               onClick={handleSave}
-              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#06B6D4] hover:bg-[#0891B2] text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-[0_0_16px_rgba(6,182,212,0.2)] hover:shadow-[0_0_24px_rgba(6,182,212,0.3)]"
+              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-[0_0_16px_rgba(99,102,241,0.2)] hover:shadow-[0_0_24px_rgba(99,102,241,0.3)]"
             >
               {saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
               {saved ? "Saved!" : "Save Credentials"}
@@ -131,7 +131,7 @@ export default function SettingsPage() {
             <button
               onClick={handleTest}
               disabled={testing || !creds.token}
-              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#111111] border border-[#1F1F1F] hover:border-[#06B6D4]/30 text-white rounded-lg transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#111827] border border-[#1F2937] hover:border-[#6366F1]/30 text-white rounded-lg transition-all duration-200 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {testing ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -160,7 +160,7 @@ export default function SettingsPage() {
                 <p className={`text-sm font-medium ${testResult.success ? "text-[#10b981]" : "text-[#ef4444]"}`}>
                   {testResult.success ? "Success" : "Error"}
                 </p>
-                <p className="text-[#808080] text-sm mt-0.5">{testResult.message}</p>
+                <p className="text-[#94A3B8] text-sm mt-0.5">{testResult.message}</p>
               </div>
             </div>
           )}
@@ -168,7 +168,7 @@ export default function SettingsPage() {
       </Card>
 
       <Link href="/settings/fees" className="block group">
-        <Card hover={false} className="hover:border-[#06B6D4]/30 transition-all duration-200">
+        <Card hover={false} className="hover:border-[#6366F1]/30 transition-all duration-200">
           <CardHeader>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -177,10 +177,10 @@ export default function SettingsPage() {
                 </div>
                 <CardTitle>Country Service Fees</CardTitle>
               </div>
-              <ChevronRight className="w-5 h-5 text-[#606060] group-hover:text-white transition-colors duration-200" />
+              <ChevronRight className="w-5 h-5 text-[#64748B] group-hover:text-white transition-colors duration-200" />
             </div>
           </CardHeader>
-          <p className="text-[#808080] text-sm">
+          <p className="text-[#94A3B8] text-sm">
             Configure CodinAfrica service fee percentages per country to calculate net revenue and track real profitability.
           </p>
         </Card>
@@ -196,11 +196,11 @@ export default function SettingsPage() {
           </div>
         </CardHeader>
         <div className="space-y-5">
-          <p className="text-[#808080] text-sm">
-            AI Agent كيستعمل Groq API (مجاني) باش يجاوبك بحال ChatGPT. سجل ف <a href="https://console.groq.com" target="_blank" rel="noopener noreferrer" className="text-[#22D3EE] hover:underline">console.groq.com</a> باش تاخد API key مجاني.
+          <p className="text-[#94A3B8] text-sm">
+            AI Agent كيستعمل Groq API (مجاني) باش يجاوبك بحال ChatGPT. سجل ف <a href="https://console.groq.com" target="_blank" rel="noopener noreferrer" className="text-[#8B5CF6] hover:underline">console.groq.com</a> باش تاخد API key مجاني.
           </p>
           <div>
-            <label className="block text-[#808080] text-sm font-medium mb-1.5">
+            <label className="block text-[#94A3B8] text-sm font-medium mb-1.5">
               <Key className="w-4 h-4 inline mr-1.5" />
               Groq API Key
             </label>
@@ -214,7 +214,7 @@ export default function SettingsPage() {
               />
               <button
                 onClick={() => setShowGroqKey(!showGroqKey)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#606060] hover:text-white transition-colors duration-200"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] hover:text-white transition-colors duration-200"
               >
                 {showGroqKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
@@ -234,16 +234,16 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle>About COD Analytics</CardTitle>
         </CardHeader>
-        <div className="space-y-3 text-sm text-[#808080]">
+        <div className="space-y-3 text-sm text-[#94A3B8]">
           <p>
             This dashboard connects to the <strong className="text-white">CodinAfrica API</strong> to provide real-time analytics
             for your Cash on Delivery e-commerce business across Africa.
           </p>
           <p>All data is fetched live. Credentials are stored locally in your browser only.</p>
-          <div className="bg-[#0A0A0A] rounded-lg p-4 space-y-1.5">
-            <p className="text-[#606060] text-xs font-medium uppercase tracking-wider">Available endpoints</p>
-            <code className="block text-[#22D3EE] text-xs font-mono">GET /orders/search?limit=500</code>
-            <code className="block text-[#22D3EE] text-xs font-mono">GET /warehouses/search?limit=50</code>
+          <div className="bg-[#0B0F19] rounded-lg p-4 space-y-1.5">
+            <p className="text-[#64748B] text-xs font-medium uppercase tracking-wider">Available endpoints</p>
+            <code className="block text-[#8B5CF6] text-xs font-mono">GET /orders/search?limit=500</code>
+            <code className="block text-[#8B5CF6] text-xs font-mono">GET /warehouses/search?limit=50</code>
           </div>
         </div>
       </Card>

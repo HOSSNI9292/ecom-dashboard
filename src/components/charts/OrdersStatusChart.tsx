@@ -33,7 +33,7 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   cancelled: { label: "Cancelled", color: "#EF4444" },
   double: { label: "Double", color: "#EC4899" },
   transferred: { label: "Transferred", color: "#8B5CF6" },
-  out_of_stock: { label: "Out of Stock", color: "#6B7280" },
+  out_of_stock: { label: "Out of Stock", color: "#64748B" },
   unreached: { label: "Unreached", color: "#94A3B8" },
 };
 
@@ -73,12 +73,12 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
       {loading ? (
         <div className="h-[300px] flex items-center justify-center">
           <div className="relative">
-            <div className="w-10 h-10 border-2 border-[#1F1F1F] rounded-full" />
-            <div className="w-10 h-10 border-2 border-transparent border-t-[#06B6D4] rounded-full animate-spin absolute inset-0" />
+            <div className="w-10 h-10 border-2 border-[#1F2937] rounded-full" />
+            <div className="w-10 h-10 border-2 border-transparent border-t-[#6366F1] rounded-full animate-spin absolute inset-0" />
           </div>
         </div>
       ) : chartData.length === 0 ? (
-        <div className="h-[300px] flex items-center justify-center text-[#606060] text-sm">No data</div>
+        <div className="h-[300px] flex items-center justify-center text-[#64748B] text-sm">No data</div>
       ) : (
         <div className="h-[340px] relative">
           <ResponsiveContainer width="100%" height="100%">
@@ -96,7 +96,7 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
                 activeIndex={undefined}
               >
                 {chartData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} stroke="#0A0A0A" strokeWidth={2} />
+                  <Cell key={`cell-${index}`} fill={entry.color} stroke="#0B0F19" strokeWidth={2} />
                 ))}
               </Pie>
               <Tooltip
@@ -105,14 +105,14 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
                   const d = payload[0].payload;
                   const pct = total > 0 ? ((d.value / total) * 100).toFixed(1) : "0.0";
                   return (
-                    <div className="bg-[#1A1A1A] border border-[#2A2A2A] rounded-xl px-4 py-3 shadow-2xl">
+                    <div className="bg-[#1E293B] border border-[#334155] rounded-xl px-4 py-3 shadow-2xl">
                       <div className="flex items-center gap-2 mb-1.5">
                         <div className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
                         <span className="text-white text-sm font-semibold">{d.label}</span>
                       </div>
                       <div className="text-white/80 text-xs space-y-1">
                         <p className="text-white font-medium">{d.value.toLocaleString()} orders</p>
-                        <p className="text-[#06B6D4] font-semibold text-sm">{pct}%</p>
+                        <p className="text-[#6366F1] font-semibold text-sm">{pct}%</p>
                       </div>
                     </div>
                   );
@@ -124,14 +124,14 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
                 iconType="circle"
                 iconSize={10}
                 formatter={(value: string) => (
-                  <span className="text-[#c0c0c0] text-xs font-medium">{value}</span>
+                  <span className="text-[#94A3B8] text-xs font-medium">{value}</span>
                 )}
               />
             </PieChart>
           </ResponsiveContainer>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none text-center">
             <p className="text-2xl font-bold text-white">{total.toLocaleString()}</p>
-            <p className="text-[#606060] text-[11px] mt-0.5 leading-none">Total Orders</p>
+            <p className="text-[#64748B] text-[11px] mt-0.5 leading-none">Total Orders</p>
           </div>
         </div>
       )}

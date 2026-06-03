@@ -126,28 +126,28 @@ export default function CountriesPage() {
       <div className="space-y-6">
         <DateFilter value={dateFilter} onChange={setDateFilter} />
         {bestCountry && (
-          <Card className="bg-gradient-to-br from-[#06B6D4]/10 via-[#111111] to-[#111111] border-[#06B6D4]/20" hover={false}>
+          <Card className="bg-gradient-to-br from-[#6366F1]/10 via-[#111827] to-[#111827] border-[#6366F1]/20" hover={false}>
             <div className="flex items-center gap-5">
-              <div className="p-4 rounded-2xl bg-[#06B6D4]/10 shrink-0">
-                <Star className="w-8 h-8 text-[#22D3EE]" />
+              <div className="p-4 rounded-2xl bg-[#6366F1]/10 shrink-0">
+                <Star className="w-8 h-8 text-[#8B5CF6]" />
               </div>
               <div>
-                <p className="text-[#606060] text-xs font-medium uppercase tracking-wider">Best Performing Country</p>
+                <p className="text-[#64748B] text-xs font-medium uppercase tracking-wider">Best Performing Country</p>
                 <p className="text-3xl font-bold text-white mt-1">{bestCountry.countryName}</p>
                 <div className="flex items-center gap-5 mt-2">
                   <div>
                     <p className="text-[#10b981] text-lg font-bold">{formatCurrency(bestCountry.netRevenue)}</p>
-                    <p className="text-[#606060] text-[11px]">Net Revenue</p>
+                    <p className="text-[#64748B] text-[11px]">Net Revenue</p>
                   </div>
-                  <div className="w-px h-10 bg-[#1F1F1F]" />
+                  <div className="w-px h-10 bg-[#1F2937]" />
                   <div>
                     <p className="text-white text-lg font-bold">{formatNumber(bestCountry.processedOrders)}</p>
-                    <p className="text-[#606060] text-[11px]">Processed Orders</p>
+                    <p className="text-[#64748B] text-[11px]">Processed Orders</p>
                   </div>
-                  <div className="w-px h-10 bg-[#1F1F1F]" />
+                  <div className="w-px h-10 bg-[#1F2937]" />
                   <div>
-                    <p className="text-[#22D3EE] text-lg font-bold">{formatPercentage(bestCountry.deliveryRate)}</p>
-                    <p className="text-[#606060] text-[11px]">Delivery Rate</p>
+                    <p className="text-[#8B5CF6] text-lg font-bold">{formatPercentage(bestCountry.deliveryRate)}</p>
+                    <p className="text-[#64748B] text-[11px]">Delivery Rate</p>
                   </div>
                 </div>
               </div>
@@ -172,7 +172,7 @@ export default function CountriesPage() {
             <CardTitle>Country Rankings</CardTitle>
             <button
               onClick={handleExport}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#606060] hover:text-white hover:bg-[#1F1F1F] border border-[#1F1F1F] transition-all duration-200"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#1F2937] border border-[#1F2937] transition-all duration-200"
             >
               <Download className="w-3.5 h-3.5" /> Export
             </button>
@@ -180,27 +180,27 @@ export default function CountriesPage() {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                  <tr className="border-b border-[#1F1F1F]">
-                    <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">#</th>
-                    <th className="text-left text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
-                    <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
-                    <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Net Revenue</th>
-                    <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fee/Order</th>
-                    <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Processed</th>
-                    <th className="text-right text-[#606060] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Conf. Rate</th>
+                  <tr className="border-b border-[#1F2937]">
+                    <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">#</th>
+                    <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
+                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
+                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Net Revenue</th>
+                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fee/Order</th>
+                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Processed</th>
+                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Conf. Rate</th>
                   </tr>
                 </thead>
                 <tbody>
                   {sorted.map((country: CountryStats, idx: number) => {
                     const revenueShare = country.revenue / maxRevenue;
                     return (
-                      <tr key={country.country} className="border-b border-[#1F1F1F]/50 transition-all duration-150 hover:bg-[#1A1A1A] group">
+                      <tr key={country.country} className="border-b border-[#1F2937]/50 transition-all duration-150 hover:bg-[#1E293B] group">
                         <td className="py-3.5 px-4">
                           <div className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold ${
                             idx === 0 ? "bg-[#f59e0b]/20 text-[#f59e0b]" :
-                            idx === 1 ? "bg-[#808080]/20 text-[#808080]" :
+                            idx === 1 ? "bg-[#94A3B8]/20 text-[#94A3B8]" :
                             idx === 2 ? "bg-[#8b5cf6]/20 text-[#8b5cf6]" :
-                            "bg-[#1F1F1F] text-[#606060]"
+                            "bg-[#1F2937] text-[#64748B]"
                           }`}>
                             {idx + 1}
                           </div>
@@ -216,9 +216,9 @@ export default function CountriesPage() {
                         <td className="py-3.5 px-4">
                           <div className="flex flex-col items-end">
                             <span className="text-white font-semibold text-sm">{formatCurrency(country.revenue)}</span>
-                            <div className="w-24 h-1 rounded-full bg-[#1F1F1F] mt-1 overflow-hidden">
+                            <div className="w-24 h-1 rounded-full bg-[#1F2937] mt-1 overflow-hidden">
                               <div
-                                className="h-full rounded-full bg-[#06B6D4]"
+                                className="h-full rounded-full bg-[#6366F1]"
                                 style={{ width: `${revenueShare * 100}%` }}
                               />
                             </div>
@@ -239,7 +239,7 @@ export default function CountriesPage() {
                     );
                   })}
                   {sorted.length === 0 && (
-                    <tr><td colSpan={7} className="text-center py-12 text-[#606060]">No country data</td></tr>
+                    <tr><td colSpan={7} className="text-center py-12 text-[#64748B]">No country data</td></tr>
                   )}
               </tbody>
             </table>
