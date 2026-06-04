@@ -77,6 +77,8 @@ const en = {
     revenueTrend: "Revenue Trend",
     ordersByStatus: "Orders by Status",
     totalOrdersLabel: "Total Orders",
+    ordersLabel: "{{count}} order",
+    ordersLabel_plural: "{{count}} orders",
     noRevenueData: "No revenue data available",
     noData: "No data",
     bestSelling: "Best Selling",

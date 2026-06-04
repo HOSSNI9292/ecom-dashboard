@@ -20,6 +20,7 @@ interface RevenueChartProps {
 }
 
 function CustomTooltip({ active, payload, label }: any) {
+  const { t } = useTranslation();
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-[#111827]/90 backdrop-blur-xl border border-[#334155] rounded-xl px-4 py-3 shadow-2xl">
@@ -27,14 +28,15 @@ function CustomTooltip({ active, payload, label }: any) {
       <p className="text-white font-bold text-base">{formatCurrency(payload[0].value)}</p>
       <div className="flex items-center gap-1.5 mt-1">
         <div className="w-1.5 h-1.5 rounded-full bg-[#6366F1]" />
-        <p className="text-[#64748B] text-xs">{payload[0]?.payload?.orders} {payload[0]?.payload?.orders === 1 ? "order" : "orders"}</p>
+        <p className="text-[#64748B] text-xs">{t("dashboard.ordersLabel", { count: payload[0]?.payload?.orders })}</p>
       </div>
     </div>
   );
 }
 
 export function RevenueChart({ data, loading }: RevenueChartProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.dir() === "rtl";
 
   return (
     <Card className="lg:col-span-2" hover={false}>
@@ -53,7 +55,7 @@ export function RevenueChart({ data, loading }: RevenueChartProps) {
       ) : (
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={data} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+            <AreaChart data={data} margin={{ top: 5, right: isRtl ? -10 : 10, left: isRtl ? 10 : -10, bottom: 0 }}>
               <defs>
                 <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="#6366F1" stopOpacity={0.5} />

@@ -161,3 +161,15 @@ body {
 .animate-count {
   animation: countUp 0.6s ease-out forwards;
 }
+
+[dir="rtl"] .ltr-only {
+  display: none;
+}
+
+[dir="ltr"] .rtl-only {
+  display: none;
+}
+
+[dir="rtl"] aside + div {
+  margin-right: 0;
+}

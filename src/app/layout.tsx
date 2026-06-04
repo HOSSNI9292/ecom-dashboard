@@ -43,12 +43,12 @@ function LanguageSwitcher() {
   const [open, setOpen] = useState(false);
 
   const languages = [
-    { code: "en", label: "🇬🇧 English" },
     { code: "fr", label: "🇫🇷 Français" },
+    { code: "en", label: "🇬🇧 English" },
     { code: "ar", label: "🇲🇦 العربية" },
   ];
 
-  const current = languages.find((l) => l.code === currentLang) || languages[1];
+  const current = languages.find((l) => l.code === currentLang) || languages[0];
 
   return (
     <div className="relative">
@@ -69,14 +69,14 @@ function LanguageSwitcher() {
               <button
                 key={lang.code}
                 onClick={() => { setLanguage(lang.code); setOpen(false); }}
-                className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-2.5 transition-colors duration-150 ${
+                className={`w-full text-start px-4 py-2.5 text-sm flex items-center gap-2.5 transition-colors duration-150 ${
                   currentLang === lang.code
                     ? "bg-[#6366F1]/10 text-[#6366F1] font-semibold"
                     : "text-[#94A3B8] hover:text-white hover:bg-[#1E293B]"
                 }`}
               >
                 <span>{lang.label}</span>
-                {currentLang === lang.code && <span className="ml-auto text-[10px] text-[#6366F1]">✓</span>}
+                {currentLang === lang.code && <span className="ms-auto text-[10px] text-[#6366F1]">✓</span>}
               </button>
             ))}
           </div>

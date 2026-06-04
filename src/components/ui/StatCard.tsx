@@ -2,6 +2,7 @@
 
 import { Card } from "./Card";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface StatCardProps {
   title: string;
@@ -33,7 +34,7 @@ function SkeletonCard() {
           <div className="h-8 skeleton rounded w-32" />
           <div className="h-3 skeleton rounded w-20" />
         </div>
-        <div className="p-3 rounded-xl bg-[#1F2937] shrink-0 ml-3">
+        <div className="p-3 rounded-xl bg-[#1F2937] shrink-0 ms-3">
           <div className="w-5 h-5 rounded bg-[#334155]" />
         </div>
       </div>
@@ -49,6 +50,7 @@ function getValueFontSize(digits: number): string {
 }
 
 export function StatCard({ title, value, icon, trend, subtitle, color = "accent", delay = 0, tooltip, loading }: StatCardProps) {
+  const { t } = useTranslation();
   const c = colorMap[color] || colorMap.accent;
   const digits = value.replace(/[^0-9]/g, "").length;
   const fontSize = getValueFontSize(digits);
@@ -81,12 +83,12 @@ export function StatCard({ title, value, icon, trend, subtitle, color = "accent"
             {trend && (
               <div className={`flex items-center gap-1 mt-2 text-xs font-medium ${trend.isUp ? "text-[#10b981]" : "text-[#ef4444]"}`}>
                 {trend.isUp ? <TrendingUp className="w-3.5 h-3.5 shrink-0" /> : <TrendingDown className="w-3.5 h-3.5 shrink-0" />}
-                <span>{Math.abs(trend.value)}% vs last period</span>
+                <span>{Math.abs(trend.value)}% {t("common.vsLastPeriod")}</span>
               </div>
             )}
             {subtitle && <p className="text-[#94A3B8] text-xs mt-1.5">{subtitle}</p>}
           </div>
-          <div className={`p-3 rounded-xl ${c.bg} ${c.text} shrink-0 ml-3`}>
+          <div className={`p-3 rounded-xl ${c.bg} ${c.text} shrink-0 ms-3`}>
             {icon}
           </div>
         </div>

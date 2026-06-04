@@ -404,7 +404,7 @@ export default function DashboardPage() {
                     </div>
                     <p className="text-white text-sm truncate">{p.name}</p>
                   </div>
-                  <span className="text-white text-sm font-medium shrink-0 ml-2">{formatNumber(p.totalSold)}</span>
+                  <span className="text-white text-sm font-medium shrink-0 ms-2">{formatNumber(p.totalSold)}</span>
                 </div>
               ))}
               {topSelling.length === 0 && <p className="text-[#64748B] text-sm text-center py-4">{t("common.noData")}</p>}
@@ -426,7 +426,7 @@ export default function DashboardPage() {
                     </div>
                     <p className="text-white text-sm truncate">{p.name}</p>
                   </div>
-                  <span className="text-[#10b981] text-sm font-medium shrink-0 ml-2">{formatCurrency(p.revenue)}</span>
+                  <span className="text-[#10b981] text-sm font-medium shrink-0 ms-2">{formatCurrency(p.revenue)}</span>
                 </div>
               ))}
               {topRevenue.length === 0 && <p className="text-[#64748B] text-sm text-center py-4">{t("common.noData")}</p>}
@@ -441,7 +441,7 @@ export default function DashboardPage() {
               {lowestStock.map((p, i) => (
                 <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[#1F2937]/50 transition-all duration-200">
                   <p className="text-white text-sm truncate">{p.name}</p>
-                  <span className={`text-sm font-medium shrink-0 ml-2 ${p.stockQuantity <= 3 ? "text-[#ef4444]" : "text-[#f59e0b]"}`}>
+                  <span className={`text-sm font-medium shrink-0 ms-2 ${p.stockQuantity <= 3 ? "text-[#ef4444]" : "text-[#f59e0b]"}`}>
                     {formatNumber(p.stockQuantity)}
                   </span>
                 </div>
@@ -531,7 +531,7 @@ export default function DashboardPage() {
                       <p className="text-[#94A3B8] text-xs">{formatDate(order.date)}</p>
                     </div>
                   </div>
-                  <div className="text-right flex items-center gap-3 shrink-0 ml-3">
+                  <div className="text-end flex items-center gap-3 shrink-0 ms-3">
                     <StatusBadge status={order.status} color={order.statusColor} />
                     <span className="text-white text-sm font-medium">{formatCurrency(order.amount)}</span>
                   </div>

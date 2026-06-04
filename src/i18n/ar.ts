@@ -77,6 +77,8 @@ const ar = {
     revenueTrend: "اتجاه الإيرادات",
     ordersByStatus: "الطلبات حسب الحالة",
     totalOrdersLabel: "إجمالي الطلبات",
+    ordersLabel: "{{count}} طلب",
+    ordersLabel_plural: "{{count}} طلب",
     noRevenueData: "لا توجد بيانات إيرادات متاحة",
     noData: "لا توجد بيانات",
     bestSelling: "الأكثر مبيعاً",
