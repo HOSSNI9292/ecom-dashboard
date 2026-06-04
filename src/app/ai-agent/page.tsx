@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { Bot, Send, User, Sparkles, TrendingDown, Package, AlertTriangle, BarChart3, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { PageWrapper } from "@/components/PageWrapper";
@@ -18,6 +19,7 @@ interface Message {
 const GROQ_KEY = "groq_api_key";
 
 export default function AIAgentPage() {
+  const { t } = useTranslation();
   const { data, loading, error, refetch } = useDashboardData();
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -495,16 +497,16 @@ ${found.fakeRate >= 0.5 ? "⛔ **خطير! وقف الإعلانات فوراً!
               <Bot className="w-6 h-6 text-[#8B5CF6]" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">AI Agent</h1>
+              <h1 className="text-xl font-bold text-white">{t("nav.aiAgent")}</h1>
               <p className="text-[#64748B] text-xs">
-                {groqKey ? "🟢 Groq AI (Advanced)" : "🟢 Smart AI (Ready)"}
+                {groqKey ? `🟢 ${t("aiAgent.groqAdvanced")}` : `🟢 ${t("aiAgent.smartReady")}`}
               </p>
             </div>
           </div>
           <button
             onClick={handleClear}
             className="p-2 rounded-lg text-[#64748B] hover:text-white hover:bg-[#1F2937] transition-all"
-            title="Clear chat"
+            title={t("aiAgent.clearChat")}
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -564,7 +566,7 @@ ${found.fakeRate >= 0.5 ? "⛔ **خطير! وقف الإعلانات فوراً!
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={handleKeyPress}
-                placeholder="سولني على المنتجات، الستوك، النصائح..."
+                placeholder={t("aiAgent.placeholder")}
                 className="flex-1 px-4 py-3 bg-[#0B0F19] border border-[#1F2937] rounded-xl text-white text-sm placeholder:text-[#475569] focus:outline-none focus:border-[#6366F1]/50 resize-none"
                 rows={1}
               />
