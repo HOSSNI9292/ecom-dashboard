@@ -14,7 +14,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Meta App ID and App Secret are required" }, { status: 400 });
     }
 
-    const API_VERSION = "v22.0";
+    const API_VERSION = "v25.0";
     const GRAPH_URL = `https://graph.facebook.com/${API_VERSION}`;
 
     const tokenUrl = `${GRAPH_URL}/oauth/access_token?client_id=${appId}&redirect_uri=${encodeURIComponent(redirectUri)}&client_secret=${appSecret}&code=${code}`;

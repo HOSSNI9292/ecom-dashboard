@@ -122,7 +122,7 @@ export function MetaConnection({ onConnected }: MetaConnectionProps) {
     const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     localStorage.setItem("meta_oauth_state", state);
     const scopes = ["ads_read", "business_management"].join(",");
-    const url = `https://www.facebook.com/v22.0/dialog/oauth?client_id=${appConfig.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&state=${state}&response_type=code`;
+    const url = `https://www.facebook.com/v25.0/dialog/oauth?client_id=${appConfig.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&state=${state}&response_type=code`;
 
     console.log("[MetaConnection] Opening OAuth popup...");
     console.log("[MetaConnection] Redirect URI:", redirectUri);
@@ -179,6 +179,7 @@ export function MetaConnection({ onConnected }: MetaConnectionProps) {
         accessToken: oauthToken,
         lastSyncTime: null,
         tokenExpiresAt: oauthExpiresAt,
+        currency: account.currency,
       };
       saveMetaConnection(conn);
       setConnection(conn);

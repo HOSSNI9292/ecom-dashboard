@@ -65,7 +65,7 @@ export function getOAuthUrl(redirectUri: string): string {
   if (!config.appId) throw new Error("Meta App ID not configured");
   const state = generateState();
   const scopes = ["ads_read", "business_management"].join(",");
-  return `https://www.facebook.com/v22.0/dialog/oauth?client_id=${config.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&state=${state}&response_type=code`;
+  return `https://www.facebook.com/v25.0/dialog/oauth?client_id=${config.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&state=${state}&response_type=code`;
 }
 
 export function getCachedMetaData(): MetaSummary | null {
@@ -84,14 +84,14 @@ export function setCachedMetaData(data: MetaSummary): void {
   localStorage.setItem(DATA_KEY, JSON.stringify(data));
 }
 
-export async function fetchMetaAds(): Promise<MetaSummary> {
+export async function fetchMetaAds(datePreset?: string): Promise<MetaSummary> {
   const creds = getMetaCredentials();
   if (!creds) throw new Error("Meta credentials not configured");
 
   const res = await fetch("/api/meta/ads", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(creds),
+    body: JSON.stringify({ ...creds, datePreset: datePreset || "last_30d" }),
   });
 
   if (!res.ok) {
@@ -111,7 +111,7 @@ export async function fetchMetaAds(): Promise<MetaSummary> {
 
 export async function exchangeCodeForToken(code: string, redirectUri: string, appId?: string, appSecret?: string): Promise<{ accessToken: string; expiresAt: string }> {
   const config = appId && appSecret ? { appId, appSecret } : getMetaAppConfig();
-  const url = `https://graph.facebook.com/v22.0/oauth/access_token?client_id=${config.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&client_secret=${config.appSecret}&code=${code}`;
+  const url = `https://graph.facebook.com/v25.0/oauth/access_token?client_id=${config.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&client_secret=${config.appSecret}&code=${code}`;
   const res = await fetch(url);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: { message: "Token exchange failed" } }));
@@ -124,7 +124,7 @@ export async function exchangeCodeForToken(code: string, redirectUri: string, ap
 
 export async function exchangeShortLivedToken(token: string, appId?: string, appSecret?: string): Promise<{ accessToken: string; expiresAt: string }> {
   const config = appId && appSecret ? { appId, appSecret } : getMetaAppConfig();
-  const url = `https://graph.facebook.com/v22.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${config.appId}&client_secret=${config.appSecret}&fb_exchange_token=${token}`;
+  const url = `https://graph.facebook.com/v25.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${config.appId}&client_secret=${config.appSecret}&fb_exchange_token=${token}`;
   const res = await fetch(url);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: { message: "Token exchange failed" } }));
@@ -136,7 +136,7 @@ export async function exchangeShortLivedToken(token: string, appId?: string, app
 }
 
 export async function fetchAdAccounts(accessToken: string): Promise<MetaAdAccount[]> {
-  const url = `https://graph.facebook.com/v22.0/me/adaccounts?fields=id,name,currency,account_id,account_status&access_token=${accessToken}&limit=100`;
+  const url = `https://graph.facebook.com/v25.0/me/adaccounts?fields=id,name,currency,account_id,account_status&access_token=${accessToken}&limit=100`;
   const res = await fetch(url);
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: { message: "Failed to fetch ad accounts" } }));

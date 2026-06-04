@@ -1,23 +1,35 @@
 "use client";
 
-import { DollarSign, TrendingUp, Target, BarChart3, Trophy, AlertTriangle, Globe, Package, Facebook, CheckCircle } from "lucide-react";
+import { useState } from "react";
+import { DollarSign, TrendingUp, Target, BarChart3, Trophy, AlertTriangle, Globe, Package, Facebook, CheckCircle, Bug, ChevronDown } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
-import { getMetaConnection, clearMetaCredentials } from "@/services/meta";
-import type { MetaSummary } from "@/types/meta";
+import { getMetaConnection } from "@/services/meta";
+import type { MetaSummary, DatePreset } from "@/types/meta";
 
 interface MetaStatsCardsProps {
   data: MetaSummary | null;
   loading: boolean;
   error: string | null;
-  onRefresh: () => void;
+  onRefresh: (preset?: DatePreset) => void;
   onSetup: () => void;
   hasCredentials: boolean;
 }
 
+const PRESET_OPTIONS: { value: DatePreset; label: string }[] = [
+  { value: "today", label: "Today" },
+  { value: "yesterday", label: "Yesterday" },
+  { value: "last_7d", label: "Last 7 Days" },
+  { value: "last_30d", label: "Last 30 Days" },
+  { value: "this_month", label: "This Month" },
+];
+
 export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCredentials }: MetaStatsCardsProps) {
   const { t } = useTranslation();
   const connection = hasCredentials ? getMetaConnection() : null;
+  const currency = data?.accountCurrency || connection?.currency || "XOF";
+  const [preset, setPreset] = useState<DatePreset>("last_30d");
+  const [showDebug, setShowDebug] = useState(false);
 
   if (!hasCredentials) {
     return (
@@ -63,7 +75,7 @@ export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCr
           <AlertTriangle className="w-8 h-8 text-[#EF4444] mx-auto mb-2" />
           <p className="text-[#EF4444] text-sm mb-3">{error}</p>
           <button
-            onClick={onRefresh}
+            onClick={() => onRefresh(preset)}
             className="px-4 py-2 rounded-lg bg-[#1F2937] text-white text-sm font-medium hover:bg-[#334155] transition-colors"
           >
             {t("common.retry")}
@@ -75,16 +87,18 @@ export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCr
 
   if (!data) return null;
 
+  const fmt = (n: number) => Math.round(n).toLocaleString();
+
   const cards = [
     {
       title: t("meta.totalSpend"),
-      value: `${Math.round(data.totalSpend).toLocaleString()} XOF`,
+      value: `${fmt(data.totalSpend)} ${currency}`,
       icon: <DollarSign className="w-5 h-5" />,
       color: "primary" as const,
     },
     {
       title: t("meta.averageCpa"),
-      value: data.averageCpa > 0 ? `${Math.round(data.averageCpa).toLocaleString()} XOF` : t("common.noData"),
+      value: data.averageCpa > 0 ? `${fmt(data.averageCpa)} ${currency}` : t("common.noData"),
       icon: <Target className="w-5 h-5" />,
       color: "warning" as const,
     },
@@ -98,7 +112,7 @@ export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCr
       title: t("meta.averageRoas"),
       value: `${data.averageRoas.toFixed(2)}x`,
       icon: <BarChart3 className="w-5 h-5" />,
-      color: data.averageRoas >= 1.5 ? "success" as const : "error" as const,
+      color: data.averageRoas >= 1.5 ? ("success" as const) : ("error" as const),
       tooltip: data.averageRoas >= 1.5 ? t("meta.roasHealthy") : t("meta.roasLow"),
     },
     {
@@ -143,24 +157,42 @@ export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCr
             )}
           </div>
           <div className="flex items-center gap-2">
-            <div className="hidden sm:flex items-center gap-2">
-              {connection?.adAccountName && (
-                <span className="text-[#64748B] text-[10px] max-w-[120px] truncate">{connection.adAccountName}</span>
-              )}
-              {data.lastSynced && (
-                <span className="text-[#64748B] text-[10px]">
-                  {t("meta.lastSynced")}: {new Date(data.lastSynced).toLocaleString()}
-                </span>
-              )}
-            </div>
+            <select
+              value={preset}
+              onChange={(e) => {
+                const p = e.target.value as DatePreset;
+                setPreset(p);
+                onRefresh(p);
+              }}
+              className="bg-[#111827] border border-[#1F2937] rounded-lg text-white text-xs px-2 py-1.5 focus:outline-none focus:border-[#6366F1]/50 cursor-pointer"
+            >
+              {PRESET_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+            {connection?.adAccountName && (
+              <span className="hidden sm:inline text-[#64748B] text-[10px] max-w-[120px] truncate">{connection.adAccountName}</span>
+            )}
+            {data.lastSynced && (
+              <span className="hidden sm:inline text-[#64748B] text-[10px]">
+                {t("meta.lastSynced")}: {new Date(data.lastSynced).toLocaleString()}
+              </span>
+            )}
             <button
-              onClick={onRefresh}
+              onClick={() => onRefresh(preset)}
               className="p-1.5 rounded-lg text-[#64748B] hover:text-white hover:bg-[#1F2937] transition-all"
               title={t("common.refresh")}
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" />
               </svg>
+            </button>
+            <button
+              onClick={() => setShowDebug(!showDebug)}
+              className={`p-1.5 rounded-lg transition-all ${showDebug ? "text-[#F59E0B] bg-[#1F2937]" : "text-[#64748B] hover:text-white hover:bg-[#1F2937]"}`}
+              title="Debug"
+            >
+              <Bug className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -197,6 +229,41 @@ export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCr
             </div>
           ))}
         </div>
+
+        {showDebug && data.debugInfo && (
+          <div className="mt-4 p-4 rounded-xl bg-[#0B0F19] border border-[#1F2937]/60">
+            <div className="flex items-center gap-2 mb-3">
+              <Bug className="w-4 h-4 text-[#F59E0B]" />
+              <span className="text-[#F59E0B] text-xs font-semibold uppercase tracking-wider">Meta API Debug</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-xs font-mono">
+              <div>
+                <span className="text-[#64748B]">Account ID:</span>
+                <span className="text-white ml-2">{data.debugInfo.accountId || connection?.adAccountId || "—"}</span>
+              </div>
+              <div>
+                <span className="text-[#64748B]">Currency:</span>
+                <span className="text-white ml-2">{data.debugInfo.currency || currency}</span>
+              </div>
+              <div>
+                <span className="text-[#64748B]">Date Range:</span>
+                <span className="text-white ml-2">{data.debugInfo.dateRange.since} → {data.debugInfo.dateRange.until}</span>
+              </div>
+              <div>
+                <span className="text-[#64748B]">Raw Spend:</span>
+                <span className="text-white ml-2">{fmt(data.debugInfo.rawSpend)} {currency}</span>
+              </div>
+              <div>
+                <span className="text-[#64748B]">Ads Fetched:</span>
+                <span className="text-white ml-2">{data.ads.length}</span>
+              </div>
+              <div>
+                <span className="text-[#64748B]">Date Preset:</span>
+                <span className="text-white ml-2">{data.datePreset || preset}</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </Card>
   );

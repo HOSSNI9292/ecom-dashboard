@@ -22,6 +22,7 @@ import { useRecommendations } from "@/hooks/useRecommendations";
 import { formatCurrency, formatNumber, formatPercentage, formatDate, filterOrdersByDate, DATE_FILTER_LABELS, getImageUrlOrFallback, getFeeForCountry, computeServiceFees, COUNTRY_NAMES, COUNTRY_FLAGS } from "@/utils";
 import { exportToCSV } from "@/utils/csv";
 import type { DateFilterValue } from "@/utils/dates";
+import type { DatePreset } from "@/types/meta";
 import type { Order, Product } from "@/types";
 
 function getPreviousPeriodRange(filter: DateFilterValue): { start: string; end: string } | null {
@@ -214,7 +215,8 @@ export default function DashboardPage() {
   const prevNonCancelled = previousOrders.filter((o) => o.status !== "cancelled" && o.status !== "out_of_stock").length;
   const prevConfRate = prevNonCancelled > 0 ? prevConfirmed / prevNonCancelled : 0;
 
-  const { data: metaData, loading: metaLoading, error: metaError, refresh: refreshMeta, hasCredentials: metaHasCreds } = useMetaAds();
+  const [metaDatePreset, setMetaDatePreset] = useState<DatePreset>("last_30d");
+  const { data: metaData, loading: metaLoading, error: metaError, refresh: refreshMeta, hasCredentials: metaHasCreds } = useMetaAds(metaDatePreset);
   const { data: recData, loading: recLoading, refresh: refreshRecs, markRead } = useRecommendations(
     data?.stats ?? null,
     data?.countries ?? [],
@@ -403,7 +405,7 @@ export default function DashboardPage() {
           data={metaData}
           loading={metaLoading}
           error={metaError}
-          onRefresh={() => refreshMeta()}
+          onRefresh={(p) => { if (p) setMetaDatePreset(p); else refreshMeta(); }}
           onSetup={() => window.location.href = "/settings"}
           hasCredentials={metaHasCreds}
         />

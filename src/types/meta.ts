@@ -23,7 +23,10 @@ export interface MetaConnection {
   accessToken: string | null;
   lastSyncTime: string | null;
   tokenExpiresAt: string | null;
+  currency?: string | null;
 }
+
+export type DatePreset = "today" | "yesterday" | "last_7d" | "last_30d" | "this_month";
 
 export interface MetaAd {
   campaignId: string;
@@ -40,6 +43,8 @@ export interface MetaAd {
   frequency: number;
   roas: number;
   linkClicks: number;
+  conversions: number;
+  purchaseRoas: number;
 }
 
 export interface MetaSummary {
@@ -55,6 +60,14 @@ export interface MetaSummary {
   ads: MetaAd[];
   lastSynced: string | null;
   syncing: boolean;
+  accountCurrency?: string;
+  datePreset?: DatePreset;
+  debugInfo?: {
+    accountId: string;
+    currency: string;
+    dateRange: { since: string; until: string };
+    rawSpend: number;
+  };
 }
 
 export interface Recommendation {

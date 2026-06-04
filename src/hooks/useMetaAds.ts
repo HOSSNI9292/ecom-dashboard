@@ -6,7 +6,7 @@ import { getCachedMetaData, setCachedMetaData, fetchMetaAds, getMetaCredentials 
 
 const SYNC_INTERVAL = 30 * 60 * 1000;
 
-export function useMetaAds() {
+export function useMetaAds(datePreset?: string) {
   const [data, setData] = useState<MetaSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -21,7 +21,7 @@ export function useMetaAds() {
     }
     try {
       setError(null);
-      const result = await fetchMetaAds();
+      const result = await fetchMetaAds(datePreset);
       setData(result);
     } catch (err) {
       const cached = getCachedMetaData();
@@ -30,7 +30,7 @@ export function useMetaAds() {
     } finally {
       setLoading(false);
     }
-  }, [data]);
+  }, [data, datePreset]);
 
   useEffect(() => {
     if (!hasCredentials) {

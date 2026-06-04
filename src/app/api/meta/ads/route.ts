@@ -1,23 +1,26 @@
 import { NextResponse } from "next/server";
 
-const META_API_VERSION = "v22.0";
+const META_API_VERSION = "v25.0";
 const META_GRAPH_URL = `https://graph.facebook.com/${META_API_VERSION}`;
+
+const DATE_PRESETS: Record<string, { since: string; until: string }> = {
+  today: { since: new Date().toISOString().split("T")[0], until: new Date().toISOString().split("T")[0] },
+  yesterday: { since: new Date(Date.now() - 86400000).toISOString().split("T")[0], until: new Date(Date.now() - 86400000).toISOString().split("T")[0] },
+  last_7d: { since: new Date(Date.now() - 7 * 86400000).toISOString().split("T")[0], until: new Date().toISOString().split("T")[0] },
+  last_30d: { since: new Date(Date.now() - 30 * 86400000).toISOString().split("T")[0], until: new Date().toISOString().split("T")[0] },
+  this_month: { since: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split("T")[0], until: new Date().toISOString().split("T")[0] },
+};
 
 export async function POST(request: Request) {
   try {
-    const { adAccountId, accessToken } = await request.json();
+    const { adAccountId, accessToken, datePreset } = await request.json();
 
     if (!adAccountId || !accessToken) {
       return NextResponse.json({ error: "Missing adAccountId or accessToken" }, { status: 400 });
     }
 
     const cleanAdAccountId = adAccountId.startsWith("act_") ? adAccountId : `act_${adAccountId}`;
-
-    const today = new Date();
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(today.getMonth() - 6);
-    const since = sixMonthsAgo.toISOString().split("T")[0];
-    const until = today.toISOString().split("T")[0];
+    const preset = DATE_PRESETS[datePreset || "last_30d"] || DATE_PRESETS.last_30d;
 
     const fields = [
       "campaign_name",
@@ -35,11 +38,13 @@ export async function POST(request: Request) {
       "actions",
       "cost_per_action_type",
       "action_values",
+      "purchase_roas",
+      "conversions",
     ].join(",");
 
-    const url = `${META_GRAPH_URL}/${cleanAdAccountId}/insights?fields=${fields}&level=ad&time_range={"since":"${since}","until":"${until}"}&limit=200&access_token=${accessToken}`;
+    const url = `${META_GRAPH_URL}/${cleanAdAccountId}/insights?fields=${fields}&level=ad&time_range={"since":"${preset.since}","until":"${preset.until}"}&limit=200&access_token=${accessToken}`;
 
-    const res = await fetch(url, { next: { revalidate: 1800 } });
+    const res = await fetch(url);
 
     if (!res.ok) {
       const errBody = await res.text();
@@ -77,6 +82,8 @@ export async function POST(request: Request) {
       impressions?: string;
       frequency?: string;
       clicks?: string;
+      purchase_roas?: string[];
+      conversions?: string;
       actions?: ActionEntry[];
       cost_per_action_type?: ActionEntry[];
       action_values?: ActionValueEntry[];
@@ -90,10 +97,14 @@ export async function POST(request: Request) {
       const linkClicks = (ad.actions || [])
         .filter((a) => a.action_type === "link_click")
         .reduce((sum, a) => sum + parseFloat(a.value || "0"), 0);
+      const conversions = (ad.actions || [])
+        .filter((a) => a.action_type === "purchase")
+        .reduce((sum, a) => sum + parseFloat(a.value || "0"), 0);
       const purchaseValue = (ad.action_values || [])
         .filter((a) => a.action_type === "purchase")
         .reduce((sum, a) => sum + parseFloat(a.value || "0"), 0);
       const roas = spend > 0 ? purchaseValue / spend : 0;
+      const purchaseRoas = ad.purchase_roas && ad.purchase_roas.length > 0 ? parseFloat(ad.purchase_roas[0]) : roas;
 
       return {
         campaignId: ad.campaign_id || "",
@@ -110,6 +121,8 @@ export async function POST(request: Request) {
         frequency: parseFloat(ad.frequency || "0"),
         roas,
         linkClicks,
+        conversions,
+        purchaseRoas,
       };
     });
 
@@ -138,6 +151,10 @@ export async function POST(request: Request) {
       if (!worstCampaign || roas < worstCampaign.roas) worstCampaign = { name, roas };
     });
 
+    const accountInfo = json.account_id
+      ? { accountId: json.account_id, currency: json.account_currency || "", dateRange: { since: preset.since, until: preset.until }, rawSpend: totalSpend }
+      : undefined;
+
     return NextResponse.json({
       totalSpend,
       totalPurchases,
@@ -151,6 +168,9 @@ export async function POST(request: Request) {
       ads,
       lastSynced: new Date().toISOString(),
       syncing: false,
+      accountCurrency: "",
+      datePreset: datePreset || "last_30d",
+      debugInfo: accountInfo,
     });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal server error";
