@@ -24,22 +24,19 @@ export async function POST(request: Request) {
 
     let accountCurrency = "";
     let accountName = "";
+    let rawAccountResponse = "";
     try {
-      const acctUrl = `${META_GRAPH_URL}/${cleanAdAccountId}?fields=currency,name&access_token=${accessToken}`;
-      console.log("[Meta Ads Route] Fetching account info:", acctUrl.replace(accessToken, "TOKEN_REDACTED"));
+      const acctUrl = `${META_GRAPH_URL}/${cleanAdAccountId}?fields=id,name,currency&access_token=${accessToken}`;
       const acctRes = await fetch(acctUrl);
       const acctRaw = await acctRes.text();
-      console.log("[Meta Ads Route] Raw account response:", acctRaw);
+      rawAccountResponse = acctRaw;
       if (acctRes.ok) {
         const acctJson = JSON.parse(acctRaw);
         accountCurrency = acctJson.currency || "";
         accountName = acctJson.name || "";
-        console.log("[Meta Ads Route] Parsed currency:", accountCurrency, "name:", accountName);
-      } else {
-        console.error("[Meta Ads Route] Account fetch failed:", acctRes.status, acctRaw);
       }
     } catch (e) {
-      console.error("[Meta Ads Route] Account fetch error:", e);
+      rawAccountResponse = `Fetch error: ${e instanceof Error ? e.message : e}`;
     }
 
     const fields = [
@@ -177,9 +174,8 @@ export async function POST(request: Request) {
       currency: accountCurrency,
       dateRange: { since: preset.since, until: preset.until },
       rawSpend: totalSpend,
+      rawResponse: rawAccountResponse,
     };
-
-    console.log("[Meta Ads Route] Returning accountCurrency:", accountCurrency, "totalSpend:", totalSpend);
 
     return NextResponse.json({
       totalSpend,
@@ -197,6 +193,7 @@ export async function POST(request: Request) {
       accountCurrency,
       accountName,
       datePreset: datePreset || "last_30d",
+      rawAccountResponse,
       debugInfo: accountInfo,
     });
   } catch (err: unknown) {

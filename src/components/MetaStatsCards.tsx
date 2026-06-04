@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { DollarSign, TrendingUp, Target, BarChart3, Trophy, AlertTriangle, Globe, Package, Facebook, CheckCircle, Bug, ChevronDown } from "lucide-react";
+import { DollarSign, TrendingUp, Target, BarChart3, Trophy, AlertTriangle, Globe, Package, Facebook, CheckCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getMetaConnection } from "@/services/meta";
@@ -42,7 +42,6 @@ export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCr
   const connection = hasCredentials ? getMetaConnection() : null;
   const currency = data?.accountCurrency || connection?.currency || "";
   const [preset, setPreset] = useState<DatePreset>("last_30d");
-  const [showDebug, setShowDebug] = useState(false);
 
   if (!hasCredentials) {
     return (
@@ -183,9 +182,6 @@ export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCr
                 <option key={opt.value} value={opt.value}>{opt.label}</option>
               ))}
             </select>
-            {connection?.adAccountName && (
-              <span className="hidden sm:inline text-[#64748B] text-[10px] max-w-[120px] truncate">{connection.adAccountName}</span>
-            )}
             {data.lastSynced && (
               <span className="hidden sm:inline text-[#64748B] text-[10px]">
                 {t("meta.lastSynced")}: {new Date(data.lastSynced).toLocaleString()}
@@ -199,13 +195,6 @@ export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCr
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" />
               </svg>
-            </button>
-            <button
-              onClick={() => setShowDebug(!showDebug)}
-              className={`p-1.5 rounded-lg transition-all ${showDebug ? "text-[#F59E0B] bg-[#1F2937]" : "text-[#64748B] hover:text-white hover:bg-[#1F2937]"}`}
-              title="Debug"
-            >
-              <Bug className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -243,48 +232,50 @@ export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCr
           ))}
         </div>
 
-        {showDebug && data.debugInfo && (
-          <div className="mt-4 p-4 rounded-xl bg-[#0B0F19] border border-[#1F2937]/60">
-            <div className="flex items-center gap-2 mb-3">
-              <Bug className="w-4 h-4 text-[#F59E0B]" />
-              <span className="text-[#F59E0B] text-xs font-semibold uppercase tracking-wider">Meta API Debug</span>
+        <div className="mt-6 p-4 rounded-xl bg-[#0B0F19] border border-[#6366F1]/30">
+          <div className="flex items-center gap-2 mb-3">
+            <BarChart3 className="w-4 h-4 text-[#6366F1]" />
+            <span className="text-[#6366F1] text-xs font-semibold uppercase tracking-wider">Meta Account Debug</span>
+          </div>
+          <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs font-mono">
+            <div className="col-span-2 md:col-span-1">
+              <span className="text-[#64748B]">Account ID: </span>
+              <span className="text-white">{data.debugInfo?.accountId || data.rawAccountResponse ? JSON.parse(data.rawAccountResponse || "{}").id || "—" : connection?.adAccountId || "—"}</span>
             </div>
-            <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-              <div className="col-span-2">
-                <span className="text-[#64748B]">Currency from Meta = </span>
-                <span className={data.debugInfo.currency ? "text-[#10B981] font-bold" : "text-[#EF4444] font-bold"}>{data.debugInfo.currency || "null (no currency returned)"}</span>
-              </div>
-              <div>
-                <span className="text-[#64748B]">Account ID:</span>
-                <span className="text-white ml-2">{data.debugInfo.accountId || "—"}</span>
-              </div>
-              <div>
-                <span className="text-[#64748B]">Account Name:</span>
-                <span className="text-white ml-2">{data.debugInfo.accountName || "—"}</span>
-              </div>
-              <div>
-                <span className="text-[#64748B]">Raw Spend:</span>
-                <span className="text-white ml-2">{data.debugInfo.rawSpend}</span>
-              </div>
-              <div>
-                <span className="text-[#64748B]">Formatted Spend:</span>
-                <span className="text-white ml-2">{fmt(data.debugInfo.rawSpend)}</span>
-              </div>
-              <div>
-                <span className="text-[#64748B]">Date Range:</span>
-                <span className="text-white ml-2">{data.debugInfo.dateRange.since} → {data.debugInfo.dateRange.until}</span>
-              </div>
-              <div>
-                <span className="text-[#64748B]">Ads Fetched:</span>
-                <span className="text-white ml-2">{data.ads.length}</span>
-              </div>
-              <div>
-                <span className="text-[#64748B]">Date Preset:</span>
-                <span className="text-white ml-2">{data.datePreset || preset}</span>
-              </div>
+            <div className="col-span-2 md:col-span-1">
+              <span className="text-[#64748B]">Account Name: </span>
+              <span className="text-white">{data.debugInfo?.accountName || "—"}</span>
+            </div>
+            <div className="col-span-2 md:col-span-1">
+              <span className="text-[#64748B]">Currency returned by Meta: </span>
+              <span className={data.debugInfo?.currency ? "text-[#10B981] font-bold" : "text-[#EF4444] font-bold"}>
+                {data.debugInfo?.currency || "NONE"}
+              </span>
+            </div>
+            <div className="col-span-2 md:col-span-1">
+              <span className="text-[#64748B]">Raw Spend: </span>
+              <span className="text-white">{data.totalSpend}</span>
+            </div>
+            <div className="col-span-2 md:col-span-1">
+              <span className="text-[#64748B]">Formatted Spend: </span>
+              <span className="text-white">{fmt(data.totalSpend)}</span>
+            </div>
+            <div className="col-span-2 md:col-span-1">
+              <span className="text-[#64748B]">Currency Source: </span>
+              <span className="text-white">{data.accountCurrency ? "Meta API" : connection?.currency ? "Connection storage" : "Not found"}</span>
             </div>
           </div>
-        )}
+          {data.debugInfo?.rawResponse && (
+            <details className="mt-3">
+              <summary className="text-[#F59E0B] text-xs font-mono cursor-pointer hover:text-[#FBBF24] select-none">
+                Raw JSON response from GET /act_{data.debugInfo.accountId?.replace("act_", "") || "{id}"}?fields=id,name,currency
+              </summary>
+              <pre className="mt-2 p-3 rounded-lg bg-[#000000]/40 text-[#10B981] text-[11px] leading-relaxed overflow-x-auto max-h-48 overflow-y-auto border border-[#1F2937]/60">
+{data.debugInfo.rawResponse}
+              </pre>
+            </details>
+          )}
+        </div>
       </div>
     </Card>
   );

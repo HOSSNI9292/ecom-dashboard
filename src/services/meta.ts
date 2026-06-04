@@ -2,6 +2,8 @@ import type { MetaCredentials, MetaSummary, MetaOAuthConfig, MetaAdAccount, Meta
 
 const CREDS_KEY = "cod_meta_credentials";
 const DATA_KEY = "cod_meta_data";
+const DATA_VERSION_KEY = "cod_meta_data_version";
+const DATA_VERSION = 2;
 const OAUTH_KEY = "cod_meta_oauth";
 const CONN_KEY = "cod_meta_connection";
 const APP_CONFIG_KEY = "cod_meta_app_config";
@@ -70,6 +72,11 @@ export function getOAuthUrl(redirectUri: string): string {
 
 export function getCachedMetaData(): MetaSummary | null {
   try {
+    const ver = localStorage.getItem(DATA_VERSION_KEY);
+    if (ver !== String(DATA_VERSION)) {
+      localStorage.removeItem(DATA_KEY);
+      return null;
+    }
     const raw = localStorage.getItem(DATA_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
@@ -82,6 +89,7 @@ export function getCachedMetaData(): MetaSummary | null {
 
 export function setCachedMetaData(data: MetaSummary): void {
   localStorage.setItem(DATA_KEY, JSON.stringify(data));
+  localStorage.setItem(DATA_VERSION_KEY, String(DATA_VERSION));
 }
 
 export async function fetchMetaAds(datePreset?: string): Promise<MetaSummary> {

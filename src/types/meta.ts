@@ -69,7 +69,9 @@ export interface MetaSummary {
     currency: string;
     dateRange: { since: string; until: string };
     rawSpend: number;
+    rawResponse?: string;
   };
+  rawAccountResponse?: string;
 }
 
 export interface Recommendation {
