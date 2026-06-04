@@ -31,10 +31,10 @@ export async function POST(request: Request) {
       "reach",
       "impressions",
       "frequency",
+      "clicks",
       "actions",
       "cost_per_action_type",
       "action_values",
-      "link_clicks",
     ].join(",");
 
     const url = `${META_GRAPH_URL}/${cleanAdAccountId}/insights?fields=${fields}&level=ad&time_range={"since":"${since}","until":"${until}"}&limit=200&access_token=${accessToken}`;
@@ -76,16 +76,19 @@ export async function POST(request: Request) {
       reach?: string;
       impressions?: string;
       frequency?: string;
+      clicks?: string;
       actions?: ActionEntry[];
       cost_per_action_type?: ActionEntry[];
       action_values?: ActionValueEntry[];
-      link_clicks?: string;
     }
 
     const ads = adsData.map((ad: RawMetaAd) => {
       const spend = parseFloat(ad.spend || "0");
       const purchases = (ad.actions || [])
         .filter((a) => a.action_type === "purchase")
+        .reduce((sum, a) => sum + parseFloat(a.value || "0"), 0);
+      const linkClicks = (ad.actions || [])
+        .filter((a) => a.action_type === "link_click")
         .reduce((sum, a) => sum + parseFloat(a.value || "0"), 0);
       const purchaseValue = (ad.action_values || [])
         .filter((a) => a.action_type === "purchase")
@@ -106,7 +109,7 @@ export async function POST(request: Request) {
         impressions: parseInt(ad.impressions || "0", 10),
         frequency: parseFloat(ad.frequency || "0"),
         roas,
-        linkClicks: parseInt(ad.link_clicks || "0", 10),
+        linkClicks,
       };
     });
 
