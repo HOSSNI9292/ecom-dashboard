@@ -61,9 +61,11 @@ export interface MetaSummary {
   lastSynced: string | null;
   syncing: boolean;
   accountCurrency?: string;
+  accountName?: string;
   datePreset?: DatePreset;
   debugInfo?: {
     accountId: string;
+    accountName?: string;
     currency: string;
     dateRange: { since: string; until: string };
     rawSpend: number;

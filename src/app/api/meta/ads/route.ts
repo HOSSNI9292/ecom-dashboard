@@ -22,6 +22,26 @@ export async function POST(request: Request) {
     const cleanAdAccountId = adAccountId.startsWith("act_") ? adAccountId : `act_${adAccountId}`;
     const preset = DATE_PRESETS[datePreset || "last_30d"] || DATE_PRESETS.last_30d;
 
+    let accountCurrency = "";
+    let accountName = "";
+    try {
+      const acctUrl = `${META_GRAPH_URL}/${cleanAdAccountId}?fields=currency,name&access_token=${accessToken}`;
+      console.log("[Meta Ads Route] Fetching account info:", acctUrl.replace(accessToken, "TOKEN_REDACTED"));
+      const acctRes = await fetch(acctUrl);
+      const acctRaw = await acctRes.text();
+      console.log("[Meta Ads Route] Raw account response:", acctRaw);
+      if (acctRes.ok) {
+        const acctJson = JSON.parse(acctRaw);
+        accountCurrency = acctJson.currency || "";
+        accountName = acctJson.name || "";
+        console.log("[Meta Ads Route] Parsed currency:", accountCurrency, "name:", accountName);
+      } else {
+        console.error("[Meta Ads Route] Account fetch failed:", acctRes.status, acctRaw);
+      }
+    } catch (e) {
+      console.error("[Meta Ads Route] Account fetch error:", e);
+    }
+
     const fields = [
       "campaign_name",
       "campaign_id",
@@ -151,9 +171,15 @@ export async function POST(request: Request) {
       if (!worstCampaign || roas < worstCampaign.roas) worstCampaign = { name, roas };
     });
 
-    const accountInfo = json.account_id
-      ? { accountId: json.account_id, currency: json.account_currency || "", dateRange: { since: preset.since, until: preset.until }, rawSpend: totalSpend }
-      : undefined;
+    const accountInfo = {
+      accountId: cleanAdAccountId,
+      accountName,
+      currency: accountCurrency,
+      dateRange: { since: preset.since, until: preset.until },
+      rawSpend: totalSpend,
+    };
+
+    console.log("[Meta Ads Route] Returning accountCurrency:", accountCurrency, "totalSpend:", totalSpend);
 
     return NextResponse.json({
       totalSpend,
@@ -168,7 +194,8 @@ export async function POST(request: Request) {
       ads,
       lastSynced: new Date().toISOString(),
       syncing: false,
-      accountCurrency: "",
+      accountCurrency,
+      accountName,
       datePreset: datePreset || "last_30d",
       debugInfo: accountInfo,
     });

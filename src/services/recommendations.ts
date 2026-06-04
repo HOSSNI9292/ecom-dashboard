@@ -38,6 +38,22 @@ export function generateRecommendations(
   const now = new Date().toISOString();
   let idCounter = 1;
 
+  const acctCurrency = meta?.accountCurrency || "";
+  const fmtCurrency = (n: number) => {
+    if (!acctCurrency) return Math.round(n).toLocaleString();
+    try {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: acctCurrency,
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0,
+      }).format(n);
+    } catch {
+      return Math.round(n).toLocaleString();
+    }
+  };
+  const fmtNum = (n: number) => Math.round(n).toLocaleString();
+
   function addRec(
     type: Recommendation["type"],
     title: string,
@@ -71,7 +87,7 @@ export function generateRecommendations(
 
   if (meta && meta.ads.length > 0) {
     if (meta.averageRoas >= 3 && meta.averageCpa <= cpaThreshold * 0.4) {
-      addRec("scale_campaign", "Scale Top Campaigns", `ROAS of ${meta.averageRoas.toFixed(2)}x and CPA of ${Math.round(meta.averageCpa)} XOF indicates room to scale. Increase budgets on best performers.`, "high", undefined, "ROAS", meta.averageRoas);
+      addRec("scale_campaign", "Scale Top Campaigns", `ROAS of ${meta.averageRoas.toFixed(2)}x and CPA of ${fmtCurrency(meta.averageCpa)} indicates room to scale. Increase budgets on best performers.`, "high", undefined, "ROAS", meta.averageRoas);
     }
     if (meta.averageRoas < roasThreshold && meta.totalSpend > 50000) {
       addRec("decrease_budget", "Reduce Underperforming Spend", `Overall ROAS of ${meta.averageRoas.toFixed(2)}x is below threshold. Reduce budgets for low-ROAS campaigns.`, "medium", undefined, "ROAS", meta.averageRoas);
@@ -121,7 +137,7 @@ export function generateRecommendations(
   const sortedProducts = [...products].sort((a, b) => b.revenue - a.revenue);
   if (sortedProducts.length > 0) {
     const topProduct = sortedProducts[0];
-    addRec("detect_winning", `Top Product: ${topProduct.name}`, `Revenue of ${Math.round(topProduct.revenue).toLocaleString()} XOF. Feature this product in campaigns.`, "medium", topProduct.name, "Revenue", topProduct.revenue);
+    addRec("detect_winning", `Top Product: ${topProduct.name}`, `Revenue of ${fmtNum(topProduct.revenue)}. Feature this product in campaigns.`, "medium", topProduct.name, "Revenue", topProduct.revenue);
 
     const losers = sortedProducts
       .filter((p) => p.revenue > 0 && p.revenue < sortedProducts[0].revenue * 0.05 && p.totalSold < 5)
@@ -132,11 +148,11 @@ export function generateRecommendations(
     }
 
     if (avgOrderValue > 0 && avgOrderValue < 10000 && meta && meta.averageCpa > avgOrderValue * 0.5) {
-      addRec("raise_price", "Consider Raising Prices", `AOV is ${Math.round(avgOrderValue).toLocaleString()} XOF while CPA is ${Math.round(meta.averageCpa).toLocaleString()} XOF. Low margins suggest a price increase.`, "medium", undefined, "AOV", avgOrderValue);
+      addRec("raise_price", "Consider Raising Prices", `AOV is ${fmtNum(avgOrderValue)} while CPA is ${fmtCurrency(meta.averageCpa)}. Low margins suggest a price increase.`, "medium", undefined, "AOV", avgOrderValue);
     }
 
     if (avgOrderValue > 50000 && confirmationRate > 0.6) {
-      addRec("lower_price", "Consider Price Optimization", `AOV is high (${Math.round(avgOrderValue).toLocaleString()} XOF) with good confirmation rate. Testing lower prices might increase volume.`, "low", undefined, "AOV", avgOrderValue);
+      addRec("lower_price", "Consider Price Optimization", `AOV is high (${fmtNum(avgOrderValue)}) with good confirmation rate. Testing lower prices might increase volume.`, "low", undefined, "AOV", avgOrderValue);
     }
   }
 

@@ -9,6 +9,30 @@ import { useDashboardData } from "@/hooks";
 import { useRecommendations } from "@/hooks/useRecommendations";
 import { useMetaAds } from "@/hooks/useMetaAds";
 
+function formatCurrency(n: number, currency: string | undefined | null): string {
+  if (!currency) return "Unknown Currency";
+  const code = currency.toUpperCase();
+  try {
+    if (code === "USD") return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+    if (code === "EUR") return new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+    if (code === "GBP") return new Intl.NumberFormat("en-US", { style: "currency", currency: "GBP", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: code, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
+  } catch {
+    return `${Math.round(n).toLocaleString()} ${code}`;
+  }
+}
+
+function MetaStatRow({ label, value, currency }: { label: string; value: number; currency?: string }) {
+  const { t } = useTranslation();
+  const fmt = (n: number) => formatCurrency(n, currency);
+  return (
+    <div className="flex justify-between items-center">
+      <span className="text-[#94A3B8] text-xs">{label}</span>
+      <span className="text-white text-sm font-bold">{value > 0 ? fmt(value) : t("common.noData")}</span>
+    </div>
+  );
+}
+
 export default function AIInsightsPage() {
   const { t, i18n } = useTranslation();
   const { data, loading: codLoading, error: codError, refetch } = useDashboardData();
@@ -132,20 +156,14 @@ export default function AIInsightsPage() {
               </CardHeader>
               {metaData ? (
                 <div className="px-6 pb-6 space-y-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-[#94A3B8] text-xs">{t("meta.totalSpend")}</span>
-                    <span className="text-white text-sm font-bold">{Math.round(metaData.totalSpend).toLocaleString()} XOF</span>
-                  </div>
+                  <MetaStatRow label={t("meta.totalSpend")} value={metaData.totalSpend} currency={metaData.accountCurrency} />
                   <div className="flex justify-between items-center">
                     <span className="text-[#94A3B8] text-xs">{t("meta.averageRoas")}</span>
                     <span className={`text-sm font-bold ${metaData.averageRoas >= 1.5 ? "text-[#10B981]" : "text-[#EF4444]"}`}>
                       {metaData.averageRoas.toFixed(2)}x
                     </span>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-[#94A3B8] text-xs">{t("meta.averageCpa")}</span>
-                    <span className="text-white text-sm font-bold">{Math.round(metaData.averageCpa).toLocaleString()} XOF</span>
-                  </div>
+                  <MetaStatRow label={t("meta.averageCpa")} value={metaData.averageCpa} currency={metaData.accountCurrency} />
                   <div className="flex justify-between items-center">
                     <span className="text-[#94A3B8] text-xs">{t("meta.averageCtr")}</span>
                     <span className="text-white text-sm font-bold">{metaData.averageCtr.toFixed(2)}%</span>

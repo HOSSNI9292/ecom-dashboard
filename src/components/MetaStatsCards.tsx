@@ -24,10 +24,23 @@ const PRESET_OPTIONS: { value: DatePreset; label: string }[] = [
   { value: "this_month", label: "This Month" },
 ];
 
+function formatAccountCurrency(n: number, currency: string | undefined | null): string {
+  if (!currency) return "Unknown Currency";
+  const code = currency.toUpperCase();
+  try {
+    if (code === "USD") return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+    if (code === "EUR") return new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+    if (code === "GBP") return new Intl.NumberFormat("en-US", { style: "currency", currency: "GBP", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: code, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
+  } catch {
+    return `${Math.round(n).toLocaleString()} ${code}`;
+  }
+}
+
 export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCredentials }: MetaStatsCardsProps) {
   const { t } = useTranslation();
   const connection = hasCredentials ? getMetaConnection() : null;
-  const currency = data?.accountCurrency || connection?.currency || "XOF";
+  const currency = data?.accountCurrency || connection?.currency || "";
   const [preset, setPreset] = useState<DatePreset>("last_30d");
   const [showDebug, setShowDebug] = useState(false);
 
@@ -87,18 +100,18 @@ export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCr
 
   if (!data) return null;
 
-  const fmt = (n: number) => Math.round(n).toLocaleString();
+  const fmt = (n: number) => formatAccountCurrency(n, currency);
 
   const cards = [
     {
       title: t("meta.totalSpend"),
-      value: `${fmt(data.totalSpend)} ${currency}`,
+      value: fmt(data.totalSpend),
       icon: <DollarSign className="w-5 h-5" />,
       color: "primary" as const,
     },
     {
       title: t("meta.averageCpa"),
-      value: data.averageCpa > 0 ? `${fmt(data.averageCpa)} ${currency}` : t("common.noData"),
+      value: data.averageCpa > 0 ? fmt(data.averageCpa) : t("common.noData"),
       icon: <Target className="w-5 h-5" />,
       color: "warning" as const,
     },
@@ -237,21 +250,29 @@ export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCr
               <span className="text-[#F59E0B] text-xs font-semibold uppercase tracking-wider">Meta API Debug</span>
             </div>
             <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-              <div>
-                <span className="text-[#64748B]">Account ID:</span>
-                <span className="text-white ml-2">{data.debugInfo.accountId || connection?.adAccountId || "—"}</span>
+              <div className="col-span-2">
+                <span className="text-[#64748B]">Currency from Meta = </span>
+                <span className={data.debugInfo.currency ? "text-[#10B981] font-bold" : "text-[#EF4444] font-bold"}>{data.debugInfo.currency || "null (no currency returned)"}</span>
               </div>
               <div>
-                <span className="text-[#64748B]">Currency:</span>
-                <span className="text-white ml-2">{data.debugInfo.currency || currency}</span>
+                <span className="text-[#64748B]">Account ID:</span>
+                <span className="text-white ml-2">{data.debugInfo.accountId || "—"}</span>
+              </div>
+              <div>
+                <span className="text-[#64748B]">Account Name:</span>
+                <span className="text-white ml-2">{data.debugInfo.accountName || "—"}</span>
+              </div>
+              <div>
+                <span className="text-[#64748B]">Raw Spend:</span>
+                <span className="text-white ml-2">{data.debugInfo.rawSpend}</span>
+              </div>
+              <div>
+                <span className="text-[#64748B]">Formatted Spend:</span>
+                <span className="text-white ml-2">{fmt(data.debugInfo.rawSpend)}</span>
               </div>
               <div>
                 <span className="text-[#64748B]">Date Range:</span>
                 <span className="text-white ml-2">{data.debugInfo.dateRange.since} → {data.debugInfo.dateRange.until}</span>
-              </div>
-              <div>
-                <span className="text-[#64748B]">Raw Spend:</span>
-                <span className="text-white ml-2">{fmt(data.debugInfo.rawSpend)} {currency}</span>
               </div>
               <div>
                 <span className="text-[#64748B]">Ads Fetched:</span>

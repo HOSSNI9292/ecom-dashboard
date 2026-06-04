@@ -52,7 +52,7 @@ export async function POST(request: Request) {
     const accounts = (accountsData.data || []).map((a: any) => ({
       id: a.id,
       name: a.name || "Unnamed Account",
-      currency: a.currency || "USD",
+      currency: a.currency || "",
       accountId: a.account_id || "",
       status: a.account_status !== undefined ? (a.account_status === 1 ? "ACTIVE" : "INACTIVE") : "UNKNOWN",
     }));
