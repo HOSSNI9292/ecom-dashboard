@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Facebook, CheckCircle, AlertCircle, Loader2, LogOut,
-  RefreshCw, ChevronDown, Globe, ExternalLink, Info,
+  RefreshCw, ExternalLink, Info, XCircle,
 } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import {
@@ -30,6 +30,13 @@ export function MetaConnection({ onConnected }: MetaConnectionProps) {
   const [oauthExpiresAt, setOauthExpiresAt] = useState<string | null>(null);
   const [configSaved, setConfigSaved] = useState(false);
   const [showAppSecret, setShowAppSecret] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
+  const connectingRef = useRef(false);
+
+  const safelyResetConnecting = useCallback(() => {
+    setConnecting(false);
+    connectingRef.current = false;
+  }, []);
 
   const handleSaveConfig = useCallback(() => {
     saveMetaAppConfig(appConfig);
@@ -40,23 +47,25 @@ export function MetaConnection({ onConnected }: MetaConnectionProps) {
   useEffect(() => {
     const handler = async (event: MessageEvent) => {
       if (event.data?.type === "meta_oauth_code") {
+        console.log("[MetaConnection] Received meta_oauth_code from popup");
         const { code, state: returnState } = event.data.data;
         const savedState = localStorage.getItem("meta_oauth_state");
         if (savedState && savedState !== returnState) {
-          setConnecting(false);
-          alert("OAuth state mismatch — possible CSRF attack");
+          setConnectError("OAuth state mismatch — possible CSRF attack");
+          safelyResetConnecting();
           return;
         }
         localStorage.removeItem("meta_oauth_state");
 
         const cfg = getMetaAppConfig();
         if (!cfg.appId || !cfg.appSecret) {
-          setConnecting(false);
-          alert("Meta App credentials not saved. Please save them first.");
+          setConnectError("Meta App credentials not found in storage. Please save them first.");
+          safelyResetConnecting();
           return;
         }
 
         try {
+          console.log("[MetaConnection] Exchanging code for token...");
           const redirectUri = `${window.location.origin}/api/meta/callback`;
           const res = await fetch("/api/meta/exchange", {
             method: "POST",
@@ -70,51 +79,85 @@ export function MetaConnection({ onConnected }: MetaConnectionProps) {
           });
           const data = await res.json();
           if (data.accessToken) {
+            console.log("[MetaConnection] Token exchange succeeded, got ad accounts:", data.accounts?.length);
             setOauthToken(data.accessToken);
             setOauthExpiresAt(data.expiresAt);
             setAccounts(data.accounts || []);
             setShowAccounts(true);
-            setConnecting(false);
+            safelyResetConnecting();
           } else {
-            setConnecting(false);
-            alert(data.error || "Token exchange failed");
+            setConnectError(data.error || "Token exchange failed");
+            safelyResetConnecting();
           }
         } catch (err: any) {
-          setConnecting(false);
-          alert(err.message || "Token exchange failed");
+          console.error("[MetaConnection] Exchange error:", err);
+          setConnectError(err.message || "Token exchange failed");
+          safelyResetConnecting();
         }
       }
       if (event.data?.type === "meta_oauth_error") {
-        setConnecting(false);
-        alert(event.data.error || "OAuth failed");
+        console.log("[MetaConnection] Received meta_oauth_error:", event.data.error);
+        setConnectError(event.data.error || "OAuth failed");
+        safelyResetConnecting();
       }
     };
     window.addEventListener("message", handler);
     return () => window.removeEventListener("message", handler);
-  }, []);
+  }, [safelyResetConnecting]);
 
   const handleConnect = useCallback(() => {
+    setConnectError(null);
     if (!appConfig.appId) {
-      alert(t("meta.appIdRequired"));
+      setConnectError(t("meta.appIdRequired"));
       return;
     }
     if (!appConfig.appSecret) {
-      alert("Meta App Secret is required");
+      setConnectError("Meta App Secret is required");
       return;
     }
+
     saveMetaAppConfig(appConfig);
-    setConnecting(true);
+
     const redirectUri = `${window.location.origin}/api/meta/callback`;
     const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
     localStorage.setItem("meta_oauth_state", state);
     const scopes = ["ads_read", "business_management"].join(",");
     const url = `https://www.facebook.com/v22.0/dialog/oauth?client_id=${appConfig.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&state=${state}&response_type=code`;
-    const w = 600;
-    const h = 700;
-    const x = window.screen.width / 2 - w / 2;
-    const y = window.screen.height / 2 - h / 2;
-    window.open(url, "meta_oauth", `width=${w},height=${h},left=${x},top=${y},popup=1`);
-  }, [appConfig.appId, appConfig.appSecret, t]);
+
+    console.log("[MetaConnection] Opening OAuth popup...");
+    console.log("[MetaConnection] Redirect URI:", redirectUri);
+    console.log("[MetaConnection] App ID:", appConfig.appId);
+
+    setConnecting(true);
+    connectingRef.current = true;
+
+    setTimeout(() => {
+      if (connectingRef.current) {
+        console.warn("[MetaConnection] Connect timeout — no response from popup after 30s");
+        setConnectError("Connection timed out. The popup may have been blocked. Please allow popups for this site and try again.");
+        safelyResetConnecting();
+      }
+    }, 30000);
+
+    try {
+      const w = 600;
+      const h = 700;
+      const x = window.screen.width / 2 - w / 2;
+      const y = window.screen.height / 2 - h / 2;
+      const popup = window.open(url, "meta_oauth", `width=${w},height=${h},left=${x},top=${y},popup=1`);
+      if (!popup || popup.closed || typeof popup.closed === "undefined") {
+        console.warn("[MetaConnection] Popup was blocked!");
+        setConnectError("Popup blocked. Please allow popups for this site and try again.");
+        safelyResetConnecting();
+        return;
+      }
+      console.log("[MetaConnection] Popup opened successfully");
+    } catch (err: any) {
+      console.error("[MetaConnection] window.open threw:", err);
+      setConnectError("Failed to open popup: " + err.message);
+      safelyResetConnecting();
+    }
+  }, [appConfig.appId, appConfig.appSecret, t, safelyResetConnecting]);
 
   const handleSelectAccount = useCallback((account: MetaAdAccount) => {
     setSelectedAccount(account);
@@ -143,6 +186,7 @@ export function MetaConnection({ onConnected }: MetaConnectionProps) {
     setShowAccounts(false);
     setSelectedAccount(null);
     setOauthToken(null);
+    setConnectError(null);
   }, []);
 
   const inputClass = "w-full bg-[#111827] border border-[#1F2937] rounded-lg text-white placeholder-[#64748B] focus:outline-none focus:border-[#6366F1]/50 focus:ring-1 focus:ring-[#6366F1]/20 transition-all duration-200 text-sm px-3 py-2.5";
@@ -159,6 +203,18 @@ export function MetaConnection({ onConnected }: MetaConnectionProps) {
       </CardHeader>
 
       <div className="space-y-5">
+        {connectError && (
+          <div className="flex items-start gap-2.5 p-3 rounded-lg bg-[#EF4444]/10 border border-[#EF4444]/20">
+            <XCircle className="w-5 h-5 text-[#EF4444] shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-[#EF4444] text-sm font-medium">{connectError}</p>
+            </div>
+            <button onClick={() => setConnectError(null)} className="text-[#EF4444]/60 hover:text-[#EF4444] shrink-0">
+              <XCircle className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
         {connection.connected ? (
           <div className="bg-[#10B981]/5 border border-[#10B981]/20 rounded-xl p-4 space-y-3">
             <div className="flex items-center gap-2">
