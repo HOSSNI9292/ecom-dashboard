@@ -144,13 +144,21 @@ export function MetaConnection({ onConnected }: MetaConnectionProps) {
       const h = 700;
       const x = window.screen.width / 2 - w / 2;
       const y = window.screen.height / 2 - h / 2;
-      const popup = window.open(url, "meta_oauth", `width=${w},height=${h},left=${x},top=${y},popup=1`);
-      if (!popup || popup.closed || typeof popup.closed === "undefined") {
+
+      let popup = window.open(url, "meta_oauth", `width=${w},height=${h},left=${x},top=${y}`);
+
+      if (!popup || popup.closed) {
+        console.warn("[MetaConnection] Features popup blocked or null, trying without features...");
+        popup = window.open(url, "meta_oauth");
+      }
+
+      if (!popup || popup.closed) {
         console.warn("[MetaConnection] Popup was blocked!");
-        setConnectError("Popup blocked. Please allow popups for this site and try again.");
+        setConnectError("Popup blocked. Please allow popups for this site and try again. (Chrome: click the lock icon → Site settings → Pop-ups → Allow)");
         safelyResetConnecting();
         return;
       }
+
       console.log("[MetaConnection] Popup opened successfully");
     } catch (err: any) {
       console.error("[MetaConnection] window.open threw:", err);
