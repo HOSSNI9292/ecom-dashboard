@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Package, ShoppingCart, Globe,
   Warehouse, Settings, BarChart3, ShieldAlert,
-  Bot, CheckCircle, X, TrendingUp,
+  Bot, CheckCircle, X, TrendingUp, Lightbulb,
 } from "lucide-react";
 
 const navItems = [
@@ -20,6 +20,7 @@ const navItems = [
   { href: "/stock", labelKey: "nav.stock", icon: Warehouse },
   { href: "/fraud-detection", labelKey: "nav.fraudDetection", icon: ShieldAlert },
   { href: "/ai-agent", labelKey: "nav.aiAgent", icon: Bot },
+  { href: "/ai-insights", labelKey: "nav.aiInsights", icon: Lightbulb },
   { href: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
 

@@ -14,7 +14,11 @@ import { StatusBadge } from "@/components/ui/StatusBadge";
 import { PageWrapper } from "@/components/PageWrapper";
 import { OrderModal } from "@/components/OrderModal";
 import { DateFilter } from "@/components/DateFilter";
+import { MetaStatsCards } from "@/components/MetaStatsCards";
+import { RecommendationsPanel } from "@/components/RecommendationsPanel";
 import { useDashboardData } from "@/hooks";
+import { useMetaAds } from "@/hooks/useMetaAds";
+import { useRecommendations } from "@/hooks/useRecommendations";
 import { formatCurrency, formatNumber, formatPercentage, formatDate, filterOrdersByDate, DATE_FILTER_LABELS, getImageUrlOrFallback, getFeeForCountry, computeServiceFees, COUNTRY_NAMES, COUNTRY_FLAGS } from "@/utils";
 import { exportToCSV } from "@/utils/csv";
 import type { DateFilterValue } from "@/utils/dates";
@@ -210,6 +214,14 @@ export default function DashboardPage() {
   const prevNonCancelled = previousOrders.filter((o) => o.status !== "cancelled" && o.status !== "out_of_stock").length;
   const prevConfRate = prevNonCancelled > 0 ? prevConfirmed / prevNonCancelled : 0;
 
+  const { data: metaData, loading: metaLoading, error: metaError, refresh: refreshMeta, hasCredentials: metaHasCreds } = useMetaAds();
+  const { data: recData, loading: recLoading, refresh: refreshRecs, markRead } = useRecommendations(
+    data?.stats ?? null,
+    data?.countries ?? [],
+    data?.products ?? [],
+    metaData
+  );
+
   const handleExport = useCallback(() => {
     exportToCSV(
       filteredOrders.map((o) => ({
@@ -386,6 +398,23 @@ export default function DashboardPage() {
           <RevenueChart data={filteredRevenueTrend} loading={isLoading} />
           <OrdersStatusChart stats={filteredStats} loading={isLoading} />
         </div>
+
+        <MetaStatsCards
+          data={metaData}
+          loading={metaLoading}
+          error={metaError}
+          onRefresh={() => refreshMeta()}
+          onSetup={() => window.location.href = "/settings"}
+          hasCredentials={metaHasCreds}
+        />
+
+        <RecommendationsPanel
+          recommendations={recData?.recommendations ?? []}
+          loading={recLoading}
+          onRefresh={() => { refreshMeta(); refreshRecs(); }}
+          onMarkRead={markRead}
+          compact
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card gradient>

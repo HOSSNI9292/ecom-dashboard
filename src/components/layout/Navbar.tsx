@@ -15,6 +15,7 @@ const pageTitleKeys: Record<string, string> = {
   "/settings/fees": "nav.settings",
   "/fraud-detection": "nav.fraudDetection",
   "/ai-agent": "nav.aiAgent",
+  "/ai-insights": "nav.aiInsights",
   "/business-intelligence": "nav.businessIntelligence",
   "/executive-bi": "nav.executiveBi",
 };
