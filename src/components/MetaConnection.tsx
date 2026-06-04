@@ -61,12 +61,16 @@ export function MetaConnection({ onConnected }: MetaConnectionProps) {
       alert(t("meta.appIdRequired"));
       return;
     }
+    if (!appConfig.appSecret) {
+      alert("Meta App Secret is required");
+      return;
+    }
     setConnecting(true);
     const redirectUri = `${window.location.origin}/api/meta/callback`;
     fetch("/api/meta/auth", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ redirectUri }),
+      body: JSON.stringify({ redirectUri, appId: appConfig.appId, appSecret: appConfig.appSecret }),
     })
       .then((r) => r.json())
       .then((data) => {
@@ -89,7 +93,7 @@ export function MetaConnection({ onConnected }: MetaConnectionProps) {
         setConnecting(false);
         alert(err.message);
       });
-  }, [appConfig.appId, t]);
+  }, [appConfig.appId, appConfig.appSecret, t]);
 
   const handleSelectAccount = useCallback((account: MetaAdAccount) => {
     setSelectedAccount(account);

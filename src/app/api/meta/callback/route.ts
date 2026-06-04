@@ -20,14 +20,38 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    let appId = "";
+    let appSecret = "";
+    if (state) {
+      try {
+        const decoded = JSON.parse(Buffer.from(state, "base64").toString());
+        appId = decoded.appId || "";
+        appSecret = decoded.appSecret || "";
+      } catch { /* state not ours, fall back */ }
+    }
+
+    if (!appId || !appSecret) {
+      const { getMetaAppConfig } = await import("@/services/meta");
+      const config = getMetaAppConfig();
+      appId = config.appId;
+      appSecret = config.appSecret;
+    }
+
+    if (!appId) {
+      return new Response(
+        `<html><body><script>window.opener?.postMessage({ type: 'meta_oauth_error', error: 'Meta App ID not configured. Set it in Settings.' }, '*'); window.close();</script></body></html>`,
+        { headers: { "Content-Type": "text/html" } }
+      );
+    }
+
     const origin = request.nextUrl.origin;
     const redirectUri = `${origin}/api/meta/callback`;
 
     const { exchangeCodeForToken, exchangeShortLivedToken, fetchAdAccounts } = await import("@/services/meta");
 
-    const { accessToken: shortToken } = await exchangeCodeForToken(code, redirectUri);
+    const { accessToken: shortToken } = await exchangeCodeForToken(code, redirectUri, appId, appSecret);
 
-    const { accessToken, expiresAt } = await exchangeShortLivedToken(shortToken);
+    const { accessToken, expiresAt } = await exchangeShortLivedToken(shortToken, appId, appSecret);
 
     const accounts = await fetchAdAccounts(accessToken);
 

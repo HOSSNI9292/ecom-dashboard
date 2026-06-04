@@ -109,8 +109,8 @@ export async function fetchMetaAds(): Promise<MetaSummary> {
   return data;
 }
 
-export async function exchangeCodeForToken(code: string, redirectUri: string): Promise<{ accessToken: string; expiresAt: string }> {
-  const config = getMetaAppConfig();
+export async function exchangeCodeForToken(code: string, redirectUri: string, appId?: string, appSecret?: string): Promise<{ accessToken: string; expiresAt: string }> {
+  const config = appId && appSecret ? { appId, appSecret } : getMetaAppConfig();
   const url = `https://graph.facebook.com/v22.0/oauth/access_token?client_id=${config.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&client_secret=${config.appSecret}&code=${code}`;
   const res = await fetch(url);
   if (!res.ok) {
@@ -122,8 +122,8 @@ export async function exchangeCodeForToken(code: string, redirectUri: string): P
   return { accessToken: data.access_token, expiresAt };
 }
 
-export async function exchangeShortLivedToken(token: string): Promise<{ accessToken: string; expiresAt: string }> {
-  const config = getMetaAppConfig();
+export async function exchangeShortLivedToken(token: string, appId?: string, appSecret?: string): Promise<{ accessToken: string; expiresAt: string }> {
+  const config = appId && appSecret ? { appId, appSecret } : getMetaAppConfig();
   const url = `https://graph.facebook.com/v22.0/oauth/access_token?grant_type=fb_exchange_token&client_id=${config.appId}&client_secret=${config.appSecret}&fb_exchange_token=${token}`;
   const res = await fetch(url);
   if (!res.ok) {
