@@ -1,8 +1,9 @@
 "use client";
 
-import { DollarSign, TrendingUp, Target, BarChart3, Trophy, AlertTriangle, Globe, Package } from "lucide-react";
+import { DollarSign, TrendingUp, Target, BarChart3, Trophy, AlertTriangle, Globe, Package, Facebook, CheckCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+import { getMetaConnection, clearMetaCredentials } from "@/services/meta";
 import type { MetaSummary } from "@/types/meta";
 
 interface MetaStatsCardsProps {
@@ -16,19 +17,20 @@ interface MetaStatsCardsProps {
 
 export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCredentials }: MetaStatsCardsProps) {
   const { t } = useTranslation();
+  const connection = hasCredentials ? getMetaConnection() : null;
 
   if (!hasCredentials) {
     return (
       <Card className="border border-[#1F2937]/80 border-dashed">
         <div className="p-6 text-center">
           <div className="w-12 h-12 rounded-xl bg-[#6366F1]/10 flex items-center justify-center mx-auto mb-3">
-            <DollarSign className="w-6 h-6 text-[#6366F1]" />
+            <Facebook className="w-6 h-6 text-[#6366F1]" />
           </div>
           <h3 className="text-white font-semibold mb-1">{t("meta.connectMetaAds")}</h3>
           <p className="text-[#64748B] text-sm mb-4">{t("meta.connectMetaDesc")}</p>
           <button
             onClick={onSetup}
-            className="px-4 py-2 rounded-lg bg-[#6366F1] text-white text-sm font-medium hover:bg-[#5558E6] transition-colors"
+            className="px-4 py-2 rounded-lg bg-[#1877F2] text-white text-sm font-medium hover:bg-[#166FE5] transition-colors"
           >
             {t("meta.setupNow")}
           </button>
@@ -131,13 +133,26 @@ export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCr
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle>{t("meta.metaAdsPerformance")}</CardTitle>
           <div className="flex items-center gap-2">
-            {data.lastSynced && (
-              <span className="text-[#64748B] text-[10px]">
-                {t("meta.lastSynced")}: {new Date(data.lastSynced).toLocaleTimeString()}
+            <CardTitle>{t("meta.metaAdsPerformance")}</CardTitle>
+            {connection?.connected && (
+              <span className="flex items-center gap-1 text-[10px] text-[#10B981] bg-[#10B981]/10 px-2 py-0.5 rounded-full">
+                <CheckCircle className="w-3 h-3" />
+                {t("meta.connected")}
               </span>
             )}
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
+              {connection?.adAccountName && (
+                <span className="text-[#64748B] text-[10px] max-w-[120px] truncate">{connection.adAccountName}</span>
+              )}
+              {data.lastSynced && (
+                <span className="text-[#64748B] text-[10px]">
+                  {t("meta.lastSynced")}: {new Date(data.lastSynced).toLocaleString()}
+                </span>
+              )}
+            </div>
             <button
               onClick={onRefresh}
               className="p-1.5 rounded-lg text-[#64748B] hover:text-white hover:bg-[#1F2937] transition-all"

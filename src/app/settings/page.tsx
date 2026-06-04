@@ -3,8 +3,9 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
-import { Save, Shield, Key, Globe, Eye, EyeOff, CheckCircle, AlertCircle, RefreshCw, DollarSign, ChevronRight, Bot } from "lucide-react";
+import { Save, Shield, Key, Globe, Eye, EyeOff, CheckCircle, AlertCircle, RefreshCw, DollarSign, ChevronRight, Bot, Facebook } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+import { MetaConnection } from "@/components/MetaConnection";
 import { saveCredentials, clearCredentials, getApiConfig, api } from "@/services";
 import type { AuthCredentials } from "@/types";
 
@@ -168,6 +169,8 @@ export default function SettingsPage() {
           )}
         </div>
       </Card>
+
+      <MetaConnection onConnected={() => {}} />
 
       <Link href="/settings/fees" className="block group">
         <Card hover={false} className="hover:border-[#6366F1]/30 transition-all duration-200">

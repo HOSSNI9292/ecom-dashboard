@@ -3,6 +3,28 @@ export interface MetaCredentials {
   accessToken: string;
 }
 
+export interface MetaOAuthConfig {
+  appId: string;
+  appSecret: string;
+}
+
+export interface MetaAdAccount {
+  id: string;
+  name: string;
+  currency: string;
+  accountId: string;
+  status: string;
+}
+
+export interface MetaConnection {
+  connected: boolean;
+  adAccountId: string | null;
+  adAccountName: string | null;
+  accessToken: string | null;
+  lastSyncTime: string | null;
+  tokenExpiresAt: string | null;
+}
+
 export interface MetaAd {
   campaignId: string;
   campaignName: string;
