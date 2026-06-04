@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Download, TrendingDown, Globe, Package,
   CheckCircle, BarChart3, DollarSign,
@@ -18,6 +19,7 @@ import type { DateFilterValue } from "@/utils/dates";
 import type { CountryStats, Product, Order } from "@/types";
 
 export default function BusinessIntelligencePage() {
+  const { t } = useTranslation();
   const { data, loading, error, refetch } = useDashboardData();
   const [activeTab, setActiveTab] = useState("profit");
   const [dateFilter, setDateFilter] = useState<DateFilterValue>("all");
@@ -253,7 +255,7 @@ export default function BusinessIntelligencePage() {
             <div className="p-2 rounded-lg bg-[#6366F1]/10">
               <BarChart3 className="w-5 h-5 text-[#8B5CF6]" />
             </div>
-            <h1 className="text-xl font-bold text-white">Business Intelligence</h1>
+            <h1 className="text-xl font-bold text-white">{t("nav.businessIntelligence")}</h1>
           </div>
           <DateFilter value={dateFilter} onChange={setDateFilter} />
           <div className="flex items-center gap-2">
@@ -261,34 +263,34 @@ export default function BusinessIntelligencePage() {
               onClick={handleExport}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200"
             >
-              <Download className="w-3.5 h-3.5" /> Export Orders
+              <Download className="w-3.5 h-3.5" /> {t("bi.exportOrders")}
             </button>
             <button
               onClick={handleExportCountries}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200"
             >
-              <Download className="w-3.5 h-3.5" /> Export Countries
+              <Download className="w-3.5 h-3.5" /> {t("bi.exportCountries")}
             </button>
             <button
               onClick={handleExportProducts}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200"
             >
-              <Download className="w-3.5 h-3.5" /> Export Products
+              <Download className="w-3.5 h-3.5" /> {t("bi.exportProducts")}
             </button>
           </div>
         </div>
 
         <div className="flex items-center gap-2 bg-[#111827] border border-[#1F2937] rounded-lg p-1 overflow-x-auto">
-          {tabBtn("profit", "Profit Analytics")}
-          {tabBtn("revenue", "Revenue Trends")}
-          {tabBtn("countries", "Revenue by Country")}
-          {tabBtn("net", "Net Revenue by Country")}
-          {tabBtn("products", "Top Products")}
-          {tabBtn("worst", "Worst Products")}
-          {tabBtn("confirmation", "Confirmation Rate")}
-          {tabBtn("processed", "Processed Orders")}
-          {tabBtn("customers", "Top Customers")}
-          {tabBtn("stock", "Low Stock")}
+          {tabBtn("profit", t("bi.profitAnalytics"))}
+          {tabBtn("revenue", t("bi.revenueTrends"))}
+          {tabBtn("countries", t("bi.revenueByCountry"))}
+          {tabBtn("net", t("bi.netRevenueByCountry"))}
+          {tabBtn("products", t("bi.topProducts"))}
+          {tabBtn("worst", t("bi.worstProducts"))}
+          {tabBtn("confirmation", t("bi.confirmationRate"))}
+          {tabBtn("processed", t("bi.processedOrders"))}
+          {tabBtn("customers", t("bi.topCustomers"))}
+          {tabBtn("stock", t("bi.lowStock"))}
         </div>
 
         {/* Profit Analytics */}
@@ -303,44 +305,44 @@ export default function BusinessIntelligencePage() {
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="p-4 rounded-xl bg-[#111827] border border-[#1F2937]">
-                      <p className="text-[#64748B] text-xs font-medium mb-1">Gross Revenue</p>
+                      <p className="text-[#64748B] text-xs font-medium mb-1">{t("bi.grossRevenue")}</p>
                       <p className="text-white text-xl font-bold">{formatCurrency(totalProcessed)}</p>
-                      <p className="text-[#64748B] text-xs mt-1">Processed orders only</p>
+                      <p className="text-[#64748B] text-xs mt-1">{t("bi.processedOrdersOnly")}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-[#111827] border border-[#1F2937]">
-                      <p className="text-[#64748B] text-xs font-medium mb-1">Service Fees</p>
+                      <p className="text-[#64748B] text-xs font-medium mb-1">{t("bi.serviceFees")}</p>
                       <p className="text-[#ef4444] text-xl font-bold">{formatCurrency(totalFees)}</p>
-                      <p className="text-[#64748B] text-xs mt-1">CodinAfrica fees</p>
+                      <p className="text-[#64748B] text-xs mt-1">{t("bi.codinAfricaFees")}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-[#111827] border border-[#1F2937]">
-                      <p className="text-[#64748B] text-xs font-medium mb-1">Net Profit</p>
+                      <p className="text-[#64748B] text-xs font-medium mb-1">{t("bi.netProfit")}</p>
                       <p className="text-[#10b981] text-xl font-bold">{formatCurrency(totalNet)}</p>
-                      <p className="text-[#64748B] text-xs mt-1">After all fees</p>
+                      <p className="text-[#64748B] text-xs mt-1">{t("bi.afterAllFees")}</p>
                     </div>
                     <div className="p-4 rounded-xl bg-[#111827] border border-[#1F2937]">
-                      <p className="text-[#64748B] text-xs font-medium mb-1">Profit Margin</p>
+                      <p className="text-[#64748B] text-xs font-medium mb-1">{t("bi.profitMargin")}</p>
                       <p className="text-[#8B5CF6] text-xl font-bold">{formatPercentage(margin)}</p>
-                      <p className="text-[#64748B] text-xs mt-1">Net / Gross</p>
+                      <p className="text-[#64748B] text-xs mt-1">{t("bi.netGross")}</p>
                     </div>
                   </div>
 
                   <Card hover={false}>
                     <CardHeader>
-                      <CardTitle>Profit by Country</CardTitle>
-                      <span className="text-[#8B5CF6] text-xs font-medium">{filteredCountries.length} countries</span>
+                      <CardTitle>{t("bi.profitByCountry")}</CardTitle>
+                      <span className="text-[#8B5CF6] text-xs font-medium">{filteredCountries.length} {t("common.countries").toLowerCase()}</span>
                     </CardHeader>
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
                           <tr className="border-b border-[#1F2937]">
                             <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">#</th>
-                            <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
-                            <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Processed Orders</th>
-                            <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Gross Revenue</th>
-                            <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fee %</th>
-                            <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Service Fees</th>
-                            <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Net Revenue</th>
-                            <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Margin</th>
+                            <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.country")}</th>
+                            <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.processedOrders")}</th>
+                            <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.grossRevenue")}</th>
+                            <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.feePercent")}</th>
+                            <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.serviceFees")}</th>
+                            <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.netRevenue")}</th>
+                            <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.margin")}</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -369,7 +371,7 @@ export default function BusinessIntelligencePage() {
                             );
                           })}
                           {filteredCountries.length === 0 && (
-                            <tr><td colSpan={8} className="text-center py-12 text-[#64748B]">No data</td></tr>
+                            <tr><td colSpan={8} className="text-center py-12 text-[#64748B]">{t("common.noData")}</td></tr>
                           )}
                         </tbody>
                       </table>
@@ -385,8 +387,8 @@ export default function BusinessIntelligencePage() {
         {activeTab === "revenue" && (
           <Card hover={false}>
             <CardHeader>
-              <CardTitle>Revenue Trends</CardTitle>
-              <span className="text-[#64748B] text-xs">Daily revenue over time</span>
+              <CardTitle>{t("bi.revenueTrends")}</CardTitle>
+              <span className="text-[#64748B] text-xs">{t("bi.dailyRevenueOverTime")}</span>
             </CardHeader>
             <RevenueChart data={data?.revenueTrend ?? []} loading={false} />
           </Card>
@@ -397,7 +399,7 @@ export default function BusinessIntelligencePage() {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-[#8B5CF6]" />
-              <span className="text-white text-sm font-medium">Top 10 Countries by Revenue</span>
+              <span className="text-white text-sm font-medium">{t("bi.top10CountriesByRevenue")}</span>
             </div>
             <div className="space-y-2">
               {topCountries.map((c: CountryStats, i: number) => {
@@ -430,7 +432,7 @@ export default function BusinessIntelligencePage() {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <DollarSign className="w-4 h-4 text-[#10b981]" />
-              <span className="text-white text-sm font-medium">Net Revenue by Country (after service fees)</span>
+              <span className="text-white text-sm font-medium">{t("bi.netRevenueByCountryAfter")}</span>
             </div>
             <Card hover={false}>
               <div className="overflow-x-auto">
@@ -438,11 +440,11 @@ export default function BusinessIntelligencePage() {
                   <thead>
                     <tr className="border-b border-[#1F2937]">
                       <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">#</th>
-                      <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
-                      <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Gross Revenue</th>
-                      <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fee %</th>
-                      <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Service Fees</th>
-                      <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Net Revenue</th>
+                      <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.country")}</th>
+                      <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.grossRevenue")}</th>
+                      <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.feePercent")}</th>
+                      <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.serviceFees")}</th>
+                      <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.netRevenue")}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -462,7 +464,7 @@ export default function BusinessIntelligencePage() {
                       </tr>
                     ))}
                     {netRevenueByCountry.length === 0 && (
-                      <tr><td colSpan={6} className="text-center py-12 text-[#64748B]">No data</td></tr>
+                    <tr><td colSpan={6} className="text-center py-12 text-[#64748B]">{t("common.noData")}</td></tr>
                     )}
                   </tbody>
                 </table>
@@ -475,18 +477,18 @@ export default function BusinessIntelligencePage() {
         {activeTab === "products" && (
           <Card hover={false}>
             <CardHeader>
-              <CardTitle>Top 10 Products by Revenue</CardTitle>
+              <CardTitle>{t("bi.top10ProductsByRevenue")}</CardTitle>
             </CardHeader>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-[#1F2937]">
                     <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">#</th>
-                    <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Product</th>
-                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
-                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Sold</th>
-                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Stock</th>
-                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Price</th>
+                    <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.product")}</th>
+                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.revenue")}</th>
+                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.sold")}</th>
+                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.stock")}</th>
+                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.price")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -537,7 +539,7 @@ export default function BusinessIntelligencePage() {
                     );
                   })}
                   {topProducts.length === 0 && (
-                    <tr><td colSpan={6} className="text-center py-12 text-[#64748B]">No data</td></tr>
+                    <tr><td colSpan={6} className="text-center py-12 text-[#64748B]">{t("common.noData")}</td></tr>
                   )}
                 </tbody>
               </table>
@@ -549,15 +551,15 @@ export default function BusinessIntelligencePage() {
         {activeTab === "worst" && (
           <Card hover={false}>
             <CardHeader>
-              <CardTitle>Worst Performing Products</CardTitle>
-              <span className="text-[#ef4444] text-xs font-medium">Bottom 10 by revenue</span>
+              <CardTitle>{t("bi.worstPerformingProducts")}</CardTitle>
+              <span className="text-[#ef4444] text-xs font-medium">{t("bi.bottom10ByRevenue")}</span>
             </CardHeader>
             <div className="space-y-2">
               {worstProducts.map((p: Product, i: number) => (
                 <div key={p.id} className="flex items-center justify-between py-2.5 px-3 rounded-lg bg-[#ef4444]/5 border border-[#ef4444]/10 hover:bg-[#ef4444]/10 transition-all duration-200">
                   <div className="min-w-0 flex-1">
                     <p className="text-white text-sm font-medium truncate">{p.name}</p>
-                    <p className="text-[#64748B] text-xs">{p.code} &middot; {formatNumber(p.totalSold)} sold</p>
+                    <p className="text-[#64748B] text-xs">{p.code} &middot; {formatNumber(p.totalSold)} {t("common.sold").toLowerCase()}</p>
                   </div>
                   <div className="flex items-center gap-3 shrink-0 ml-3">
                     <span className="text-[#ef4444] font-bold text-sm">{formatCurrency(p.revenue)}</span>
@@ -566,7 +568,7 @@ export default function BusinessIntelligencePage() {
                 </div>
               ))}
               {worstProducts.length === 0 && (
-                <p className="text-center py-8 text-[#64748B]">No data</p>
+                <p className="text-center py-8 text-[#64748B]">{t("common.noData")}</p>
               )}
             </div>
           </Card>
@@ -577,7 +579,7 @@ export default function BusinessIntelligencePage() {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-[#10b981]" />
-              <span className="text-white text-sm font-medium">Confirmation Rate by Country</span>
+              <span className="text-white text-sm font-medium">{t("bi.confirmationRateByCountry")}</span>
             </div>
             <div className="space-y-2">
               {confirmationByCountry.map((c: CountryStats, i: number) => (
@@ -602,7 +604,7 @@ export default function BusinessIntelligencePage() {
                 </div>
               ))}
               {confirmationByCountry.length === 0 && (
-                <p className="text-center py-8 text-[#64748B]">No data</p>
+                <p className="text-center py-8 text-[#64748B]">{t("common.noData")}</p>
               )}
             </div>
           </div>
@@ -613,7 +615,7 @@ export default function BusinessIntelligencePage() {
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-4 h-4 text-[#8B5CF6]" />
-              <span className="text-white text-sm font-medium">Processed Orders by Country</span>
+              <span className="text-white text-sm font-medium">{t("bi.processedOrdersByCountry")}</span>
             </div>
             <div className="space-y-2">
               {processedByCountry.map((c: CountryStats, i: number) => {
@@ -639,7 +641,7 @@ export default function BusinessIntelligencePage() {
                 );
               })}
               {processedByCountry.length === 0 && (
-                <p className="text-center py-8 text-[#64748B]">No data</p>
+                <p className="text-center py-8 text-[#64748B]">{t("common.noData")}</p>
               )}
             </div>
           </div>
@@ -649,19 +651,19 @@ export default function BusinessIntelligencePage() {
         {activeTab === "customers" && (
           <Card hover={false}>
             <CardHeader>
-              <CardTitle>Top 10 Customers by Revenue</CardTitle>
-              <span className="text-[#8B5CF6] text-xs font-medium">{topCustomers.length} customers</span>
+              <CardTitle>{t("bi.top10CustomersByRevenue")}</CardTitle>
+              <span className="text-[#8B5CF6] text-xs font-medium">{topCustomers.length} {t("common.customers").toLowerCase()}</span>
             </CardHeader>
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-[#1F2937]">
                     <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">#</th>
-                    <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Customer</th>
-                    <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
-                    <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Orders</th>
-                    <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Products</th>
-                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
+                    <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.customer")}</th>
+                    <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.country")}</th>
+                    <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.orders")}</th>
+                    <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.products")}</th>
+                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("bi.revenue")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -706,7 +708,7 @@ export default function BusinessIntelligencePage() {
                     </tr>
                   ))}
                   {topCustomers.length === 0 && (
-                    <tr><td colSpan={6} className="text-center py-12 text-[#64748B]">No customer data</td></tr>
+                    <tr><td colSpan={6} className="text-center py-12 text-[#64748B]">{t("common.noData")}</td></tr>
                   )}
                 </tbody>
               </table>
@@ -718,8 +720,8 @@ export default function BusinessIntelligencePage() {
         {activeTab === "stock" && (
           <Card hover={false}>
             <CardHeader>
-              <CardTitle>Low Stock Products</CardTitle>
-              <span className="text-[#f59e0b] text-xs font-medium">{lowStockData.length} items</span>
+              <CardTitle>{t("bi.lowStockProducts")}</CardTitle>
+              <span className="text-[#f59e0b] text-xs font-medium">{lowStockData.length} {t("bi.items")}</span>
             </CardHeader>
             <div className="space-y-2">
               {lowStockData.map((p: Product) => (
@@ -731,7 +733,7 @@ export default function BusinessIntelligencePage() {
                   <div className="flex items-center gap-3 shrink-0 ml-3">
                     <span className="text-[#f59e0b] font-bold text-lg">{formatNumber(p.stockQuantity)}</span>
                     <div className="flex flex-col items-end">
-                      <span className="text-[#94A3B8] text-xs">{formatNumber(p.totalSold)} sold</span>
+                      <span className="text-[#94A3B8] text-xs">{formatNumber(p.totalSold)} {t("common.sold").toLowerCase()}</span>
                       <span className="text-[#64748B] text-xs">{formatCurrency(p.revenue)}</span>
                     </div>
                   </div>
@@ -739,7 +741,7 @@ export default function BusinessIntelligencePage() {
               ))}
               {lowStockData.length === 0 && (
                 <div className="text-center py-8">
-                  <p className="text-[#10b981] text-sm font-medium">All products well stocked</p>
+                  <p className="text-[#10b981] text-sm font-medium">{t("bi.allWellStocked")}</p>
                 </div>
               )}
             </div>

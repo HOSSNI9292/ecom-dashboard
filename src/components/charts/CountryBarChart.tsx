@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useTranslation } from "react-i18next";
 import type { CountryStats } from "@/types";
 import { formatCurrency } from "@/utils";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -42,8 +43,11 @@ export function CountryBarChart({
   data,
   loading,
   dataKey = "revenue",
-  title = "Revenue by Country",
+  title,
 }: CountryBarChartProps) {
+  const { t } = useTranslation();
+  const chartTitle = title || t("dashboard.highestRevenue");
+
   const chartData = [...(data || [])]
     .sort((a, b) => (b[dataKey] as number) - (a[dataKey] as number))
     .slice(0, 10);
@@ -57,7 +61,7 @@ export function CountryBarChart({
   return (
     <Card hover={false} className="lg:col-span-2">
       <CardHeader>
-        <CardTitle>{title}</CardTitle>
+        <CardTitle>{chartTitle}</CardTitle>
       </CardHeader>
       {loading ? (
         <div className="h-[300px] flex items-center justify-center">
@@ -67,7 +71,7 @@ export function CountryBarChart({
           </div>
         </div>
       ) : chartData.length === 0 ? (
-        <div className="h-[300px] flex items-center justify-center text-[#64748B] text-sm">No data</div>
+        <div className="h-[300px] flex items-center justify-center text-[#64748B] text-sm">{t("common.noData")}</div>
       ) : (
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">

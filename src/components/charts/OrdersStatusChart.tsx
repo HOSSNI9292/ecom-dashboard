@@ -10,7 +10,9 @@ import {
   Legend,
   Sector,
 } from "recharts";
+import { useTranslation } from "react-i18next";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
+
 interface FilteredChartStats {
   pendingOrders: number;
   confirmedOrders: number;
@@ -27,15 +29,15 @@ interface OrdersStatusChartProps {
   loading?: boolean;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
-  pending: { label: "Pending", color: "#F59E0B" },
-  confirmed: { label: "Confirmed", color: "#10B981" },
-  cancelled: { label: "Cancelled", color: "#EF4444" },
-  double: { label: "Double", color: "#EC4899" },
-  transferred: { label: "Transferred", color: "#8B5CF6" },
-  out_of_stock: { label: "Out of Stock", color: "#64748B" },
-  unreached: { label: "Unreached", color: "#94A3B8" },
-};
+const STATUS_KEYS = [
+  { key: "pending", tKey: "status.pending", color: "#F59E0B" },
+  { key: "confirmed", tKey: "status.confirmed", color: "#10B981" },
+  { key: "cancelled", tKey: "status.cancelled", color: "#EF4444" },
+  { key: "double", tKey: "status.double", color: "#EC4899" },
+  { key: "transferred", tKey: "status.transferred", color: "#8B5CF6" },
+  { key: "out_of_stock", tKey: "status.outOfStock", color: "#64748B" },
+  { key: "unreached", tKey: "status.unreached", color: "#94A3B8" },
+];
 
 const RADIAN = Math.PI / 180;
 
@@ -43,7 +45,6 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
   const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
   const y = cy + radius * Math.sin(-midAngle * RADIAN);
-
   return percent > 0.05 ? (
     <text x={x} y={y} fill="white" textAnchor="middle" dominantBaseline="central" fontSize={11} fontWeight={600}>
       {`${(percent * 100).toFixed(0)}%`}
@@ -52,19 +53,20 @@ const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, per
 };
 
 export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
+  const { t } = useTranslation();
+
   const chartData = !stats
     ? []
-    : Object.keys(STATUS_CONFIG).map((key) => {
-        const cfg = STATUS_CONFIG[key];
+    : STATUS_KEYS.map((s) => {
         let value = 0;
-        if (key === "pending") value = stats.pendingOrders;
-        else if (key === "confirmed") value = stats.confirmedOrders;
-        else if (key === "cancelled") value = stats.cancelledOrders;
-        else if (key === "double") value = stats.doubleOrders;
-        else if (key === "transferred") value = stats.transferredOrders;
-        else if (key === "out_of_stock") value = stats.outOfStockOrders;
-        else if (key === "unreached") value = stats.unreachedOrders;
-        return { key, ...cfg, value };
+        if (s.key === "pending") value = stats.pendingOrders;
+        else if (s.key === "confirmed") value = stats.confirmedOrders;
+        else if (s.key === "cancelled") value = stats.cancelledOrders;
+        else if (s.key === "double") value = stats.doubleOrders;
+        else if (s.key === "transferred") value = stats.transferredOrders;
+        else if (s.key === "out_of_stock") value = stats.outOfStockOrders;
+        else if (s.key === "unreached") value = stats.unreachedOrders;
+        return { key: s.key, label: t(s.tKey), color: s.color, value };
       }).filter((d) => d.value > 0).sort((a, b) => b.value - a.value);
 
   const total = chartData.reduce((s, d) => s + d.value, 0);
@@ -82,7 +84,7 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
   return (
     <Card hover={false}>
       <CardHeader>
-        <CardTitle>Orders by Status</CardTitle>
+        <CardTitle>{t("dashboard.ordersByStatus")}</CardTitle>
       </CardHeader>
       {loading ? (
         <div className="h-[300px] flex items-center justify-center">
@@ -92,7 +94,7 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
           </div>
         </div>
       ) : chartData.length === 0 ? (
-        <div className="h-[300px] flex items-center justify-center text-[#64748B] text-sm">No data</div>
+        <div className="h-[300px] flex items-center justify-center text-[#64748B] text-sm">{t("dashboard.noData")}</div>
       ) : (
         <div className="h-[340px] relative">
           <ResponsiveContainer width="100%" height="100%">
@@ -127,7 +129,7 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
                         <span className="text-white text-sm font-semibold">{d.label}</span>
                       </div>
                       <div className="space-y-1">
-                        <p className="text-white font-medium text-sm">{d.value.toLocaleString()} orders</p>
+                        <p className="text-white font-medium text-sm">{d.value.toLocaleString()} {t("common.orders")}</p>
                         <p className="text-[#6366F1] font-semibold">{pct}%</p>
                       </div>
                     </div>
@@ -147,7 +149,7 @@ export function OrdersStatusChart({ stats, loading }: OrdersStatusChartProps) {
           </ResponsiveContainer>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none text-center">
             <p className="text-2xl font-bold text-white">{total.toLocaleString()}</p>
-            <p className="text-[#64748B] text-[11px] mt-0.5 leading-none">Total Orders</p>
+            <p className="text-[#64748B] text-[11px] mt-0.5 leading-none">{t("dashboard.totalOrdersLabel")}</p>
           </div>
         </div>
       )}

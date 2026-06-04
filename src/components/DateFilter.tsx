@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { DATE_FILTER_OPTIONS } from "@/utils/dates";
 import type { DateFilterValue } from "@/utils/dates";
 
@@ -10,8 +10,10 @@ interface DateFilterProps {
 }
 
 export function DateFilter({ value, onChange }: DateFilterProps) {
+  const { t } = useTranslation();
+
   return (
-    <div className="flex items-center gap-2 bg-[#111827] border border-[#1F2937] rounded-lg p-1 overflow-x-auto">
+    <div className="flex items-center gap-2 bg-[#111827] border border-[#1F2937]/80 rounded-lg p-1 overflow-x-auto">
       {DATE_FILTER_OPTIONS.map((f) => (
         <button
           key={f.value}
@@ -22,7 +24,7 @@ export function DateFilter({ value, onChange }: DateFilterProps) {
               : "text-[#64748B] hover:text-white"
           }`}
         >
-          {f.label}
+          {t(`dateFilter.${f.value}`)}
         </button>
       ))}
     </div>

@@ -1,35 +1,26 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard,
-  Package,
-  ShoppingCart,
-  Globe,
-  Warehouse,
-  Settings,
-  BarChart3,
-  ShieldAlert,
-  Bot,
-  CheckCircle,
-  X,
-  ChevronRight,
-  TrendingUp,
+  LayoutDashboard, Package, ShoppingCart, Globe,
+  Warehouse, Settings, BarChart3, ShieldAlert,
+  Bot, CheckCircle, X, TrendingUp,
 } from "lucide-react";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/business-intelligence", label: "Business Intelligence", icon: BarChart3 },
-  { href: "/executive-bi", label: "Executive BI", icon: TrendingUp },
-  { href: "/products", label: "Products", icon: Package },
-  { href: "/orders", label: "Orders", icon: ShoppingCart },
-  { href: "/delivered", label: "Delivered", icon: CheckCircle },
-  { href: "/countries", label: "Countries", icon: Globe },
-  { href: "/stock", label: "Stock", icon: Warehouse },
-  { href: "/fraud-detection", label: "Fraud Detection", icon: ShieldAlert },
-  { href: "/ai-agent", label: "AI Agent", icon: Bot },
-  { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { href: "/business-intelligence", labelKey: "nav.businessIntelligence", icon: BarChart3 },
+  { href: "/executive-bi", labelKey: "nav.executiveBi", icon: TrendingUp },
+  { href: "/products", labelKey: "nav.products", icon: Package },
+  { href: "/orders", labelKey: "nav.orders", icon: ShoppingCart },
+  { href: "/delivered", labelKey: "nav.delivered", icon: CheckCircle },
+  { href: "/countries", labelKey: "nav.countries", icon: Globe },
+  { href: "/stock", labelKey: "nav.stock", icon: Warehouse },
+  { href: "/fraud-detection", labelKey: "nav.fraudDetection", icon: ShieldAlert },
+  { href: "/ai-agent", labelKey: "nav.aiAgent", icon: Bot },
+  { href: "/settings", labelKey: "nav.settings", icon: Settings },
 ];
 
 interface SidebarProps {
@@ -39,6 +30,8 @@ interface SidebarProps {
 
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.language === "ar";
 
   return (
     <>
@@ -49,8 +42,12 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         />
       )}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 bg-[#0B0F19] border-r border-[#1F2937] transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto ${
-          open ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 z-50 h-full w-64 bg-[#0B0F19] ltr:border-r rtl:border-l border-[#1F2937] transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto ${
+          isRtl ? "right-0" : "left-0"
+        } ${
+          open
+            ? "translate-x-0"
+            : isRtl ? "translate-x-full" : "-translate-x-full"
         }`}
       >
         <div className="flex items-center justify-between px-5 py-5 border-b border-[#1F2937]">
@@ -63,8 +60,8 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               </svg>
             </div>
             <div>
-              <span className="text-white font-semibold text-sm">COD Analytics</span>
-              <p className="text-[#64748B] text-[10px]">Dashboard v2.0</p>
+              <span className="text-white font-semibold text-sm">{t("common.appName")}</span>
+              <p className="text-[#64748B] text-[10px]">{t("common.appVersion")}</p>
             </div>
           </Link>
           <button
@@ -92,7 +89,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                   <item.icon className={`w-5 h-5 transition-colors duration-200 ${
                     isActive ? "text-[#6366F1]" : "text-[#64748B] group-hover:text-white"
                   }`} />
-                  {item.label}
+                  {t(item.labelKey)}
                 </div>
                 {isActive && (
                   <div className="w-1 h-5 rounded-full bg-[#6366F1] shadow-[0_0_8px_rgba(99,102,241,0.5)]" />

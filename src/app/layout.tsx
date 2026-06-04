@@ -1,15 +1,18 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { Navbar } from "@/components/layout/Navbar";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { NotificationsProvider } from "@/context/NotificationsContext";
-import { Sun, Moon } from "lucide-react";
+import { Sun, Moon, Globe, ChevronDown } from "lucide-react";
+import i18n, { setLanguage } from "@/i18n";
 import "./globals.css";
 
 function ThemeToggle() {
   const [dark, setDark] = useState(true);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const stored = localStorage.getItem("cod_dashboard_theme");
@@ -27,24 +30,75 @@ function ThemeToggle() {
     <button
       onClick={toggle}
       className="p-2 rounded-lg text-[#64748B] hover:text-white hover:bg-[#111827] transition-all duration-200"
-      title={`Switch to ${dark ? "light" : "dark"} mode`}
+      title={dark ? t("theme.switchToLight") : t("theme.switchToDark")}
     >
       {dark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
     </button>
   );
 }
 
-function LayoutInner({ children }: { children: React.ReactNode }) {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+function LanguageSwitcher() {
+  const { i18n: i18nInstance } = useTranslation();
+  const currentLang = i18nInstance.language || "en";
+  const [open, setOpen] = useState(false);
+
+  const languages = [
+    { code: "en", label: "🇬🇧 English" },
+    { code: "fr", label: "🇫🇷 Français" },
+    { code: "ar", label: "🇲🇦 العربية" },
+  ];
+
+  const current = languages.find((l) => l.code === currentLang) || languages[1];
 
   return (
-    <div className="flex min-h-screen bg-[#0B0F19] text-[#F8FAFC]">
+    <div className="relative">
+      <button
+        onClick={() => setOpen(!open)}
+        className="px-3 py-2 rounded-lg text-[#94A3B8] hover:text-white hover:bg-[#1E293B] border border-[#1F2937]/60 hover:border-[#6366F1]/30 transition-all duration-200 flex items-center gap-2"
+        title={current.label}
+      >
+        <Globe className="w-4 h-4 shrink-0" />
+        <span className="text-xs font-medium">{current.label}</span>
+        <ChevronDown className={`w-3 h-3 text-[#64748B] transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+      </button>
+      {open && (
+        <>
+          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+          <div className="absolute right-0 top-full mt-1.5 z-50 w-44 bg-[#111827] border border-[#1F2937]/80 rounded-xl shadow-2xl py-1.5 overflow-hidden">
+            {languages.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => { setLanguage(lang.code); setOpen(false); }}
+                className={`w-full text-left px-4 py-2.5 text-sm flex items-center gap-2.5 transition-colors duration-150 ${
+                  currentLang === lang.code
+                    ? "bg-[#6366F1]/10 text-[#6366F1] font-semibold"
+                    : "text-[#94A3B8] hover:text-white hover:bg-[#1E293B]"
+                }`}
+              >
+                <span>{lang.label}</span>
+                {currentLang === lang.code && <span className="ml-auto text-[10px] text-[#6366F1]">✓</span>}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function LayoutInner({ children }: { children: React.ReactNode }) {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex min-h-screen bg-[#0B0F19] text-[#F8FAFC]" dir="inherit">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col min-w-0">
         <Navbar
           onMenuClick={() => setSidebarOpen(true)}
           actions={
             <div className="flex items-center gap-1">
+              <LanguageSwitcher />
               <ThemeToggle />
             </div>
           }
@@ -58,14 +112,25 @@ function LayoutInner({ children }: { children: React.ReactNode }) {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    const lang = i18n.language;
+    document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+    document.documentElement.lang = lang;
+    setReady(true);
+  }, []);
+
   return (
     <html lang="en" data-theme="dark">
       <body>
-        <ThemeProvider>
-          <NotificationsProvider>
-            <LayoutInner>{children}</LayoutInner>
-          </NotificationsProvider>
-        </ThemeProvider>
+        {ready && (
+          <ThemeProvider>
+            <NotificationsProvider>
+              <LayoutInner>{children}</LayoutInner>
+            </NotificationsProvider>
+          </ThemeProvider>
+        )}
       </body>
     </html>
   );

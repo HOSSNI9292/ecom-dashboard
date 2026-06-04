@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ShieldAlert, ShieldCheck, AlertTriangle, TrendingDown,
   Flag, FlagOff, Search, Download, RefreshCw, Eye
@@ -42,6 +43,7 @@ interface ProductFraudAnalysis {
 const FAKE_STATUSES = ["cancelled", "double", "transferred"];
 
 export default function FraudDetectionPage() {
+  const { t } = useTranslation();
   const { data, loading, error, refetch } = useDashboardData();
   const [dateFilter, setDateFilter] = useState<DateFilterValue>("all");
   const [search, setSearch] = useState("");
@@ -231,16 +233,16 @@ export default function FraudDetectionPage() {
               <ShieldAlert className="w-6 h-6 text-[#ef4444]" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">Fraud Detection</h1>
-              <p className="text-[#64748B] text-xs">Identify products with fake orders</p>
+              <h1 className="text-xl font-bold text-white">{t("nav.fraudDetection")}</h1>
+              <p className="text-[#64748B] text-xs">{t("fraud.subtitle")}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={refetch} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200">
-              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} /> {t("common.refresh")}
             </button>
             <button onClick={handleExport} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200">
-              <Download className="w-3.5 h-3.5" /> Export
+              <Download className="w-3.5 h-3.5" /> {t("common.export")}
             </button>
           </div>
         </div>
@@ -250,22 +252,22 @@ export default function FraudDetectionPage() {
           <Select
             value={country}
             onChange={setCountry}
-            options={[{ label: "All Countries", value: "" }, ...countries]}
+            options={[{ label: t("common.all"), value: "" }, ...countries]}
             className="w-full sm:w-44"
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-          <StatCard title="Total Fake Orders" value={formatNumber(stats.totalFakeOrders)} icon={<AlertTriangle className="w-5 h-5" />} color="error" delay={0} subtitle={`${formatPercentage(stats.totalOrders > 0 ? stats.totalFakeOrders / stats.totalOrders : 0)} of all orders`} />
-          <StatCard title="High Risk Products" value={formatNumber(stats.highRisk)} icon={<ShieldAlert className="w-5 h-5" />} color="error" delay={50} subtitle="50%+ fake rate" />
-          <StatCard title="Flagged Products" value={formatNumber(stats.flagged)} icon={<Flag className="w-5 h-5" />} color="warning" delay={100} subtitle="Stop ads for these" />
-          <StatCard title="Fake Revenue Lost" value={formatCurrency(stats.totalFakeRevenue)} icon={<TrendingDown className="w-5 h-5" />} color="error" delay={150} subtitle="From fake orders" />
-          <StatCard title="Products Analyzed" value={formatNumber(productAnalysis.length)} icon={<Eye className="w-5 h-5" />} color="primary" delay={200} />
+          <StatCard title={t("fraud.totalFakeOrders")} value={formatNumber(stats.totalFakeOrders)} icon={<AlertTriangle className="w-5 h-5" />} color="error" delay={0} subtitle={`${formatPercentage(stats.totalOrders > 0 ? stats.totalFakeOrders / stats.totalOrders : 0)} ${t("fraud.ofAllOrders")}`} />
+          <StatCard title={t("fraud.highRiskProducts")} value={formatNumber(stats.highRisk)} icon={<ShieldAlert className="w-5 h-5" />} color="error" delay={50} subtitle={t("fraud.fiftyPercentFake")} />
+          <StatCard title={t("fraud.flaggedProducts")} value={formatNumber(stats.flagged)} icon={<Flag className="w-5 h-5" />} color="warning" delay={100} subtitle={t("fraud.stopAdsForThese")} />
+          <StatCard title={t("fraud.fakeRevenueLost")} value={formatCurrency(stats.totalFakeRevenue)} icon={<TrendingDown className="w-5 h-5" />} color="error" delay={150} subtitle={t("fraud.fromFakeOrders")} />
+          <StatCard title={t("fraud.productsAnalyzed")} value={formatNumber(productAnalysis.length)} icon={<Eye className="w-5 h-5" />} color="primary" delay={200} />
         </div>
 
         <Card hover={false}>
           <CardHeader>
-            <CardTitle>High Risk Products - Stop Ads</CardTitle>
+            <CardTitle>{t("fraud.highRiskTitle")}</CardTitle>
             <span className="text-[#ef4444] text-xs font-medium">{productAnalysis.filter((p) => p.riskLevel === "high").length} products</span>
           </CardHeader>
           <div className="space-y-2">
@@ -300,7 +302,7 @@ export default function FraudDetectionPage() {
             {productAnalysis.filter((p) => p.riskLevel === "high").length === 0 && (
               <div className="text-center py-8">
                 <ShieldCheck className="w-12 h-12 text-[#10b981] mx-auto mb-2" />
-                <p className="text-[#10b981] text-sm font-medium">No high risk products detected</p>
+                    <p className="text-[#10b981] text-sm font-medium">{t("fraud.noHighRisk")}</p>
               </div>
             )}
           </div>
@@ -308,17 +310,17 @@ export default function FraudDetectionPage() {
 
         <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-start">
           <div className="flex-1 min-w-[200px]">
-            <SearchInput value={search} onChange={setSearch} placeholder="Search products..." />
+            <SearchInput value={search} onChange={setSearch} placeholder={t("common.search")} />
           </div>
           <Select
             value={filterType}
             onChange={setFilterType}
             options={[
-              { label: "All Products", value: "" },
-              { label: "Flagged Only", value: "flagged" },
-              { label: "High Risk", value: "high" },
-              { label: "Medium Risk", value: "medium" },
-              { label: "Suspicious (30%+)", value: "suspicious" },
+              { label: t("common.all"), value: "" },
+              { label: t("fraud.flaggedOnly"), value: "flagged" },
+              { label: t("fraud.highRisk"), value: "high" },
+              { label: t("fraud.mediumRisk"), value: "medium" },
+              { label: t("fraud.suspicious"), value: "suspicious" },
             ]}
             className="w-full sm:w-44"
           />
@@ -326,10 +328,10 @@ export default function FraudDetectionPage() {
             value={sortBy}
             onChange={setSortBy}
             options={[
-              { label: "Fake Rate (High)", value: "fakeRate" },
-              { label: "Fake Orders (High)", value: "fakeOrders" },
-              { label: "Total Orders", value: "totalOrders" },
-              { label: "Name A-Z", value: "name" },
+              { label: t("fraud.fakeRateHigh"), value: "fakeRate" },
+              { label: t("fraud.fakeOrdersHigh"), value: "fakeOrders" },
+              { label: t("fraud.totalOrders"), value: "totalOrders" },
+              { label: t("fraud.nameAZ"), value: "name" },
             ]}
             className="w-full sm:w-44"
           />
@@ -337,7 +339,7 @@ export default function FraudDetectionPage() {
 
         <Card hover={false}>
           <CardHeader>
-            <CardTitle>All Products Analysis</CardTitle>
+            <CardTitle>{t("fraud.allProductsAnalysis")}</CardTitle>
             <span className="text-[#64748B] text-xs">{filtered.length} products</span>
           </CardHeader>
           <div className="overflow-x-auto">
@@ -391,11 +393,11 @@ export default function FraudDetectionPage() {
                     <td className="py-3.5 px-4 text-center">
                       {p.isFlagged ? (
                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444]/20">
-                          <Flag className="w-3 h-3" /> Flagged
+                          <Flag className="w-3 h-3" /> {t("fraud.flagged")}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-[#1F2937] text-[#64748B] border border-[#1F2937]">
-                          Active
+                          {t("fraud.active")}
                         </span>
                       )}
                     </td>
@@ -413,7 +415,7 @@ export default function FraudDetectionPage() {
                   </tr>
                 ))}
                 {filtered.length === 0 && (
-                  <tr><td colSpan={10} className="text-center py-12 text-[#64748B]">No products found</td></tr>
+                  <tr><td colSpan={10} className="text-center py-12 text-[#64748B]">{t("fraud.noProductsFound")}</td></tr>
                 )}
               </tbody>
             </table>
@@ -421,7 +423,7 @@ export default function FraudDetectionPage() {
         </Card>
       </div>
 
-      <Modal open={showFlagModal} onClose={() => setShowFlagModal(false)} title="Flag Product - Stop Ads">
+      <Modal open={showFlagModal} onClose={() => setShowFlagModal(false)} title={t("fraud.flagProductTitle")}>
         {selectedProduct && (
           <div className="space-y-4">
             <div className="p-4 rounded-xl bg-[#ef4444]/5 border border-[#ef4444]/20">
@@ -430,25 +432,25 @@ export default function FraudDetectionPage() {
               <div className="flex items-center gap-4 mt-3">
                 <div>
                   <p className="text-[#ef4444] text-lg font-bold">{formatPercentage(selectedProduct.fakeRate)}</p>
-                  <p className="text-[#64748B] text-xs">Fake Rate</p>
+                    <p className="text-[#64748B] text-xs">{t("fraud.fakeRateLabel")}</p>
                 </div>
                 <div>
                   <p className="text-white text-lg font-bold">{selectedProduct.fakeOrders}</p>
-                  <p className="text-[#64748B] text-xs">Fake Orders</p>
+                    <p className="text-[#64748B] text-xs">{t("fraud.fakeOrdersLabel")}</p>
                 </div>
                 <div>
                   <p className="text-[#f59e0b] text-lg font-bold">{formatCurrency(selectedProduct.fakeRevenue)}</p>
-                  <p className="text-[#64748B] text-xs">Lost Revenue</p>
+                    <p className="text-[#64748B] text-xs">{t("fraud.lostRevenue")}</p>
                 </div>
               </div>
             </div>
             <div>
-              <label className="text-[#94A3B8] text-sm font-medium block mb-2">Reason (optional)</label>
+              <label className="text-[#94A3B8] text-sm font-medium block mb-2">{t("fraud.reasonOptional")}</label>
               <input
                 type="text"
                 value={flagReason}
                 onChange={(e) => setFlagReason(e.target.value)}
-                placeholder="e.g., Too many cancellations, fake leads..."
+                placeholder={t("fraud.reasonPlaceholder")}
                 className="w-full px-4 py-2.5 bg-[#0B0F19] border border-[#1F2937] rounded-lg text-white text-sm placeholder:text-[#475569] focus:outline-none focus:border-[#ef4444]/50"
               />
             </div>
@@ -457,13 +459,13 @@ export default function FraudDetectionPage() {
                 onClick={confirmFlag}
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#ef4444] hover:bg-[#dc2626] text-white rounded-lg transition-all duration-200 text-sm font-medium"
               >
-                <Flag className="w-4 h-4" /> Confirm Flag - Stop Ads
+                <Flag className="w-4 h-4" /> {t("fraud.confirmFlag")}
               </button>
               <button
                 onClick={() => setShowFlagModal(false)}
                 className="px-4 py-2.5 bg-[#1F2937] hover:bg-[#334155] text-white rounded-lg transition-all duration-200 text-sm"
               >
-                Cancel
+                {t("common.cancel")}
               </button>
             </div>
           </div>

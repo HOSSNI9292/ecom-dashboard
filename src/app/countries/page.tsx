@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Globe, DollarSign, ShoppingCart, CheckCircle, TrendingUp, Download, Star, Percent } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { StatCard } from "@/components/ui/StatCard";
@@ -14,6 +15,7 @@ import type { CountryStats, Order } from "@/types";
 import type { DateFilterValue } from "@/utils/dates";
 
 export default function CountriesPage() {
+  const { t } = useTranslation();
   const { data, loading, error, refetch } = useCountries();
   const ordersData = useDashboardData();
   const [dateFilter, setDateFilter] = useState<DateFilterValue>("all");
@@ -132,22 +134,22 @@ export default function CountriesPage() {
                 <Star className="w-8 h-8 text-[#8B5CF6]" />
               </div>
               <div>
-                <p className="text-[#64748B] text-xs font-medium uppercase tracking-wider">Best Performing Country</p>
+                <p className="text-[#64748B] text-xs font-medium uppercase tracking-wider">{t("dashboard.bestPerformingCountry")}</p>
                 <p className="text-3xl font-bold text-white mt-1">{bestCountry.countryName}</p>
                 <div className="flex items-center gap-5 mt-2">
                   <div>
                     <p className="text-[#10b981] text-lg font-bold">{formatCurrency(bestCountry.netRevenue)}</p>
-                    <p className="text-[#64748B] text-[11px]">Net Revenue</p>
+                    <p className="text-[#64748B] text-[11px]">{t("dashboard.netRevenue")}</p>
                   </div>
                   <div className="w-px h-10 bg-[#1F2937]" />
                   <div>
                     <p className="text-white text-lg font-bold">{formatNumber(bestCountry.processedOrders)}</p>
-                    <p className="text-[#64748B] text-[11px]">Processed Orders</p>
+                    <p className="text-[#64748B] text-[11px]">{t("dashboard.processed")}</p>
                   </div>
                   <div className="w-px h-10 bg-[#1F2937]" />
                   <div>
                     <p className="text-[#8B5CF6] text-lg font-bold">{formatPercentage(bestCountry.deliveryRate)}</p>
-                    <p className="text-[#64748B] text-[11px]">Delivery Rate</p>
+                    <p className="text-[#64748B] text-[11px]">{t("dashboard.deliveryRate")}</p>
                   </div>
                 </div>
               </div>
@@ -156,25 +158,25 @@ export default function CountriesPage() {
         )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Total Revenue" value={formatCurrency(totalRevenue)} icon={<DollarSign className="w-5 h-5" />} color="primary" delay={0} />
-          <StatCard title="Net Revenue" value={formatCurrency(totalNetRevenue)} icon={<DollarSign className="w-5 h-5" />} color="success" delay={50} subtitle="After fees" />
-          <StatCard title="Service Fees" value={formatCurrency(totalFees)} icon={<Percent className="w-5 h-5" />} color="warning" delay={100} />
-          <StatCard title="Total Orders" value={formatNumber(totalOrders)} icon={<ShoppingCart className="w-5 h-5" />} color="primary" delay={150} />
+          <StatCard title={t("dashboard.totalOrders")} value={formatCurrency(totalRevenue)} icon={<DollarSign className="w-5 h-5" />} color="primary" delay={0} />
+          <StatCard title={t("dashboard.netRevenue")} value={formatCurrency(totalNetRevenue)} icon={<DollarSign className="w-5 h-5" />} color="success" delay={50} subtitle={t("dashboard.afterServiceFees")} />
+          <StatCard title={t("dashboard.serviceFees")} value={formatCurrency(totalFees)} icon={<Percent className="w-5 h-5" />} color="warning" delay={100} />
+          <StatCard title={t("dashboard.totalOrdersLabel")} value={formatNumber(totalOrders)} icon={<ShoppingCart className="w-5 h-5" />} color="primary" delay={150} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <CountryBarChart data={filteredCountriesData ?? []} loading={loading} dataKey="revenue" title="Revenue by Country" />
-          <CountryBarChart data={filteredCountriesData ?? []} loading={loading} dataKey="orders" title="Orders by Country" />
+          <CountryBarChart data={filteredCountriesData ?? []} loading={loading} dataKey="revenue" title={t("countries.revenueByCountry")} />
+          <CountryBarChart data={filteredCountriesData ?? []} loading={loading} dataKey="orders" title={t("countries.ordersByCountry")} />
         </div>
 
         <Card hover={false}>
           <CardHeader>
-            <CardTitle>Country Rankings</CardTitle>
+            <CardTitle>{t("countries.countryRankings")}</CardTitle>
             <button
               onClick={handleExport}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#1F2937] border border-[#1F2937] transition-all duration-200"
             >
-              <Download className="w-3.5 h-3.5" /> Export
+              <Download className="w-3.5 h-3.5" /> {t("common.export")}
             </button>
           </CardHeader>
           <div className="overflow-x-auto">
@@ -182,12 +184,12 @@ export default function CountriesPage() {
               <thead>
                   <tr className="border-b border-[#1F2937]">
                     <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">#</th>
-                    <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
-                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
-                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Net Revenue</th>
-                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Fee/Order</th>
-                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Processed</th>
-                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Conf. Rate</th>
+                    <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.country")}</th>
+                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("dashboard.revenue")}</th>
+                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("dashboard.netRevenue")}</th>
+                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("countries.feePerOrder")}</th>
+                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("dashboard.processed")}</th>
+                    <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("countries.confRate")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -239,7 +241,7 @@ export default function CountriesPage() {
                     );
                   })}
                   {sorted.length === 0 && (
-                    <tr><td colSpan={7} className="text-center py-12 text-[#64748B]">No country data</td></tr>
+                    <tr><td colSpan={7} className="text-center py-12 text-[#64748B]">{t("common.noData")}</td></tr>
                   )}
               </tbody>
             </table>

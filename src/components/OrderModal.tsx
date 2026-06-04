@@ -4,6 +4,7 @@ import { Modal } from "@/components/ui/Modal";
 import { StatusBadge } from "@/components/ui/StatusBadge";
 import { formatCurrency, formatDateTime, getImageUrl } from "@/utils";
 import type { Order } from "@/types";
+import { useTranslation } from "react-i18next";
 import {
   User, Phone, Globe, Package, DollarSign, Clock, Tag,
   Copy, MessageCircle, MapPin, ImageIcon, ChevronLeft, ChevronRight
@@ -30,6 +31,7 @@ function Field({ icon, label, value, action }: { icon: React.ReactNode; label: s
 }
 
 export function OrderModal({ order, open, onClose }: OrderModalProps) {
+  const { t } = useTranslation();
   const [imgIndex, setImgIndex] = useState(0);
 
   if (!order) return null;
@@ -43,7 +45,7 @@ export function OrderModal({ order, open, onClose }: OrderModalProps) {
   const hasMultipleImages = images.length > 1;
 
   return (
-    <Modal open={open} onClose={onClose} title={`Order #${order.orderId}`}>
+    <Modal open={open} onClose={onClose} title={`${t("orderModal.order")} #${order.orderId}`}>
       <div className="space-y-3">
         {order.productImage && (
           <div className="relative rounded-xl overflow-hidden bg-[#0B0F19] border border-[#1F2937] aspect-video flex items-center justify-center">
@@ -85,19 +87,19 @@ export function OrderModal({ order, open, onClose }: OrderModalProps) {
 
         <Field
           icon={<User className="w-4 h-4 text-[#8B5CF6]" />}
-          label="Customer"
+          label={t("orderModal.customer")}
           value={order.customerName}
         />
         <Field
           icon={<Phone className="w-4 h-4 text-[#10b981]" />}
-          label="Phone"
+          label={t("orderModal.phone")}
           value={order.phone}
           action={
             <div className="flex items-center gap-1">
               <button
                 onClick={handleCopyPhone}
                 className="p-2 rounded-lg text-[#64748B] hover:text-white hover:bg-[#1F2937] transition-all duration-200"
-                title="Copy phone number"
+                title={t("orderModal.copyPhone")}
               >
                 <Copy className="w-3.5 h-3.5" />
               </button>
@@ -106,7 +108,7 @@ export function OrderModal({ order, open, onClose }: OrderModalProps) {
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2 rounded-lg text-[#25D366] hover:bg-[#1F2937] transition-all duration-200"
-                title="Open WhatsApp"
+                title={t("orderModal.openWhatsApp")}
               >
                 <MessageCircle className="w-3.5 h-3.5" />
               </a>
@@ -115,28 +117,28 @@ export function OrderModal({ order, open, onClose }: OrderModalProps) {
         />
         <Field
           icon={<Globe className="w-4 h-4 text-[#f59e0b]" />}
-          label="Country"
+          label={t("orderModal.country")}
           value={order.countryName || order.country}
         />
         <Field
           icon={<Package className="w-4 h-4 text-[#6366F1]" />}
-          label="Product"
+          label={t("orderModal.product")}
           value={`${order.productName}${order.productCode ? ` (${order.productCode})` : ""}`}
         />
         <Field
           icon={<DollarSign className="w-4 h-4 text-[#10b981]" />}
-          label="Amount"
+          label={t("orderModal.amount")}
           value={formatCurrency(order.amount)}
         />
         <Field
           icon={<Clock className="w-4 h-4 text-[#64748B]" />}
-          label="Date"
+          label={t("orderModal.date")}
           value={formatDateTime(order.date)}
         />
         {order.city && (
           <Field
             icon={<MapPin className="w-4 h-4 text-[#64748B]" />}
-            label="City"
+            label={t("orderModal.city")}
             value={order.city}
           />
         )}
@@ -145,7 +147,7 @@ export function OrderModal({ order, open, onClose }: OrderModalProps) {
             <Tag className="w-4 h-4" />
           </div>
           <div>
-            <p className="text-[#64748B] text-[10px] uppercase tracking-widest font-semibold">Status</p>
+            <p className="text-[#64748B] text-[10px] uppercase tracking-widest font-semibold">{t("orderModal.status")}</p>
             <div className="mt-1">
               <StatusBadge status={order.status} color={order.statusColor} size="md" />
             </div>

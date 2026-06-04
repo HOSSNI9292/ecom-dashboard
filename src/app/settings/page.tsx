@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { Save, Shield, Key, Globe, Eye, EyeOff, CheckCircle, AlertCircle, RefreshCw, DollarSign, ChevronRight, Bot } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { saveCredentials, clearCredentials, getApiConfig, api } from "@/services";
@@ -10,6 +11,7 @@ import type { AuthCredentials } from "@/types";
 const GROQ_KEY = "groq_api_key";
 
 export default function SettingsPage() {
+  const { t } = useTranslation();
   const [creds, setCreds] = useState<AuthCredentials>({
     apiUrl: "https://api.codinafrica.com/api",
     token: "",
@@ -59,13 +61,13 @@ export default function SettingsPage() {
         },
       });
       if (res.ok) {
-        setTestResult({ success: true, message: "Connection successful! API is working." });
+        setTestResult({ success: true, message: t("settings.connectionSuccess") });
       } else {
         const body = await res.text();
-        setTestResult({ success: false, message: `Failed: ${res.status} - ${body.substring(0, 100)}` });
+        setTestResult({ success: false, message: `${t("settings.failed")}: ${res.status} - ${body.substring(0, 100)}` });
       }
     } catch (err) {
-      setTestResult({ success: false, message: `Error: ${err instanceof Error ? err.message : String(err)}` });
+        setTestResult({ success: false, message: `${t("settings.error")}: ${err instanceof Error ? err.message : String(err)}` });
     } finally {
       setTesting(false);
     }
@@ -81,34 +83,34 @@ export default function SettingsPage() {
             <div className="p-2 rounded-lg bg-[#6366F1]/10">
               <Shield className="w-5 h-5 text-[#8B5CF6]" />
             </div>
-            <CardTitle>API Credentials</CardTitle>
+            <CardTitle>{t("settings.apiCredentials")}</CardTitle>
           </div>
         </CardHeader>
         <div className="space-y-5">
           <div>
             <label className="block text-[#94A3B8] text-sm font-medium mb-1.5">
               <Globe className="w-4 h-4 inline mr-1.5" />
-              API URL
+              {t("settings.apiUrl")}
             </label>
             <input
               type="text"
               value={creds.apiUrl}
               onChange={(e) => setCreds((c) => ({ ...c, apiUrl: e.target.value }))}
-              placeholder="https://api.codinafrica.com/api"
+              placeholder={t("settings.apiUrlPlaceholder")}
               className={inputClass}
             />
           </div>
           <div>
             <label className="block text-[#94A3B8] text-sm font-medium mb-1.5">
               <Key className="w-4 h-4 inline mr-1.5" />
-              X-Auth-Token
+              {t("settings.authToken")}
             </label>
             <div className="relative">
               <input
                 type={showToken ? "text" : "password"}
                 value={creds.token}
                 onChange={(e) => setCreds((c) => ({ ...c, token: e.target.value }))}
-                placeholder="Enter your API authentication token"
+                placeholder={t("settings.tokenPlaceholder")}
                 className={inputClass + " pr-10"}
               />
               <button
@@ -126,7 +128,7 @@ export default function SettingsPage() {
               className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-[0_0_16px_rgba(99,102,241,0.2)] hover:shadow-[0_0_24px_rgba(99,102,241,0.3)]"
             >
               {saved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-              {saved ? "Saved!" : "Save Credentials"}
+              {saved ? t("settings.saved") : t("settings.saveCredentials")}
             </button>
             <button
               onClick={handleTest}
@@ -138,13 +140,13 @@ export default function SettingsPage() {
               ) : (
                 <Globe className="w-4 h-4" />
               )}
-              {testing ? "Testing..." : "Test Connection"}
+              {testing ? t("settings.testing") : t("settings.testConnection")}
             </button>
             <button
               onClick={handleClear}
               className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#ef4444]/10 hover:bg-[#ef4444]/20 text-[#ef4444] rounded-lg transition-all duration-200 text-sm font-medium border border-[#ef4444]/20"
             >
-              Clear
+              {t("settings.clear")}
             </button>
           </div>
 
@@ -158,7 +160,7 @@ export default function SettingsPage() {
               }
               <div>
                 <p className={`text-sm font-medium ${testResult.success ? "text-[#10b981]" : "text-[#ef4444]"}`}>
-                  {testResult.success ? "Success" : "Error"}
+                  {testResult.success ? t("settings.success") : t("settings.error")}
                 </p>
                 <p className="text-[#94A3B8] text-sm mt-0.5">{testResult.message}</p>
               </div>
@@ -175,13 +177,13 @@ export default function SettingsPage() {
                 <div className="p-2 rounded-lg bg-[#10b981]/10">
                   <DollarSign className="w-5 h-5 text-[#10b981]" />
                 </div>
-                <CardTitle>Country Service Fees</CardTitle>
+                <CardTitle>{t("settings.countryFees")}</CardTitle>
               </div>
               <ChevronRight className="w-5 h-5 text-[#64748B] group-hover:text-white transition-colors duration-200" />
             </div>
           </CardHeader>
           <p className="text-[#94A3B8] text-sm">
-            Configure CodinAfrica service fee percentages per country to calculate net revenue and track real profitability.
+            {t("settings.countryFeesDesc")}
           </p>
         </Card>
       </Link>
@@ -192,24 +194,24 @@ export default function SettingsPage() {
             <div className="p-2 rounded-lg bg-[#10b981]/10">
               <Bot className="w-5 h-5 text-[#10b981]" />
             </div>
-            <CardTitle>AI Agent - Groq API</CardTitle>
+            <CardTitle>{t("settings.groqTitle")}</CardTitle>
           </div>
         </CardHeader>
         <div className="space-y-5">
           <p className="text-[#94A3B8] text-sm">
-            AI Agent كيستعمل Groq API (مجاني) باش يجاوبك بحال ChatGPT. سجل ف <a href="https://console.groq.com" target="_blank" rel="noopener noreferrer" className="text-[#8B5CF6] hover:underline">console.groq.com</a> باش تاخد API key مجاني.
+            {t("settings.groqDesc")}
           </p>
           <div>
             <label className="block text-[#94A3B8] text-sm font-medium mb-1.5">
               <Key className="w-4 h-4 inline mr-1.5" />
-              Groq API Key
+              {t("settings.groqKey")}
             </label>
             <div className="relative">
               <input
                 type={showGroqKey ? "text" : "password"}
                 value={groqKey}
                 onChange={(e) => setGroqKey(e.target.value)}
-                placeholder="gsk_..."
+                placeholder={t("settings.groqKeyPlaceholder")}
                 className={inputClass + " pr-10"}
               />
               <button
@@ -225,23 +227,20 @@ export default function SettingsPage() {
             className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#10b981] hover:bg-[#059669] text-white rounded-lg transition-all duration-200 text-sm font-medium"
           >
             {groqSaved ? <CheckCircle className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-            {groqSaved ? "Saved!" : "Save Groq Key"}
+            {groqSaved ? t("settings.saved") : t("settings.saveGroqKey")}
           </button>
         </div>
       </Card>
 
       <Card hover={false}>
         <CardHeader>
-          <CardTitle>About COD Analytics</CardTitle>
+          <CardTitle>{t("settings.aboutTitle")}</CardTitle>
         </CardHeader>
         <div className="space-y-3 text-sm text-[#94A3B8]">
-          <p>
-            This dashboard connects to the <strong className="text-white">CodinAfrica API</strong> to provide real-time analytics
-            for your Cash on Delivery e-commerce business across Africa.
-          </p>
-          <p>All data is fetched live. Credentials are stored locally in your browser only.</p>
+          <p>{t("settings.aboutDesc1")}</p>
+          <p>{t("settings.aboutDesc2")}</p>
           <div className="bg-[#0B0F19] rounded-lg p-4 space-y-1.5">
-            <p className="text-[#64748B] text-xs font-medium uppercase tracking-wider">Available endpoints</p>
+            <p className="text-[#64748B] text-xs font-medium uppercase tracking-wider">{t("settings.availableEndpoints")}</p>
             <code className="block text-[#8B5CF6] text-xs font-mono">GET /orders/search?limit=500</code>
             <code className="block text-[#8B5CF6] text-xs font-mono">GET /warehouses/search?limit=50</code>
           </div>

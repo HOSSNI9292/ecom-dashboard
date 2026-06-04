@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import {
   ShoppingCart, CheckCircle, DollarSign, TrendingUp,
   Activity, Clock, Download, Eye, RefreshCw, Percent, Package
@@ -57,6 +58,7 @@ function computeTrend(current: number, previous: number): { value: number; isUp:
 }
 
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const { data, loading, error, refetch } = useDashboardData();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilterValue>("all");
@@ -236,146 +238,146 @@ export default function DashboardPage() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937]/80 transition-all duration-200"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-              Refresh
+              {t("common.refresh")}
             </button>
             <button
               onClick={handleExport}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937]/80 transition-all duration-200"
             >
-              <Download className="w-3.5 h-3.5" /> Export
+              <Download className="w-3.5 h-3.5" /> {t("common.export")}
             </button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title={dateFilter === "all" ? "Total Orders" : `${DATE_FILTER_LABELS[dateFilter]} Orders`}
+            title={t("dashboard.totalOrders")}
             value={formatNumber(filteredOrders.length)}
             icon={<ShoppingCart className="w-5 h-5" />}
             color="primary"
             delay={0}
             loading={isLoading}
-            tooltip="Total number of orders in the selected period across all statuses"
+            tooltip={t("dashboard.totalOrdersTooltip")}
             trend={computeTrend(filteredOrders.length, prevOrders)}
           />
           <StatCard
-            title={dateFilter === "all" ? "Total Revenue" : `${DATE_FILTER_LABELS[dateFilter]} Revenue`}
+            title={t("dashboard.totalRevenue")}
             value={formatCurrency(filteredRevenue)}
             icon={<DollarSign className="w-5 h-5" />}
             color="success"
             delay={50}
             loading={isLoading}
-            tooltip="Total order value before CodinAfrica service fees (all statuses)"
+            tooltip={t("dashboard.totalRevenueTooltip")}
             trend={computeTrend(filteredRevenue, prevRevenue)}
           />
           <StatCard
-            title="Processed Orders"
+            title={t("dashboard.processedOrders")}
             value={formatNumber(filteredProcessedOrders)}
             icon={<CheckCircle className="w-5 h-5" />}
             color="primary"
             delay={100}
-            subtitle="Paid by CodinAfrica"
+            subtitle={t("dashboard.paidByCodinAfrica")}
             loading={isLoading}
-            tooltip="Orders mapped to 'confirmed' status — these are paid and processed by CodinAfrica"
+            tooltip={t("dashboard.processedOrdersTooltip")}
             trend={computeTrend(filteredProcessedOrders, prevProcessedOrders)}
           />
           <StatCard
-            title="Processed Revenue"
+            title={t("dashboard.processedRevenue")}
             value={formatCurrency(filteredProcessedRevenue)}
             icon={<TrendingUp className="w-5 h-5" />}
             color="success"
             delay={150}
-            subtitle="Real collected revenue"
+            subtitle={t("dashboard.realCollectedRevenue")}
             loading={isLoading}
-            tooltip="Sum of all order amounts where status = 'confirmed'. This is the actual revenue collected by CodinAfrica."
+            tooltip={t("dashboard.processedRevenueTooltip")}
             trend={computeTrend(filteredProcessedRevenue, prevProcessedRevenue)}
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="Net Revenue"
+            title={t("dashboard.netRevenue")}
             value={formatCurrency(filteredNetRevenue)}
             icon={<DollarSign className="w-5 h-5" />}
             color="success"
             delay={200}
-            subtitle="After service fees"
+            subtitle={t("dashboard.afterServiceFees")}
             loading={isLoading}
-            tooltip="Processed Revenue minus CodinAfrica service fees. This is your actual earnings."
+            tooltip={t("dashboard.netRevenueTooltip")}
             trend={computeTrend(filteredNetRevenue, prevNetRevenue)}
           />
           <StatCard
-            title="Service Fees"
+            title={t("dashboard.serviceFees")}
             value={formatCurrency(filteredServiceFees)}
             icon={<Percent className="w-5 h-5" />}
             color="warning"
             delay={250}
-            subtitle="CodinAfrica fees"
+            subtitle={t("dashboard.codinAfricaFees")}
             loading={isLoading}
-            tooltip="Total fees paid to CodinAfrica. Fees are 6,500 XOF/order for GA and 5,000 XOF/order for other countries."
+            tooltip={t("dashboard.serviceFeesTooltip")}
             trend={computeTrend(filteredServiceFees, prevServiceFees)}
           />
           <StatCard
-            title="Delivery Rate"
+            title={t("dashboard.deliveryRate")}
             value={formatPercentage(filteredDeliveryRate)}
             icon={<Activity className="w-5 h-5" />}
             color="primary"
             delay={300}
-            subtitle="Based on Processed"
+            subtitle={t("dashboard.basedOnProcessed")}
             loading={isLoading}
-            tooltip="Processed Orders / Total Orders. Measures the percentage of orders successfully delivered and paid."
+            tooltip={t("dashboard.deliveryRateTooltip")}
           />
           <StatCard
-            title="Confirmation Rate"
+            title={t("dashboard.confirmationRate")}
             value={formatPercentage(filteredConfRate)}
             icon={<CheckCircle className="w-5 h-5" />}
             color="success"
             delay={350}
             loading={isLoading}
-            tooltip="Confirmed orders / (Total - Cancelled - Out of Stock). Measures order quality excluding unavoidable cancellations."
+            tooltip={t("dashboard.confirmationRateTooltip")}
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
-            title="Average Order Value"
+            title={t("dashboard.averageOrderValue")}
             value={formatCurrency(avgOrderValue)}
             icon={<TrendingUp className="w-5 h-5" />}
             color="primary"
             delay={400}
             loading={isLoading}
-            tooltip="Total Revenue / Total Orders. The average amount per order."
+            tooltip={t("dashboard.avgOrderValueTooltip")}
             trend={computeTrend(avgOrderValue, prevAvgOrderValue)}
           />
           <StatCard
-            title="Products Sold"
+            title={t("dashboard.productsSold")}
             value={formatNumber(uniqueProductCount)}
             icon={<Package className="w-5 h-5" />}
             color="primary"
             delay={450}
-            subtitle="Unique in period"
+            subtitle={t("dashboard.uniqueInPeriod")}
             loading={isLoading}
-            tooltip="Number of unique product codes/names found in orders for this period."
+            tooltip={t("dashboard.productsSoldTooltip")}
           />
           <StatCard
-            title="Pending"
+            title={t("dashboard.pending")}
             value={formatNumber(filteredPending)}
             icon={<Clock className="w-5 h-5" />}
             color="warning"
             delay={500}
-            subtitle={`${filteredOrders.length > 0 ? ((filteredPending / filteredOrders.length) * 100).toFixed(1) : 0}% of total`}
+            subtitle={`${filteredOrders.length > 0 ? ((filteredPending / filteredOrders.length) * 100).toFixed(1) : 0}${t("dashboard.percentOfTotal")}`}
             loading={isLoading}
-            tooltip="Orders with status 'pending' — not yet processed or confirmed."
+            tooltip={t("dashboard.pendingTooltip")}
             trend={computeTrend(filteredPending, prevPending)}
           />
           <StatCard
-            title="Confirmed Orders"
+            title={t("dashboard.confirmedOrders")}
             value={formatNumber(filteredConfirmed)}
             icon={<CheckCircle className="w-5 h-5" />}
             color="success"
             delay={550}
             loading={isLoading}
-            tooltip="Orders with status 'confirmed' — successfully processed and paid by CodinAfrica."
+            tooltip={t("dashboard.confirmedOrdersTooltip")}
             trend={computeTrend(filteredConfirmed, prevConfirmed)}
           />
         </div>
@@ -388,8 +390,8 @@ export default function DashboardPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <Card gradient>
             <CardHeader>
-              <CardTitle>Best Selling</CardTitle>
-              <span className="text-[#94A3B8] text-xs font-medium">Top 5</span>
+              <CardTitle>{t("dashboard.bestSelling")}</CardTitle>
+              <span className="text-[#94A3B8] text-xs font-medium">{t("dashboard.top5")}</span>
             </CardHeader>
             <div className="space-y-2">
               {topSelling.map((p, i) => (
@@ -405,13 +407,13 @@ export default function DashboardPage() {
                   <span className="text-white text-sm font-medium shrink-0 ml-2">{formatNumber(p.totalSold)}</span>
                 </div>
               ))}
-              {topSelling.length === 0 && <p className="text-[#64748B] text-sm text-center py-4">No data</p>}
+              {topSelling.length === 0 && <p className="text-[#64748B] text-sm text-center py-4">{t("common.noData")}</p>}
             </div>
           </Card>
           <Card gradient>
             <CardHeader>
-              <CardTitle>Highest Revenue</CardTitle>
-              <span className="text-[#94A3B8] text-xs font-medium">Top 5</span>
+              <CardTitle>{t("dashboard.highestRevenue")}</CardTitle>
+              <span className="text-[#94A3B8] text-xs font-medium">{t("dashboard.top5")}</span>
             </CardHeader>
             <div className="space-y-2">
               {topRevenue.map((p, i) => (
@@ -427,13 +429,13 @@ export default function DashboardPage() {
                   <span className="text-[#10b981] text-sm font-medium shrink-0 ml-2">{formatCurrency(p.revenue)}</span>
                 </div>
               ))}
-              {topRevenue.length === 0 && <p className="text-[#64748B] text-sm text-center py-4">No data</p>}
+              {topRevenue.length === 0 && <p className="text-[#64748B] text-sm text-center py-4">{t("common.noData")}</p>}
             </div>
           </Card>
           <Card gradient>
             <CardHeader>
-              <CardTitle>Lowest Stock</CardTitle>
-              <span className="text-[#94A3B8] text-xs font-medium">Needs attention</span>
+              <CardTitle>{t("dashboard.lowestStock")}</CardTitle>
+              <span className="text-[#94A3B8] text-xs font-medium">{t("dashboard.needsAttention")}</span>
             </CardHeader>
             <div className="space-y-2">
               {lowestStock.map((p, i) => (
@@ -444,7 +446,7 @@ export default function DashboardPage() {
                   </span>
                 </div>
               ))}
-              {lowestStock.length === 0 && <p className="text-[#64748B] text-sm text-center py-4">All well stocked</p>}
+              {lowestStock.length === 0 && <p className="text-[#64748B] text-sm text-center py-4">{t("dashboard.allWellStocked")}</p>}
             </div>
           </Card>
         </div>
@@ -453,8 +455,8 @@ export default function DashboardPage() {
           {bestCountry && (
             <Card className="bg-gradient-to-br from-[#6366F1]/10 via-[#111827] to-[#111827] border-[#6366F1]/20" hover={false}>
               <CardHeader>
-                <CardTitle>Best Performing Country</CardTitle>
-                <span className="text-[#10b981] text-xs font-medium">By Net Revenue</span>
+                <CardTitle>{t("dashboard.bestPerformingCountry")}</CardTitle>
+                <span className="text-[#10b981] text-xs font-medium">{t("dashboard.byNetRevenue")}</span>
               </CardHeader>
               <div className="flex items-center gap-5">
                 {bestCountry.flag && (
@@ -465,12 +467,12 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-4 mt-2">
                     <div>
                       <p className="text-[#10b981] text-sm font-semibold">{formatCurrency(bestCountry.netRevenue)}</p>
-                      <p className="text-[#94A3B8] text-[11px]">Net Revenue</p>
+                      <p className="text-[#94A3B8] text-[11px]">{t("dashboard.netRevenue")}</p>
                     </div>
                     <div className="w-px h-8 bg-[#1F2937]/80" />
                     <div>
                       <p className="text-white text-sm font-semibold">{formatNumber(bestCountry.processedOrders)}</p>
-                      <p className="text-[#94A3B8] text-[11px]">Processed</p>
+                      <p className="text-[#94A3B8] text-[11px]">{t("dashboard.processed")}</p>
                     </div>
                   </div>
                 </div>
@@ -480,8 +482,8 @@ export default function DashboardPage() {
           {bestProduct && (
             <Card className="bg-gradient-to-br from-[#10b981]/10 via-[#111827] to-[#111827] border-[#10b981]/20" hover={false}>
               <CardHeader>
-                <CardTitle>Best Performing Product</CardTitle>
-                <span className="text-[#10b981] text-xs font-medium">By Revenue</span>
+                <CardTitle>{t("dashboard.bestPerformingProduct")}</CardTitle>
+                <span className="text-[#10b981] text-xs font-medium">{t("dashboard.byRevenue")}</span>
               </CardHeader>
               <div className="flex items-center gap-4">
                 {bestProduct.image ? (
@@ -498,12 +500,12 @@ export default function DashboardPage() {
                   <div className="flex items-center gap-4 mt-1.5">
                     <div>
                       <p className="text-[#10b981] text-sm font-semibold">{formatCurrency(bestProduct.revenue)}</p>
-                      <p className="text-[#94A3B8] text-[11px]">Revenue</p>
+                      <p className="text-[#94A3B8] text-[11px]">{t("dashboard.byRevenue")}</p>
                     </div>
                     <div className="w-px h-7 bg-[#1F2937]/80" />
                     <div>
                       <p className="text-white text-sm font-semibold">{formatNumber(bestProduct.totalSold)}</p>
-                      <p className="text-[#94A3B8] text-[11px]">Sold</p>
+                      <p className="text-[#94A3B8] text-[11px]">{t("dashboard.sold")}</p>
                     </div>
                   </div>
                 </div>
@@ -512,8 +514,8 @@ export default function DashboardPage() {
           )}
           <Card gradient>
             <CardHeader>
-              <CardTitle>Recent Orders</CardTitle>
-              <span className="text-[#94A3B8] text-xs">Latest 5</span>
+              <CardTitle>{t("dashboard.recentOrders")}</CardTitle>
+              <span className="text-[#94A3B8] text-xs">{t("dashboard.latest5")}</span>
             </CardHeader>
             <div className="space-y-2">
               {filteredOrders.slice(0, 5).map((order) => (
@@ -535,7 +537,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
               ))}
-              {filteredOrders.length === 0 && <p className="text-[#64748B] text-sm text-center py-4">No data</p>}
+              {filteredOrders.length === 0 && <p className="text-[#64748B] text-sm text-center py-4">{t("common.noData")}</p>}
             </div>
           </Card>
         </div>

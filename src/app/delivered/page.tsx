@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { CheckCircle, Package, DollarSign, TrendingUp, TrendingDown, Download, Globe, RefreshCw } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { StatCard } from "@/components/ui/StatCard";
@@ -26,20 +27,10 @@ const DELIVERY_STATUS_COLORS: Record<string, string> = {
   transferred: "#8B5CF6",
 };
 
-const DELIVERY_STATUS_LABELS: Record<string, string> = {
-  processed: "Delivered",
-  delivered: "Delivered",
-  shipped: "Shipped",
-  confirmed: "Confirmed",
-  pending: "Pending",
-  cancelled: "Cancelled",
-  returned: "Returned",
-  double: "Double",
-  out_of_stock: "Out of Stock",
-  transferred: "To Transfer",
-};
+
 
 export default function DeliveredPage() {
+  const { t } = useTranslation();
   const { data, loading, error, refetch } = useDashboardData();
   const [dateFilter, setDateFilter] = useState<DateFilterValue>("all");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -140,7 +131,19 @@ export default function DeliveredPage() {
   const getStatusBadge = (status: string) => {
     const normalizedStatus = status.toLowerCase().replace(/\s+/g, "_");
     const color = DELIVERY_STATUS_COLORS[normalizedStatus] || "#64748B";
-    const label = DELIVERY_STATUS_LABELS[normalizedStatus] || status;
+    const labelMap: Record<string, string> = {
+      processed: t("status.delivered"),
+      delivered: t("status.delivered"),
+      shipped: t("status.shipping"),
+      confirmed: t("status.confirmed"),
+      pending: t("status.pending"),
+      cancelled: t("status.cancelled"),
+      returned: t("status.returned"),
+      double: t("status.double"),
+      out_of_stock: t("status.outOfStock"),
+      transferred: t("status.transferred"),
+    };
+    const label = labelMap[normalizedStatus] || status;
     
     return (
       <span
@@ -165,8 +168,8 @@ export default function DeliveredPage() {
               <CheckCircle className="w-6 h-6 text-[#10b981]" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">Deliveries</h1>
-              <p className="text-[#64748B] text-xs">Track delivery status and performance</p>
+              <h1 className="text-xl font-bold text-white">{t("nav.delivered")}</h1>
+              <p className="text-[#64748B] text-xs">{t("delivered.subtitle")}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -175,13 +178,13 @@ export default function DeliveredPage() {
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-              Refresh
+              {t("common.refresh")}
             </button>
             <button
               onClick={handleExport}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200"
             >
-              <Download className="w-3.5 h-3.5" /> Export
+              <Download className="w-3.5 h-3.5" /> {t("common.export")}
             </button>
           </div>
         </div>
@@ -192,32 +195,32 @@ export default function DeliveredPage() {
             value={statusFilter}
             onChange={setStatusFilter}
             options={[
-              { value: "all", label: "All Statuses" },
-              { value: "pending", label: "Pending" },
-              { value: "confirmed", label: "Confirmed" },
-              { value: "cancelled", label: "Cancelled" },
-              { value: "delivered", label: "Delivered" },
-              { value: "processed", label: "Delivered" },
-              { value: "shipped", label: "Shipped" },
-              { value: "returned", label: "Returned" },
-              { value: "double", label: "Double" },
-              { value: "out_of_stock", label: "Out of Stock" },
-              { value: "transferred", label: "To Transfer" },
+              { value: "all", label: t("common.all") },
+              { value: "pending", label: t("status.pending") },
+              { value: "confirmed", label: t("status.confirmed") },
+              { value: "cancelled", label: t("status.cancelled") },
+              { value: "delivered", label: t("status.delivered") },
+              { value: "processed", label: t("status.delivered") },
+              { value: "shipped", label: t("status.shipping") },
+              { value: "returned", label: t("status.returned") },
+              { value: "double", label: t("status.double") },
+              { value: "out_of_stock", label: t("status.outOfStock") },
+              { value: "transferred", label: t("status.transferred") },
             ]}
           />
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <StatCard
-            title="Total Deliveries"
+            title={t("delivered.totalDeliveries")}
             value={formatNumber(stats.totalDeliveries)}
             icon={<Package className="w-5 h-5" />}
             color="primary"
             delay={0}
-            subtitle={`${stats.countriesCount} countries`}
+            subtitle={`${stats.countriesCount} ${t("delivered.countries").toLowerCase()}`}
           />
           <StatCard
-            title="Delivered Orders"
+            title={t("delivered.deliveredOrders")}
             value={formatNumber(stats.deliveredOrders)}
             icon={<CheckCircle className="w-5 h-5" />}
             color="success"
@@ -225,55 +228,55 @@ export default function DeliveredPage() {
             subtitle={formatCurrency(stats.deliveredRevenue)}
           />
           <StatCard
-            title="Delivered Revenue"
+            title={t("delivered.deliveredRevenue")}
             value={formatCurrency(stats.deliveredRevenue)}
             icon={<DollarSign className="w-5 h-5" />}
             color="success"
             delay={100}
-            subtitle={`${stats.deliveredOrders} orders`}
+            subtitle={`${stats.deliveredOrders} ${t("common.orders")}`}
           />
           <StatCard
-            title="Return Rate"
+            title={t("delivered.returnRate")}
             value={formatPercentage(stats.returnRate)}
             icon={<TrendingDown className="w-5 h-5" />}
             color="error"
             delay={150}
-            subtitle="Returned orders"
+            subtitle={t("delivered.returnedOrders")}
           />
           <StatCard
-            title="Delivery Rate"
+            title={t("delivered.deliveryRate")}
             value={formatPercentage(stats.deliveryRate)}
             icon={<TrendingUp className="w-5 h-5" />}
             color="success"
             delay={200}
-            subtitle="Successfully delivered"
+            subtitle={t("delivered.successfullyDelivered")}
           />
           <StatCard
-            title="Countries"
+            title={t("delivered.countries")}
             value={formatNumber(stats.countriesCount)}
             icon={<Globe className="w-5 h-5" />}
             color="primary"
             delay={250}
-            subtitle="With deliveries"
+            subtitle={t("delivered.withDeliveries")}
           />
         </div>
 
         <Card hover={false}>
           <CardHeader>
-            <CardTitle>Deliveries</CardTitle>
-            <span className="text-[#10b981] text-xs font-medium">{filteredByStatus.length} deliveries</span>
+            <CardTitle>{t("delivered.deliveries")}</CardTitle>
+            <span className="text-[#10b981] text-xs font-medium">{filteredByStatus.length} {t("delivered.deliveries").toLowerCase()}</span>
           </CardHeader>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#1F2937]">
-                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Tracking</th>
-                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Product</th>
-                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Country</th>
-                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Date</th>
-                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Qty</th>
-                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Status</th>
-                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">Revenue</th>
+                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.tracking")}</th>
+                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.product")}</th>
+                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.country")}</th>
+                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.date")}</th>
+                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.qty")}</th>
+                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.status")}</th>
+                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.revenue")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -335,7 +338,7 @@ export default function DeliveredPage() {
                 {filteredByStatus.length === 0 && (
                   <tr>
                     <td colSpan={7} className="text-center py-12 text-[#64748B]">
-                      No deliveries found
+                      {t("delivered.noDeliveries")}
                     </td>
                   </tr>
                 )}

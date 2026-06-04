@@ -1,16 +1,22 @@
 "use client";
 
-import { Menu, RefreshCw } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Menu } from "lucide-react";
 import { usePathname } from "next/navigation";
 
-const pageTitles: Record<string, string> = {
-  "/dashboard": "Dashboard",
-  "/orders": "Orders",
-  "/delivered": "Delivered Orders",
-  "/products": "Products",
-  "/countries": "Countries",
-  "/stock": "Stock Management",
-  "/settings": "Settings",
+const pageTitleKeys: Record<string, string> = {
+  "/dashboard": "nav.dashboard",
+  "/orders": "nav.orders",
+  "/delivered": "nav.delivered",
+  "/products": "nav.products",
+  "/countries": "nav.countries",
+  "/stock": "nav.stock",
+  "/settings": "nav.settings",
+  "/settings/fees": "nav.settings",
+  "/fraud-detection": "nav.fraudDetection",
+  "/ai-agent": "nav.aiAgent",
+  "/business-intelligence": "nav.businessIntelligence",
+  "/executive-bi": "nav.executiveBi",
 };
 
 interface NavbarProps {
@@ -21,10 +27,11 @@ interface NavbarProps {
 
 export function Navbar({ onMenuClick, onRefresh, actions }: NavbarProps) {
   const pathname = usePathname();
-  const title = pageTitles[pathname] || "Dashboard";
+  const { t } = useTranslation();
+  const titleKey = pageTitleKeys[pathname] || "nav.dashboard";
 
   return (
-    <header className="sticky top-0 z-30 bg-[#0B0F19]/80 backdrop-blur-xl border-b border-[#1F2937] px-4 lg:px-6 py-3">
+    <header className="sticky top-0 z-30 bg-[#0B0F19]/80 backdrop-blur-xl border-b border-[#1F2937]/80 px-4 lg:px-6 py-3">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
@@ -34,8 +41,8 @@ export function Navbar({ onMenuClick, onRefresh, actions }: NavbarProps) {
             <Menu className="w-5 h-5" />
           </button>
           <div>
-            <h1 className="text-base font-semibold text-white">{title}</h1>
-            <p className="text-[#64748B] text-[11px] hidden sm:block">Real-time analytics overview</p>
+            <h1 className="text-base font-semibold text-white">{t(titleKey)}</h1>
+            <p className="text-[#94A3B8] text-[11px] hidden sm:block">{t("nav.subtitle")}</p>
           </div>
         </div>
         <div className="flex items-center gap-1">
@@ -44,9 +51,11 @@ export function Navbar({ onMenuClick, onRefresh, actions }: NavbarProps) {
             <button
               onClick={onRefresh}
               className="p-2 rounded-lg text-[#64748B] hover:text-white hover:bg-[#111827] transition-all duration-200"
-              title="Refresh data"
+              title={t("common.refresh")}
             >
-              <RefreshCw className="w-4 h-4" />
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16" />
+              </svg>
             </button>
           )}
         </div>

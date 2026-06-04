@@ -1,19 +1,20 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { STATUS_COLORS } from "@/utils";
 
-const STATUS_LABELS: Record<string, string> = {
-  pending: "Pending",
-  confirmed: "Confirmed",
-  delivered: "Delivered",
-  shipped: "Shipped",
-  shipping: "Shipped",
-  cancelled: "Cancelled",
-  returned: "Returned",
-  double: "Double",
-  transferred: "A transférer",
-  out_of_stock: "Out of Stock",
-  unreached: "Unreached",
+const STATUS_KEYS: Record<string, string> = {
+  pending: "status.pending",
+  confirmed: "status.confirmed",
+  delivered: "status.delivered",
+  shipped: "status.delivered",
+  shipping: "status.delivered",
+  cancelled: "status.cancelled",
+  returned: "status.returned",
+  double: "status.double",
+  transferred: "status.transferred",
+  out_of_stock: "status.outOfStock",
+  unreached: "status.unreached",
 };
 
 interface StatusBadgeProps {
@@ -23,8 +24,10 @@ interface StatusBadgeProps {
 }
 
 export function StatusBadge({ status, color, size = "sm" }: StatusBadgeProps) {
+  const { t } = useTranslation();
   const resolvedColor = color || STATUS_COLORS[status] || "#94A3B8";
-  const label = STATUS_LABELS[status] || status;
+  const labelKey = STATUS_KEYS[status];
+  const label = labelKey ? t(labelKey) : status;
   const isSmall = size === "sm";
 
   return (

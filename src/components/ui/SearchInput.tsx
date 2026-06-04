@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { Search, X } from "lucide-react";
 
 interface SearchInputProps {
@@ -8,7 +9,8 @@ interface SearchInputProps {
   placeholder?: string;
 }
 
-export function SearchInput({ value, onChange, placeholder = "Search..." }: SearchInputProps) {
+export function SearchInput({ value, onChange, placeholder }: SearchInputProps) {
+  const { t } = useTranslation();
   return (
     <div className="relative group">
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#64748B] group-focus-within:text-[#6366F1] transition-colors duration-200" />
@@ -16,7 +18,7 @@ export function SearchInput({ value, onChange, placeholder = "Search..." }: Sear
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t("common.search")}
         className="w-full pl-10 pr-10 py-2.5 bg-[#111827] border border-[#1F2937] rounded-lg text-white placeholder-[#64748B] focus:outline-none focus:border-[#6366F1]/50 focus:ring-1 focus:ring-[#6366F1]/20 transition-all duration-200 text-sm"
       />
       {value && (

@@ -14,22 +14,13 @@ import { formatCurrency, formatDate, getImageUrlOrFallback, filterOrdersByDate }
 import { exportToCSV } from "@/utils/csv";
 import type { Order } from "@/types";
 import type { DateFilterValue } from "@/utils/dates";
+import { useTranslation } from "react-i18next";
 import { ShoppingCart, Download, Eye, Copy, MessageCircle, Phone } from "lucide-react";
-
-const statusOptions = [
-  { label: "All Status", value: "" },
-  { label: "Pending", value: "pending" },
-  { label: "Cancelled", value: "cancelled" },
-  { label: "Double", value: "double" },
-  { label: "Transferred", value: "transferred" },
-  { label: "Out of Stock", value: "out_of_stock" },
-  { label: "Confirmed", value: "confirmed" },
-  { label: "Delivered", value: "delivered" },
-];
 
 const perPage = 20;
 
 export default function OrdersPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -57,6 +48,17 @@ export default function OrdersPage() {
   const handleSearch = useCallback((val: string) => { setSearch(val); setPage(1); }, []);
   const handleStatus = useCallback((val: string) => { setStatus(val); setPage(1); }, []);
   const handleCountry = useCallback((val: string) => { setCountry(val); setPage(1); }, []);
+
+  const statusOptions = useMemo(() => [
+    { label: t("common.all"), value: "" },
+    { label: t("status.pending"), value: "pending" },
+    { label: t("status.cancelled"), value: "cancelled" },
+    { label: t("status.double"), value: "double" },
+    { label: t("status.transferred"), value: "transferred" },
+    { label: t("status.outOfStock"), value: "out_of_stock" },
+    { label: t("status.confirmed"), value: "confirmed" },
+    { label: t("status.delivered"), value: "delivered" },
+  ], [t]);
 
   const filtered = useMemo(() => {
     if (!rawData?.orders) return [];
@@ -132,7 +134,7 @@ export default function OrdersPage() {
               <button
                 onClick={(e) => handleCopyPhone(e, o.phone)}
                 className="text-[#475569] hover:text-[#8B5CF6] transition-colors duration-200"
-                title="Copy phone"
+                title={t("order.copyPhone")}
               >
                 <Copy className="w-3 h-3" />
               </button>
@@ -142,7 +144,7 @@ export default function OrdersPage() {
                 rel="noopener noreferrer"
                 onClick={(e) => e.stopPropagation()}
                 className="text-[#475569] hover:text-[#25D366] transition-colors duration-200"
-                title="WhatsApp"
+                title={t("order.whatsapp")}
               >
                 <MessageCircle className="w-3 h-3" />
               </a>
@@ -208,7 +210,7 @@ export default function OrdersPage() {
         <button
           onClick={() => setSelectedOrder(o)}
           className="p-2 rounded-lg text-[#64748B] hover:text-white hover:bg-[#1F2937] transition-all duration-200 opacity-0 group-hover:opacity-100"
-          title="View details"
+          title={t("order.viewDetails")}
         >
           <Eye className="w-4 h-4" />
         </button>
@@ -222,20 +224,20 @@ export default function OrdersPage() {
         <DateFilter value={dateFilter} onChange={setDateFilter} />
         <div className="flex flex-col sm:flex-row gap-3 flex-wrap items-start">
           <div className="flex-1 min-w-[200px]">
-            <SearchInput value={search} onChange={handleSearch} placeholder="Search orders..." />
+            <SearchInput value={search} onChange={handleSearch} placeholder={t("common.search")} />
           </div>
-          <Select value={status} onChange={handleStatus} options={statusOptions} placeholder="Status" className="w-full sm:w-36" />
-          <Select value={country} onChange={handleCountry} options={[{ label: "All Countries", value: "" }, ...countries]} placeholder="Country" className="w-full sm:w-40" />
+          <Select value={status} onChange={handleStatus} options={statusOptions} placeholder={t("common.select")} className="w-full sm:w-36" />
+          <Select value={country} onChange={handleCountry} options={[{ label: t("common.all"), value: "" }, ...countries]} placeholder={t("common.select")} className="w-full sm:w-40" />
           <button
             onClick={handleExport}
             className="flex items-center gap-2 px-4 py-2.5 bg-[#111827] border border-[#1F2937] hover:border-[#6366F1]/30 text-white rounded-lg transition-all duration-200 text-sm hover:bg-[#1E293B]"
           >
-            <Download className="w-4 h-4" /> Export CSV
+            <Download className="w-4 h-4" /> {t("common.export")} CSV
           </button>
         </div>
 
         <div className="bg-[#111827] border border-[#1F2937] rounded-xl overflow-hidden">
-          <DataTable columns={columns} data={paged} keyExtractor={(o: Order) => o.id} loading={loading && !rawData?.orders?.length} emptyMessage={`${filtered.length === 0 && rawData?.orders?.length ? "No orders match filters" : "No orders found"}`} />
+          <DataTable columns={columns} data={paged} keyExtractor={(o: Order) => o.id} loading={loading && !rawData?.orders?.length} emptyMessage={`${filtered.length === 0 && rawData?.orders?.length ? t("orders.noMatchFilters") : t("common.noData")}`} />
         </div>
 
         {totalPages > 1 && (
@@ -244,8 +246,8 @@ export default function OrdersPage() {
 
         {rawData && (
           <p className="text-[#475569] text-xs text-center">
-            Showing {paged.length} of {filtered.length} orders
-            {filtered.length < rawData.orders.length && ` (filtered from ${rawData.orders.length})`}
+            {t("orders.showing")} {paged.length} {t("common.of")} {filtered.length} {t("common.orders")}
+            {filtered.length < rawData.orders.length && ` (${t("orders.filteredFrom")} ${rawData.orders.length})`}
           </p>
         )}
       </div>

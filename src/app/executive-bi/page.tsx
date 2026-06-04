@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import {
   TrendingUp, TrendingDown, Globe, Package, DollarSign,
   BarChart3, Download, RefreshCw, AlertTriangle,
@@ -19,6 +20,7 @@ import type { ExcelColumn } from "@/utils/excel";
 import type { CountryStats, Product, Order } from "@/types";
 
 export default function ExecutiveBIPage() {
+  const { t } = useTranslation();
   const { data, loading, error, refetch } = useDashboardData({ refreshInterval: 300000 });
   const { data: lowStock } = useLowStockProducts();
   const { data: outOfStock } = useOutOfStockProducts();
@@ -113,20 +115,20 @@ export default function ExecutiveBIPage() {
   const alerts = useMemo(() => {
     const list: { type: "warning" | "danger" | "info"; icon: typeof AlertTriangle; title: string; message: string }[] = [];
     for (const p of lowStockProducts.slice(0, 5)) {
-      list.push({ type: "warning", icon: AlertTriangle, title: `Low Stock: ${p.name}`, message: `Only ${p.stockQuantity} units left (${formatNumber(p.totalSold)} sold)` });
+      list.push({ type: "warning", icon: AlertTriangle, title: t("executiveBi.alertLowStockTitle", { name: p.name }), message: t("executiveBi.alertLowStockMsg", { quantity: p.stockQuantity, sold: formatNumber(p.totalSold) }) });
     }
     for (const p of outOfStockProducts.slice(0, 5)) {
-      list.push({ type: "danger", icon: XCircle, title: `Out of Stock: ${p.name}`, message: `Product is out of stock (${formatNumber(p.totalSold)} sold)` });
+      list.push({ type: "danger", icon: XCircle, title: t("executiveBi.alertOutOfStockTitle", { name: p.name }), message: t("executiveBi.alertOutOfStockMsg", { sold: formatNumber(p.totalSold) }) });
     }
     for (const c of countryStats) {
       if (c.confirmationRate < 0.2 && c.orders > 5) {
-        list.push({ type: "danger", icon: ShieldAlert, title: `Low Confirmation: ${c.countryName}`, message: `${formatPercentage(c.confirmationRate)} confirmation rate (${c.orders} orders)` });
+        list.push({ type: "danger", icon: ShieldAlert, title: t("executiveBi.alertLowConfTitle", { country: c.countryName }), message: t("executiveBi.alertLowConfMsg", { rate: formatPercentage(c.confirmationRate), orders: c.orders }) });
       } else if (c.confirmationRate < 0.4 && c.orders > 5) {
-        list.push({ type: "warning", icon: AlertTriangle, title: `Low Confirmation: ${c.countryName}`, message: `${formatPercentage(c.confirmationRate)} confirmation rate (${c.orders} orders)` });
+        list.push({ type: "warning", icon: AlertTriangle, title: t("executiveBi.alertLowConfTitle", { country: c.countryName }), message: t("executiveBi.alertLowConfMsg", { rate: formatPercentage(c.confirmationRate), orders: c.orders }) });
       }
     }
     return list;
-  }, [lowStockProducts, outOfStockProducts, countryStats]);
+  }, [lowStockProducts, outOfStockProducts, countryStats, t]);
 
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
@@ -177,20 +179,20 @@ export default function ExecutiveBIPage() {
               <BarChart3 className="w-6 h-6 text-[#8B5CF6]" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white">Executive BI</h1>
-              <p className="text-[#64748B] text-xs">Comprehensive business intelligence & analytics</p>
+              <h1 className="text-xl font-bold text-white">{t("executiveBi.title")}</h1>
+              <p className="text-[#64748B] text-xs">{t("executiveBi.subtitle")}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <button onClick={handleRefresh} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200">
               <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
-              Refresh
+              {t("common.refresh")}
             </button>
             <button onClick={handleExportCSV} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200">
-              <Download className="w-3.5 h-3.5" /> CSV
+              <Download className="w-3.5 h-3.5" /> {t("common.csv")}
             </button>
             <button onClick={handleExportExcel} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-[#64748B] hover:text-white hover:bg-[#111827] border border-[#1F2937] transition-all duration-200">
-              <Download className="w-3.5 h-3.5" /> Excel
+              <Download className="w-3.5 h-3.5" /> {t("common.excel")}
             </button>
           </div>
         </div>
@@ -199,33 +201,33 @@ export default function ExecutiveBIPage() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Wallet className="w-4 h-4 text-[#8B5CF6]" />
-            <h2 className="text-white text-sm font-semibold">Financial Analytics</h2>
+            <h2 className="text-white text-sm font-semibold">{t("executiveBi.financialAnalytics")}</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
             <div className="p-4 rounded-xl bg-[#111827] border border-[#1F2937]">
-              <p className="text-[#64748B] text-xs mb-1">Gross Revenue</p>
+              <p className="text-[#64748B] text-xs mb-1">{t("executiveBi.grossRevenue")}</p>
               <p className="text-white text-lg font-bold">{formatCurrency(finStats.grossRevenue)}</p>
-              <p className="text-[#64748B] text-[10px] mt-1">All orders total</p>
+              <p className="text-[#64748B] text-[10px] mt-1">{t("executiveBi.allOrdersTotal")}</p>
             </div>
             <div className="p-4 rounded-xl bg-[#111827] border border-[#1F2937]">
-              <p className="text-[#64748B] text-xs mb-1">Processed Revenue</p>
+              <p className="text-[#64748B] text-xs mb-1">{t("executiveBi.processedRevenue")}</p>
               <p className="text-[#8B5CF6] text-lg font-bold">{formatCurrency(finStats.processedRevenue)}</p>
-              <p className="text-[#64748B] text-[10px] mt-1">{finStats.processedOrders} confirmed orders</p>
+              <p className="text-[#64748B] text-[10px] mt-1">{finStats.processedOrders} {t("executiveBi.confirmedOrders")}</p>
             </div>
             <div className="p-4 rounded-xl bg-[#111827] border border-[#1F2937]">
-              <p className="text-[#64748B] text-xs mb-1">Service Fees</p>
+              <p className="text-[#64748B] text-xs mb-1">{t("executiveBi.serviceFees")}</p>
               <p className="text-[#ef4444] text-lg font-bold">{formatCurrency(finStats.totalFees)}</p>
-              <p className="text-[#64748B] text-[10px] mt-1">CodinAfrica fees</p>
+              <p className="text-[#64748B] text-[10px] mt-1">{t("executiveBi.codinAfricaFees")}</p>
             </div>
             <div className="p-4 rounded-xl bg-[#111827] border border-[#1F2937]">
-              <p className="text-[#64748B] text-xs mb-1">Net Revenue</p>
+              <p className="text-[#64748B] text-xs mb-1">{t("executiveBi.netRevenue")}</p>
               <p className="text-[#10b981] text-lg font-bold">{formatCurrency(finStats.netRevenue)}</p>
-              <p className="text-[#64748B] text-[10px] mt-1">After service fees</p>
+              <p className="text-[#64748B] text-[10px] mt-1">{t("executiveBi.afterServiceFees")}</p>
             </div>
             <div className="p-4 rounded-xl bg-[#111827] border border-[#1F2937]">
-              <p className="text-[#64748B] text-xs mb-1">Profit Margin</p>
+              <p className="text-[#64748B] text-xs mb-1">{t("executiveBi.profitMargin")}</p>
               <p className={`text-lg font-bold ${finStats.margin >= 0.85 ? "text-[#10b981]" : finStats.margin >= 0.75 ? "text-[#f59e0b]" : "text-[#ef4444]"}`}>{formatPercentage(finStats.margin)}</p>
-              <p className="text-[#64748B] text-[10px] mt-1">Net / Processed</p>
+              <p className="text-[#64748B] text-[10px] mt-1">{t("executiveBi.netProcessed")}</p>
             </div>
           </div>
         </div>
@@ -234,30 +236,30 @@ export default function ExecutiveBIPage() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Activity className="w-4 h-4 text-[#8B5CF6]" />
-            <h2 className="text-white text-sm font-semibold">Advanced KPIs</h2>
+            <h2 className="text-white text-sm font-semibold">{t("executiveBi.advancedKpis")}</h2>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
             <div className="p-3 rounded-xl bg-[#111827] border border-[#1F2937]">
-              <p className="text-[#64748B] text-[10px] mb-1">Avg Revenue / Day</p>
+              <p className="text-[#64748B] text-[10px] mb-1">{t("executiveBi.avgRevenuePerDay")}</p>
               <p className="text-white text-sm font-bold">{formatCurrency(kpi.avgRevenuePerDay)}</p>
             </div>
             <div className="p-3 rounded-xl bg-[#111827] border border-[#1F2937]">
-              <p className="text-[#64748B] text-[10px] mb-1">Avg Orders / Day</p>
+              <p className="text-[#64748B] text-[10px] mb-1">{t("executiveBi.avgOrdersPerDay")}</p>
               <p className="text-white text-sm font-bold">{kpi.avgOrdersPerDay.toFixed(1)}</p>
             </div>
             <div className="p-3 rounded-xl bg-[#111827] border border-[#1F2937]">
-              <p className="text-[#64748B] text-[10px] mb-1">Avg Order Value</p>
+              <p className="text-[#64748B] text-[10px] mb-1">{t("executiveBi.avgOrderValue")}</p>
               <p className="text-white text-sm font-bold">{formatCurrency(kpi.avgOrderValue)}</p>
             </div>
             <div className="p-3 rounded-xl bg-[#111827] border border-[#1F2937]">
-              <p className="text-[#64748B] text-[10px] mb-1">Revenue Growth</p>
+              <p className="text-[#64748B] text-[10px] mb-1">{t("executiveBi.revenueGrowth")}</p>
               <div className="flex items-center gap-1">
                 {kpi.revenueGrowth > 0 ? <ArrowUp className="w-3.5 h-3.5 text-[#10b981]" /> : kpi.revenueGrowth < 0 ? <ArrowDown className="w-3.5 h-3.5 text-[#ef4444]" /> : <Minus className="w-3.5 h-3.5 text-[#64748B]" />}
                 <span className={`text-sm font-bold ${kpi.revenueGrowth > 0 ? "text-[#10b981]" : kpi.revenueGrowth < 0 ? "text-[#ef4444]" : "text-white"}`}>{formatPercentage(kpi.revenueGrowth)}</span>
               </div>
             </div>
             <div className="p-3 rounded-xl bg-[#111827] border border-[#1F2937]">
-              <p className="text-[#64748B] text-[10px] mb-1">Order Growth</p>
+              <p className="text-[#64748B] text-[10px] mb-1">{t("executiveBi.orderGrowth")}</p>
               <div className="flex items-center gap-1">
                 {kpi.orderGrowth > 0 ? <ArrowUp className="w-3.5 h-3.5 text-[#10b981]" /> : kpi.orderGrowth < 0 ? <ArrowDown className="w-3.5 h-3.5 text-[#ef4444]" /> : <Minus className="w-3.5 h-3.5 text-[#64748B]" />}
                 <span className={`text-sm font-bold ${kpi.orderGrowth > 0 ? "text-[#10b981]" : kpi.orderGrowth < 0 ? "text-[#ef4444]" : "text-white"}`}>{formatPercentage(kpi.orderGrowth)}</span>
@@ -271,22 +273,22 @@ export default function ExecutiveBIPage() {
           <CardHeader>
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-[#8B5CF6]" />
-              <CardTitle>Country Performance Ranking</CardTitle>
+              <CardTitle>{t("executiveBi.countryPerformanceRanking")}</CardTitle>
             </div>
-            <span className="text-[#64748B] text-xs">{countryStats.length} countries</span>
+            <span className="text-[#64748B] text-xs">{countryStats.length} {t("common.countries").toLowerCase()}</span>
           </CardHeader>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#1F2937]">
                   <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3 px-3">#</th>
-                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3 px-3">Country</th>
-                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3 px-3">Revenue</th>
-                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3 px-3">Orders</th>
-                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3 px-3">Proc. Revenue</th>
-                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3 px-3">Net Revenue</th>
-                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3 px-3">Conf. Rate</th>
-                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3 px-3">Del. Rate</th>
+                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3 px-3">{t("bi.country")}</th>
+                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3 px-3">{t("bi.revenue")}</th>
+                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3 px-3">{t("bi.orders")}</th>
+                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3 px-3">{t("executiveBi.procRevenue")}</th>
+                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3 px-3">{t("bi.netRevenue")}</th>
+                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3 px-3">{t("executiveBi.confRate")}</th>
+                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3 px-3">{t("executiveBi.delRate")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -313,7 +315,7 @@ export default function ExecutiveBIPage() {
                   </tr>
                 ))}
                 {countryStats.length === 0 && (
-                  <tr><td colSpan={8} className="text-center py-12 text-[#64748B]">No country data</td></tr>
+                  <tr><td colSpan={8} className="text-center py-12 text-[#64748B]">{t("common.noData")}</td></tr>
                 )}
               </tbody>
             </table>
@@ -324,11 +326,11 @@ export default function ExecutiveBIPage() {
         <div>
           <div className="flex items-center gap-2 mb-3">
             <Package className="w-4 h-4 text-[#8B5CF6]" />
-            <h2 className="text-white text-sm font-semibold">Product Analytics</h2>
+            <h2 className="text-white text-sm font-semibold">{t("executiveBi.productAnalytics")}</h2>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <Card hover={false}>
-              <CardHeader><CardTitle>Top 10 Selling Products</CardTitle><span className="text-[#8B5CF6] text-xs">{topSelling.length} products</span></CardHeader>
+              <CardHeader><CardTitle>{t("executiveBi.top10Selling")}</CardTitle><span className="text-[#8B5CF6] text-xs">{topSelling.length} {t("executiveBi.products").toLowerCase()}</span></CardHeader>
               <div className="space-y-1.5">
                 {topSelling.map((p, i) => (
                   <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-[#1E293B] transition-all duration-150">
@@ -342,11 +344,11 @@ export default function ExecutiveBIPage() {
                     <span className="text-white text-xs font-semibold shrink-0 ml-2">{formatNumber(p.totalSold)}</span>
                   </div>
                 ))}
-                {topSelling.length === 0 && <p className="text-center py-6 text-[#64748B] text-sm">No data</p>}
+                {topSelling.length === 0 && <p className="text-center py-6 text-[#64748B] text-sm">{t("common.noData")}</p>}
               </div>
             </Card>
             <Card hover={false}>
-              <CardHeader><CardTitle>Top 10 Revenue Products</CardTitle><span className="text-[#8B5CF6] text-xs">{topRevenue.length} products</span></CardHeader>
+              <CardHeader><CardTitle>{t("executiveBi.top10Revenue")}</CardTitle><span className="text-[#8B5CF6] text-xs">{topRevenue.length} {t("executiveBi.products").toLowerCase()}</span></CardHeader>
               <div className="space-y-1.5">
                 {topRevenue.map((p, i) => {
                   const maxR = topRevenue[0]?.revenue || 1;
@@ -368,13 +370,13 @@ export default function ExecutiveBIPage() {
                     </div>
                   );
                 })}
-                {topRevenue.length === 0 && <p className="text-center py-6 text-[#64748B] text-sm">No data</p>}
+                {topRevenue.length === 0 && <p className="text-center py-6 text-[#64748B] text-sm">{t("common.noData")}</p>}
               </div>
             </Card>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
             <Card hover={false}>
-              <CardHeader><CardTitle>Low Stock Products</CardTitle><span className="text-[#f59e0b] text-xs">{lowStockProducts.length} items</span></CardHeader>
+              <CardHeader><CardTitle>{t("executiveBi.lowStockProducts")}</CardTitle><span className="text-[#f59e0b] text-xs">{lowStockProducts.length} {t("executiveBi.items")}</span></CardHeader>
               <div className="space-y-1.5">
                 {lowStockProducts.slice(0, 8).map((p) => (
                   <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-[#f59e0b]/5 border border-[#f59e0b]/10">
@@ -385,11 +387,11 @@ export default function ExecutiveBIPage() {
                     <span className="text-[#f59e0b] text-xs font-bold">{formatNumber(p.stockQuantity)}</span>
                   </div>
                 ))}
-                {lowStockProducts.length === 0 && <p className="text-center py-6 text-[#10b981] text-sm">All products well stocked</p>}
+                {lowStockProducts.length === 0 && <p className="text-center py-6 text-[#10b981] text-sm">{t("executiveBi.allWellStocked")}</p>}
               </div>
             </Card>
             <Card hover={false}>
-              <CardHeader><CardTitle>Out of Stock Products</CardTitle><span className="text-[#ef4444] text-xs">{outOfStockProducts.length} items</span></CardHeader>
+              <CardHeader><CardTitle>{t("executiveBi.outOfStockProducts")}</CardTitle><span className="text-[#ef4444] text-xs">{outOfStockProducts.length} {t("executiveBi.items")}</span></CardHeader>
               <div className="space-y-1.5">
                 {outOfStockProducts.slice(0, 8).map((p) => (
                   <div key={p.id} className="flex items-center justify-between py-2 px-3 rounded-lg bg-[#ef4444]/5 border border-[#ef4444]/10">
@@ -400,7 +402,7 @@ export default function ExecutiveBIPage() {
                     <span className="text-[#ef4444] text-xs font-bold">0</span>
                   </div>
                 ))}
-                {outOfStockProducts.length === 0 && <p className="text-center py-6 text-[#10b981] text-sm">No out of stock products</p>}
+                {outOfStockProducts.length === 0 && <p className="text-center py-6 text-[#10b981] text-sm">{t("executiveBi.noOutOfStock")}</p>}
               </div>
             </Card>
           </div>
@@ -411,7 +413,7 @@ export default function ExecutiveBIPage() {
           <div>
             <div className="flex items-center gap-2 mb-3">
               <AlertCircle className="w-4 h-4 text-[#f59e0b]" />
-              <h2 className="text-white text-sm font-semibold">Smart Alerts ({alerts.length})</h2>
+              <h2 className="text-white text-sm font-semibold">{t("executiveBi.smartAlerts")} ({alerts.length})</h2>
             </div>
             <div className="space-y-2">
               {alerts.slice(0, 10).map((alert, i) => (

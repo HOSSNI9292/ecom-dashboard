@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { Save, RotateCcw, DollarSign, Globe } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getCountryFees, saveCountryFees, resetCountryFees } from "@/utils/fees";
@@ -13,6 +14,7 @@ const ALL_COUNTRIES = [
 ];
 
 export default function FeesSettingsPage() {
+  const { t } = useTranslation();
   const [fees, setFees] = useState<CountryFeeConfig>({});
   const [otherFee, setOtherFee] = useState(DEFAULT_FIXED_FEE);
   const [saved, setSaved] = useState(false);
@@ -54,10 +56,10 @@ export default function FeesSettingsPage() {
             <div className="p-2 rounded-lg bg-[#6366F1]/10">
               <DollarSign className="w-5 h-5 text-[#8B5CF6]" />
             </div>
-            <CardTitle>Country Service Fees</CardTitle>
+            <CardTitle>{t("fees.title")}</CardTitle>
           </div>
           <p className="text-[#64748B] text-xs mt-1">
-            Fixed fee deducted per processed order (status = Confirmed). Only countries with fees listed below are charged.
+            {t("fees.description")}
           </p>
         </CardHeader>
         {!loaded ? (
@@ -105,8 +107,8 @@ export default function FeesSettingsPage() {
             <div className="flex items-center gap-3 p-4 rounded-xl bg-[#0B0F19] border border-[#1F2937] border-dashed">
               <Globe className="w-5 h-5 text-[#64748B] shrink-0" />
               <div className="flex-1">
-                <p className="text-white text-sm font-medium">Other Countries</p>
-                <p className="text-[#64748B] text-xs">Default fee per processed order for unlisted countries</p>
+                <p className="text-white text-sm font-medium">{t("fees.otherCountries")}</p>
+                <p className="text-[#64748B] text-xs">{t("fees.otherDesc")}</p>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <input
@@ -122,13 +124,13 @@ export default function FeesSettingsPage() {
             </div>
 
             <div className="bg-[#0B0F19] border border-[#1F2937] rounded-xl p-4">
-              <p className="text-[#64748B] text-xs font-medium mb-2">Examples</p>
+              <p className="text-[#64748B] text-xs font-medium mb-2">{t("fees.examples")}</p>
               <div className="space-y-1.5 text-xs text-[#94A3B8]">
-                <p>Gabon (GA): <span className="text-white">{formatCurrency(6500)}</span> per processed order</p>
-                <p>Congo Brazzaville (CG): <span className="text-white">{formatCurrency(5000)}</span> per processed order</p>
-                <p>Mali (ML): <span className="text-white">{formatCurrency(5000)}</span> per processed order</p>
-                <p>Côte d'Ivoire (CI): <span className="text-white">{formatCurrency(5000)}</span> per processed order</p>
-                <p>Burkina Faso (BF): <span className="text-white">{formatCurrency(5000)}</span> per processed order</p>
+                <p>Gabon (GA): <span className="text-white">{formatCurrency(6500)}</span> {t("fees.perProcessedOrder")}</p>
+                <p>Congo Brazzaville (CG): <span className="text-white">{formatCurrency(5000)}</span> {t("fees.perProcessedOrder")}</p>
+                <p>Mali (ML): <span className="text-white">{formatCurrency(5000)}</span> {t("fees.perProcessedOrder")}</p>
+                <p>Côte d'Ivoire (CI): <span className="text-white">{formatCurrency(5000)}</span> {t("fees.perProcessedOrder")}</p>
+                <p>Burkina Faso (BF): <span className="text-white">{formatCurrency(5000)}</span> {t("fees.perProcessedOrder")}</p>
               </div>
             </div>
 
@@ -137,14 +139,14 @@ export default function FeesSettingsPage() {
                 onClick={handleSave}
                 className="flex items-center justify-center gap-2 px-6 py-2.5 bg-[#6366F1] hover:bg-[#4F46E5] text-white rounded-lg transition-all duration-200 text-sm font-medium shadow-[0_0_16px_rgba(99,102,241,0.2)] hover:shadow-[0_0_24px_rgba(99,102,241,0.3)]"
               >
-                {saved ? "Saved!" : "Save Fees"}
+                {saved ? t("fees.saved") : t("fees.saveFees")}
                 <Save className="w-4 h-4" />
               </button>
               <button
                 onClick={handleReset}
                 className="flex items-center gap-2 px-6 py-2.5 bg-[#111827] border border-[#1F2937] hover:border-[#6366F1]/30 text-white rounded-lg transition-all duration-200 text-sm font-medium"
               >
-                <RotateCcw className="w-4 h-4" /> Reset to Defaults
+                <RotateCcw className="w-4 h-4" /> {t("fees.resetDefaults")}
               </button>
             </div>
           </div>

@@ -9,6 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { useTranslation } from "react-i18next";
 import type { RevenuePoint } from "@/types";
 import { formatCurrency } from "@/utils";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -26,17 +27,19 @@ function CustomTooltip({ active, payload, label }: any) {
       <p className="text-white font-bold text-base">{formatCurrency(payload[0].value)}</p>
       <div className="flex items-center gap-1.5 mt-1">
         <div className="w-1.5 h-1.5 rounded-full bg-[#6366F1]" />
-        <p className="text-[#64748B] text-xs">{payload[0]?.payload?.orders} orders</p>
+        <p className="text-[#64748B] text-xs">{payload[0]?.payload?.orders} {payload[0]?.payload?.orders === 1 ? "order" : "orders"}</p>
       </div>
     </div>
   );
 }
 
 export function RevenueChart({ data, loading }: RevenueChartProps) {
+  const { t } = useTranslation();
+
   return (
     <Card className="lg:col-span-2" hover={false}>
       <CardHeader>
-        <CardTitle>Revenue Trend</CardTitle>
+        <CardTitle>{t("dashboard.revenueTrend")}</CardTitle>
       </CardHeader>
       {loading ? (
         <div className="h-[300px] flex items-center justify-center">
@@ -46,7 +49,7 @@ export function RevenueChart({ data, loading }: RevenueChartProps) {
           </div>
         </div>
       ) : !data || data.length === 0 ? (
-        <div className="h-[300px] flex items-center justify-center text-[#64748B] text-sm">No revenue data available</div>
+        <div className="h-[300px] flex items-center justify-center text-[#64748B] text-sm">{t("dashboard.noRevenueData")}</div>
       ) : (
         <div className="h-[300px]">
           <ResponsiveContainer width="100%" height="100%">

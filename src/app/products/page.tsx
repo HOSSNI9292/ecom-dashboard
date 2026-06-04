@@ -12,9 +12,11 @@ import { formatCurrency, formatNumber, getImageUrlOrFallback, filterOrdersByDate
 import { exportToCSV } from "@/utils/csv";
 import type { Product, Order } from "@/types";
 import type { DateFilterValue } from "@/utils/dates";
+import { useTranslation } from "react-i18next";
 import { TrendingUp, TrendingDown, Minus, Download, Star, ImageIcon } from "lucide-react";
 
 export default function ProductsPage() {
+  const { t } = useTranslation();
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("revenue");
@@ -134,7 +136,7 @@ export default function ProductsPage() {
                 <p className="text-white font-medium text-sm truncate">{p.name}</p>
                 {isTop && (
                   <span className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20">
-                    <Star className="w-2.5 h-2.5" /> Top
+                    <Star className="w-2.5 h-2.5" /> {t("products.top")}
                   </span>
                 )}
               </div>
@@ -203,19 +205,19 @@ export default function ProductsPage() {
         if (score > 0.6) return (
           <div className="flex items-center gap-1.5">
             <TrendingUp className="w-4 h-4 text-[#10b981]" />
-            <span className="text-xs font-semibold text-[#10b981]">Excellent</span>
+                    <span className="text-xs font-semibold text-[#10b981]">{t("products.excellent")}</span>
           </div>
         );
         if (score > 0.3) return (
           <div className="flex items-center gap-1.5">
             <Minus className="w-4 h-4 text-[#f59e0b]" />
-            <span className="text-xs font-semibold text-[#f59e0b]">Average</span>
+            <span className="text-xs font-semibold text-[#f59e0b]">{t("products.average")}</span>
           </div>
         );
         return (
           <div className="flex items-center gap-1.5">
             <TrendingDown className="w-4 h-4 text-[#ef4444]" />
-            <span className="text-xs font-semibold text-[#ef4444]">Low</span>
+            <span className="text-xs font-semibold text-[#ef4444]">{t("products.low")}</span>
           </div>
         );
       },
@@ -228,20 +230,20 @@ export default function ProductsPage() {
         <DateFilter value={dateFilter} onChange={setDateFilter} />
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="flex-1">
-            <SearchInput value={search} onChange={handleSearch} placeholder="Search products..." />
+            <SearchInput value={search} onChange={handleSearch} placeholder={t("common.search")} />
           </div>
           <Select
             value={`${sortBy}-${sortOrder}`}
             onChange={(v) => { const [sb, so] = v.split("-") as [string, "asc" | "desc"]; setSortBy(sb); setSortOrder(so); }}
             options={[
-              { label: "Revenue (High)", value: "revenue-desc" },
-              { label: "Revenue (Low)", value: "revenue-asc" },
-              { label: "Sold (High)", value: "sold-desc" },
-              { label: "Sold (Low)", value: "sold-asc" },
-              { label: "Stock (Low)", value: "stock-asc" },
-              { label: "Stock (High)", value: "stock-desc" },
-              { label: "Price (High)", value: "price-desc" },
-              { label: "Price (Low)", value: "price-asc" },
+              { label: `${t("dashboard.revenue")} (${t("products.high")})`, value: "revenue-desc" },
+              { label: `${t("dashboard.revenue")} (${t("products.low")})`, value: "revenue-asc" },
+              { label: `${t("dashboard.sold")} (${t("products.high")})`, value: "sold-desc" },
+              { label: `${t("dashboard.sold")} (${t("products.low")})`, value: "sold-asc" },
+              { label: `${t("products.stock")} (${t("products.low")})`, value: "stock-asc" },
+              { label: `${t("products.stock")} (${t("products.high")})`, value: "stock-desc" },
+              { label: `${t("products.price")} (${t("products.high")})`, value: "price-desc" },
+              { label: `${t("products.price")} (${t("products.low")})`, value: "price-asc" },
             ]}
             className="w-full sm:w-44"
           />
@@ -249,12 +251,12 @@ export default function ProductsPage() {
             onClick={handleExport}
             className="flex items-center gap-2 px-4 py-2.5 bg-[#111827] border border-[#1F2937] hover:border-[#6366F1]/30 text-white rounded-lg transition-all duration-200 text-sm hover:bg-[#1E293B]"
           >
-            <Download className="w-4 h-4" /> Export CSV
+            <Download className="w-4 h-4" /> {t("common.export")} CSV
           </button>
         </div>
 
         <div className="bg-[#111827] border border-[#1F2937] rounded-xl overflow-hidden">
-          <DataTable columns={columns} data={data?.products ?? []} keyExtractor={(p: Product) => p.id} loading={loading} emptyMessage="No products" />
+          <DataTable columns={columns} data={data?.products ?? []} keyExtractor={(p: Product) => p.id} loading={loading} emptyMessage={t("common.noData")} />
         </div>
 
         {data?.totalPages > 1 && (

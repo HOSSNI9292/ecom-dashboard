@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { Warehouse, AlertTriangle, Package, TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { StatCard } from "@/components/ui/StatCard";
@@ -13,6 +14,7 @@ import type { Product, Order } from "@/types";
 import type { DateFilterValue } from "@/utils/dates";
 
 export default function StockPage() {
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [dateFilter, setDateFilter] = useState<DateFilterValue>("all");
   const allData = useDashboardData({ refreshInterval: 30000 });
@@ -94,15 +96,15 @@ export default function StockPage() {
       <div className="space-y-6">
         <DateFilter value={dateFilter} onChange={setDateFilter} />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard title="Total Products" value={formatNumber(uniqueProductList.length)} icon={<Package className="w-5 h-5" />} color="primary" delay={0} />
-          <StatCard title="In Stock" value={formatNumber(inStock)} icon={<Warehouse className="w-5 h-5" />} color="success" delay={50} />
-          <StatCard title="Low Stock" value={formatNumber(lowStock.data?.length ?? 0)} icon={<AlertTriangle className="w-5 h-5" />} color="warning" delay={100} subtitle="10 or less remaining" />
-          <StatCard title="Out of Stock" value={formatNumber(outOfStock.data?.length ?? 0)} icon={<AlertTriangle className="w-5 h-5" />} color="error" delay={150} subtitle="Need restock" />
+          <StatCard title={t("stock.totalProducts")} value={formatNumber(uniqueProductList.length)} icon={<Package className="w-5 h-5" />} color="primary" delay={0} />
+          <StatCard title={t("stock.inStock")} value={formatNumber(inStock)} icon={<Warehouse className="w-5 h-5" />} color="success" delay={50} />
+          <StatCard title={t("stock.lowStock")} value={formatNumber(lowStock.data?.length ?? 0)} icon={<AlertTriangle className="w-5 h-5" />} color="warning" delay={100} subtitle={t("stock.tenOrLess")} />
+          <StatCard title={t("stock.outOfStock")} value={formatNumber(outOfStock.data?.length ?? 0)} icon={<AlertTriangle className="w-5 h-5" />} color="error" delay={150} subtitle={t("stock.needRestock")} />
         </div>
 
         <Card hover={false}>
           <CardHeader>
-            <CardTitle>Stock Health Overview</CardTitle>
+            <CardTitle>{t("stock.healthOverview")}</CardTitle>
           </CardHeader>
           <div className="space-y-4">
             <div className="flex items-center gap-3">
@@ -110,34 +112,34 @@ export default function StockPage() {
                 <div
                   className="h-full bg-[#10b981] transition-all duration-500"
                   style={{ width: `${stockHealth.healthyPct}%` }}
-                  title={`Healthy: ${stockHealth.healthy}`}
+                  title={`${t("stock.healthy")}: ${stockHealth.healthy}`}
                 />
                 <div
                   className="h-full bg-[#f59e0b] transition-all duration-500"
                   style={{ width: `${stockHealth.lowPct}%` }}
-                  title={`Low: ${stockHealth.low}`}
+                  title={`${t("stock.low")}: ${stockHealth.low}`}
                 />
                 <div
                   className="h-full bg-[#ef4444] transition-all duration-500"
                   style={{ width: `${stockHealth.outPct}%` }}
-                  title={`Out: ${stockHealth.out}`}
+                  title={`${t("stock.out")}: ${stockHealth.out}`}
                 />
               </div>
             </div>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div className="p-3 rounded-xl bg-[#10b981]/5 border border-[#10b981]/10">
                 <p className="text-[#10b981] text-2xl font-bold">{stockHealth.healthy}</p>
-                <p className="text-[#64748B] text-xs mt-0.5">Healthy</p>
+                <p className="text-[#64748B] text-xs mt-0.5">{t("stock.healthy")}</p>
                 <p className="text-[#10b981] text-xs">{stockHealth.healthyPct.toFixed(0)}%</p>
               </div>
               <div className="p-3 rounded-xl bg-[#f59e0b]/5 border border-[#f59e0b]/10">
                 <p className="text-[#f59e0b] text-2xl font-bold">{stockHealth.low}</p>
-                <p className="text-[#64748B] text-xs mt-0.5">Low Stock</p>
+                <p className="text-[#64748B] text-xs mt-0.5">{t("stock.lowStock")}</p>
                 <p className="text-[#f59e0b] text-xs">{stockHealth.lowPct.toFixed(0)}%</p>
               </div>
               <div className="p-3 rounded-xl bg-[#ef4444]/5 border border-[#ef4444]/10">
                 <p className="text-[#ef4444] text-2xl font-bold">{stockHealth.out}</p>
-                <p className="text-[#64748B] text-xs mt-0.5">Out of Stock</p>
+                <p className="text-[#64748B] text-xs mt-0.5">{t("stock.outOfStock")}</p>
                 <p className="text-[#ef4444] text-xs">{stockHealth.outPct.toFixed(0)}%</p>
               </div>
             </div>
@@ -147,7 +149,7 @@ export default function StockPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card gradient>
             <CardHeader>
-              <CardTitle>Low Stock Products</CardTitle>
+              <CardTitle>{t("stock.lowStockProducts")}</CardTitle>
               <span className="text-[#f59e0b] text-xs font-medium">{lowStock.data?.length ?? 0} items</span>
             </CardHeader>
             {lowStock.loading && !lowStock.data ? (
@@ -168,7 +170,7 @@ export default function StockPage() {
                     <div className="flex items-center gap-3 shrink-0 ml-3">
                       <span className="text-[#f59e0b] font-bold text-lg">{formatNumber(p.stockQuantity)}</span>
                       <div className="flex flex-col items-end">
-                        <span className="text-[#94A3B8] text-xs">{formatNumber(p.totalSold)} sold</span>
+                        <span className="text-[#94A3B8] text-xs">{formatNumber(p.totalSold)} {t("dashboard.sold").toLowerCase()}</span>
                         <span className="text-[#64748B] text-xs">{formatCurrency(p.revenue)}</span>
                       </div>
                     </div>
@@ -176,7 +178,7 @@ export default function StockPage() {
                 ))}
                 {(!lowStock.data || lowStock.data.length === 0) && (
                   <div className="text-center py-8">
-                    <p className="text-[#10b981] text-sm font-medium">All products well stocked</p>
+                    <p className="text-[#10b981] text-sm font-medium">{t("stock.allWellStocked")}</p>
                   </div>
                 )}
               </div>
@@ -185,7 +187,7 @@ export default function StockPage() {
 
           <Card gradient>
             <CardHeader>
-              <CardTitle>Out of Stock Products</CardTitle>
+              <CardTitle>{t("stock.outOfStockProducts")}</CardTitle>
               <span className="text-[#ef4444] text-xs font-medium">{outOfStock.data?.length ?? 0} items</span>
             </CardHeader>
             {outOfStock.loading && !outOfStock.data ? (
@@ -206,7 +208,7 @@ export default function StockPage() {
                     <div className="flex items-center gap-3 shrink-0 ml-3">
                       <span className="text-[#ef4444] font-bold text-lg">0</span>
                       <div className="flex flex-col items-end">
-                        <span className="text-[#94A3B8] text-xs">{formatNumber(p.totalSold)} sold</span>
+                        <span className="text-[#94A3B8] text-xs">{formatNumber(p.totalSold)} {t("dashboard.sold").toLowerCase()}</span>
                         <span className="text-[#64748B] text-xs">{formatCurrency(p.revenue)}</span>
                       </div>
                     </div>
@@ -214,7 +216,7 @@ export default function StockPage() {
                 ))}
                 {(!outOfStock.data || outOfStock.data.length === 0) && (
                   <div className="text-center py-8">
-                    <p className="text-[#10b981] text-sm font-medium">No out of stock products</p>
+                    <p className="text-[#10b981] text-sm font-medium">{t("stock.noOutOfStock")}</p>
                   </div>
                 )}
               </div>
@@ -224,20 +226,20 @@ export default function StockPage() {
 
         <Card hover={false}>
           <CardHeader>
-            <CardTitle>Product Inventory</CardTitle>
+            <CardTitle>{t("stock.productInventory")}</CardTitle>
             <div className="w-64">
-              <SearchInput value={search} onChange={setSearch} placeholder="Search inventory..." />
+              <SearchInput value={search} onChange={setSearch} placeholder={t("common.search")} />
             </div>
           </CardHeader>
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#1F2937]">
-                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111827]">Product</th>
-                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111827]">Stock</th>
-                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111827]">Sold</th>
-                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111827]">Revenue</th>
-                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111827]">Status</th>
+                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111827]">{t("delivered.product")}</th>
+                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111827]">{t("products.stock")}</th>
+                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111827]">{t("dashboard.sold")}</th>
+                  <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111827]">{t("dashboard.revenue")}</th>
+                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4 sticky top-0 bg-[#111827]">{t("delivered.status")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -271,22 +273,22 @@ export default function StockPage() {
                     <td className="py-3.5 px-4 text-center">
                       {p.stockQuantity === 0 ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#ef4444]/10 text-[#ef4444] border border-[#ef4444]/20">
-                          <TrendingDown className="w-3 h-3" /> Out
+                          <TrendingDown className="w-3 h-3" /> {t("stock.out")}
                         </span>
                       ) : p.stockQuantity <= 10 ? (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#f59e0b]/10 text-[#f59e0b] border border-[#f59e0b]/20">
-                          <Minus className="w-3 h-3" /> Low
+                          <Minus className="w-3 h-3" /> {t("stock.low")}
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#10b981]/10 text-[#10b981] border border-[#10b981]/20">
-                          <TrendingUp className="w-3 h-3" /> In Stock
+                          <TrendingUp className="w-3 h-3" /> {t("stock.inStock")}
                         </span>
                       )}
                     </td>
                   </tr>
                 ))}
                 {filteredInventory.length === 0 && (
-                  <tr><td colSpan={5} className="text-center py-12 text-[#64748B]">No products match search</td></tr>
+                  <tr><td colSpan={5} className="text-center py-12 text-[#64748B]">{t("common.noData")}</td></tr>
                 )}
               </tbody>
             </table>
