@@ -38,14 +38,51 @@ export function MetaConnection({ onConnected }: MetaConnectionProps) {
   }, [appConfig]);
 
   useEffect(() => {
-    const handler = (event: MessageEvent) => {
-      if (event.data?.type === "meta_oauth_success") {
-        const { accessToken, expiresAt, accounts: accts } = event.data.data;
-        setOauthToken(accessToken);
-        setOauthExpiresAt(expiresAt);
-        setAccounts(accts || []);
-        setShowAccounts(true);
-        setConnecting(false);
+    const handler = async (event: MessageEvent) => {
+      if (event.data?.type === "meta_oauth_code") {
+        const { code, state: returnState } = event.data.data;
+        const savedState = localStorage.getItem("meta_oauth_state");
+        if (savedState && savedState !== returnState) {
+          setConnecting(false);
+          alert("OAuth state mismatch — possible CSRF attack");
+          return;
+        }
+        localStorage.removeItem("meta_oauth_state");
+
+        const cfg = getMetaAppConfig();
+        if (!cfg.appId || !cfg.appSecret) {
+          setConnecting(false);
+          alert("Meta App credentials not saved. Please save them first.");
+          return;
+        }
+
+        try {
+          const redirectUri = `${window.location.origin}/api/meta/callback`;
+          const res = await fetch("/api/meta/exchange", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              code,
+              redirectUri,
+              appId: cfg.appId,
+              appSecret: cfg.appSecret,
+            }),
+          });
+          const data = await res.json();
+          if (data.accessToken) {
+            setOauthToken(data.accessToken);
+            setOauthExpiresAt(data.expiresAt);
+            setAccounts(data.accounts || []);
+            setShowAccounts(true);
+            setConnecting(false);
+          } else {
+            setConnecting(false);
+            alert(data.error || "Token exchange failed");
+          }
+        } catch (err: any) {
+          setConnecting(false);
+          alert(err.message || "Token exchange failed");
+        }
       }
       if (event.data?.type === "meta_oauth_error") {
         setConnecting(false);
@@ -65,34 +102,18 @@ export function MetaConnection({ onConnected }: MetaConnectionProps) {
       alert("Meta App Secret is required");
       return;
     }
+    saveMetaAppConfig(appConfig);
     setConnecting(true);
     const redirectUri = `${window.location.origin}/api/meta/callback`;
-    fetch("/api/meta/auth", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ redirectUri, appId: appConfig.appId, appSecret: appConfig.appSecret }),
-    })
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.url) {
-          const w = 600;
-          const h = 700;
-          const x = window.screen.width / 2 - w / 2;
-          const y = window.screen.height / 2 - h / 2;
-          window.open(
-            data.url,
-            "meta_oauth",
-            `width=${w},height=${h},left=${x},top=${y},popup=1`
-          );
-        } else {
-          setConnecting(false);
-          alert(data.error || "Failed to initiate OAuth");
-        }
-      })
-      .catch((err) => {
-        setConnecting(false);
-        alert(err.message);
-      });
+    const state = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    localStorage.setItem("meta_oauth_state", state);
+    const scopes = ["ads_read", "business_management"].join(",");
+    const url = `https://www.facebook.com/v22.0/dialog/oauth?client_id=${appConfig.appId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=${scopes}&state=${state}&response_type=code`;
+    const w = 600;
+    const h = 700;
+    const x = window.screen.width / 2 - w / 2;
+    const y = window.screen.height / 2 - h / 2;
+    window.open(url, "meta_oauth", `width=${w},height=${h},left=${x},top=${y},popup=1`);
   }, [appConfig.appId, appConfig.appSecret, t]);
 
   const handleSelectAccount = useCallback((account: MetaAdAccount) => {
