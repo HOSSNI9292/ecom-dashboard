@@ -1,7 +1,8 @@
 "use client";
 import { useEffect, useState } from "react";
 
-const TARGET_FIELDS = ["statusCallCenter", "validated_status", "teleConsultantConfirm", "shippingConfirmCount", "autoConfirmed"];
+const CONFIRM_FIELDS = ["statusCallCenter", "validated_status", "teleConsultantConfirm", "autoConfirmed"];
+const DATE_SUFFIXES = ["At", "Date", "date", "Time", "time", "_at", "At", "on", "On"];
 
 function getNested(obj: any, path: string): any {
   return path.split(".").reduce((acc, part) => acc?.[part], obj);
@@ -17,155 +18,176 @@ export default function DebugStatusesPage() {
       try {
         const { api } = await import("@/services/api");
         const all = await api.fetchAllOrders();
-        const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
+        const todayParis = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
 
-        const todayOrders: any[] = all.filter((o: any) => {
-          if (!o.createdAt) return false;
-          try {
-            return new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "Europe/Paris" }) === today;
-          } catch { return false; }
-        });
+        // First, discover ALL keys across ALL orders to find confirmation date fields
+        const allKeys = new Set<string>();
+        const dateKeys = new Set<string>();
+        const confirmDateCandidates: string[] = [];
 
-        // Discover actual paths for target fields
-        const fieldPaths: string[] = [];
-        for (const target of TARGET_FIELDS) {
-          let found = false;
-          for (const o of todayOrders) {
-            if (o[target] !== undefined) { fieldPaths.push(target); found = true; break; }
-            for (const k of Object.keys(o)) {
-              if (o[k] && typeof o[k] === "object" && !Array.isArray(o[k]) && o[k][target] !== undefined) {
-                fieldPaths.push(`${k}.${target}`);
-                found = true; break;
+        for (const raw of all) {
+          const o: any = raw;
+          for (const k of Object.keys(o)) {
+            allKeys.add(k);
+            if (DATE_SUFFIXES.some((s) => k.includes(s) || k.endsWith(s))) {
+              dateKeys.add(k);
+            }
+            if (CONFIRM_FIELDS.some((f) => k.toLowerCase().includes(f.toLowerCase()))) {
+              dateKeys.add(k);
+            }
+          }
+          // Nested keys
+          for (const k of Object.keys(o)) {
+            if (o[k] && typeof o[k] === "object" && !Array.isArray(o[k])) {
+              for (const sk of Object.keys(o[k])) {
+                const full = `${k}.${sk}`;
+                allKeys.add(full);
+                if (DATE_SUFFIXES.some((s) => sk.includes(s) || sk.endsWith(s)) || CONFIRM_FIELDS.some((f) => sk.toLowerCase().includes(f.toLowerCase()))) {
+                  dateKeys.add(full);
+                }
               }
             }
-            if (found) break;
           }
-          if (!found) fieldPaths.push(target); // keep for display
         }
 
-        // Distribution for each field
-        const distributions: Record<string, Record<string, number>> = {};
-        const orderTable: any[] = [];
+        const sortedDateKeys = Array.from(dateKeys).sort();
+        const sortedAllKeys = Array.from(allKeys).sort();
 
-        for (const fp of fieldPaths) {
-          const dist: Record<string, number> = {};
-          for (const o of todayOrders) {
+        // Now find orders confirmed today by any field
+        // For each order, check if any confirmation field or date field indicates today
+        const confirmedTodayViaField: any[] = [];
+        const confirmedOrdersById = new Map<string, any>();
+
+        for (const raw of all) {
+          const o: any = raw;
+          const createdAtParis = o.createdAt
+            ? new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "Europe/Paris" })
+            : "unknown";
+          const createdToday = createdAtParis === todayParis;
+
+          // Check all date-key fields for today's date
+          const confirmFieldsThatMatch: string[] = [];
+
+          for (const fp of sortedDateKeys) {
             const val = getNested(o, fp);
-            const key = val === null ? "null" : val === undefined ? "undefined" : String(val);
-            dist[key] = (dist[key] || 0) + 1;
-          }
-          distributions[fp] = dist;
-        }
-
-        // Test which field(s) produce 25 confirmed
-        const tests: any[] = [];
-        for (const fp of fieldPaths) {
-          const val = getNested(todayOrders[0], fp); // check first order
-          const isBool = val === true || val === false;
-
-          if (isBool) {
-            // Boolean field: count truthy
-            const truthyCount = todayOrders.filter((o) => getNested(o, fp) === true).length;
-            tests.push({ field: fp, type: "boolean", confirmed: truthyCount, matches25: truthyCount === 25 });
-          } else {
-            // String field: check unique values
-            const vals = new Set(todayOrders.map((o) => String(getNested(o, fp) ?? "")));
-            tests.push({ field: fp, type: "string", uniqueValues: Array.from(vals), confirmed: -1, matches25: false });
-          }
-        }
-
-        // Also test combinations
-        // For string fields, count non-empty, non-null, non-undefined
-        for (const fp of fieldPaths) {
-          const nonEmpty = todayOrders.filter((o) => {
-            const v = getNested(o, fp);
-            return v !== null && v !== undefined && v !== "" && v !== false;
-          }).length;
-          tests.push({ field: `${fp} (non-empty)`, type: "non-empty", confirmed: nonEmpty, matches25: nonEmpty === 25 });
-        }
-
-        // For string fields with specific values
-        for (const fp of fieldPaths) {
-          const freqs: Record<string, number> = {};
-          for (const o of todayOrders) {
-            const v = String(getNested(o, fp) ?? "undefined");
-            freqs[v] = (freqs[v] || 0) + 1;
-          }
-          for (const [val, count] of Object.entries(freqs)) {
-            if (count === 25) {
-              tests.push({ field: `${fp} == ${val}`, type: "exact-match", confirmed: count, matches25: true });
+            if (val === null || val === undefined || val === "") continue;
+            const valStr = String(val);
+            // Check if this value contains today's date
+            if (valStr.includes(todayParis)) {
+              confirmFieldsThatMatch.push(`${fp}=${valStr}`);
             }
           }
-        }
 
-        // Per-order table for manual inspection
-        for (const o of todayOrders) {
-          const row: any = { id: o.id || o._id, statusName: o.status?.name };
-          for (const fp of fieldPaths) {
-            row[fp] = getNested(o, fp);
+          if (confirmFieldsThatMatch.length > 0) {
+            confirmedTodayViaField.push({
+              id: o.id || o._id,
+              status: o.status?.name,
+              createdAt: o.createdAt,
+              createdToday,
+              confirmFields: confirmFieldsThatMatch,
+            });
+            confirmedOrdersById.set(o.id || o._id, o);
           }
-          orderTable.push(row);
         }
 
-        // Also try: status === "Confirmed" OR any of these fields being truthy
-        for (const fp of fieldPaths) {
-          const combined = todayOrders.filter((o: any) => {
-            const raw = o.status?.name || "";
-            const mapped = raw.toLowerCase() === "confirmed" || raw.toLowerCase() === "processed" || raw.toLowerCase() === "delivered" || raw.toLowerCase() === "shipped" || raw.toLowerCase() === "shipping";
-            if (mapped) return true;
-            const v = getNested(o, fp);
-            return v === true || (typeof v === "string" && v !== "" && v !== "undefined" && v !== "null");
-          }).length;
-          tests.push({ field: `status_confirmed|processed|delivered|shipping|shipped OR ${fp} truthy`, type: "combined-or", confirmed: combined, matches25: combined === 25 });
-        }
-
-        // Combined: status = "Confirmed" OR autoConfirmed = true
-        const confirmedStatus = todayOrders.filter((o: any) => (o.status?.name || "").toLowerCase() === "confirmed").length;
-        const autoConfirmedTrue = todayOrders.filter((o: any) => getNested(o, "autoConfirmed") === true).length;
-
-        // Auto-confirmed orders that are NOT status=Confirmed
-        const extraAutoConfirmed = todayOrders.filter((o: any) => {
-          const isStatusConfirmed = (o.status?.name || "").toLowerCase() === "confirmed";
-          const isAutoConfirmed = getNested(o, "autoConfirmed") === true;
-          return !isStatusConfirmed && isAutoConfirmed;
-        });
-
-        // teleConsultantConfirm orders that are NOT status=Confirmed
-        const extraTeleConsultant = todayOrders.filter((o: any) => {
-          const isStatusConfirmed = (o.status?.name || "").toLowerCase() === "confirmed";
-          const isTeleConfirmed = getNested(o, "teleConsultantConfirm") === true;
-          return !isStatusConfirmed && isTeleConfirmed;
-        });
-
-        // statusCallCenter orders that are NOT status=Confirmed
-        const extraStatusCallCenter = todayOrders.filter((o: any) => {
-          const isStatusConfirmed = (o.status?.name || "").toLowerCase() === "confirmed";
+        // Also try: statusCallCenter === "Confirmed" regardless of date
+        const statusCallCenterConfirmed: any[] = [];
+        for (const raw of all) {
+          const o: any = raw;
           const val = getNested(o, "statusCallCenter");
-          return !isStatusConfirmed && val === true;
+          if (val !== undefined && val !== null && String(val).toLowerCase() === "confirmed") {
+            const createdAtParis = o.createdAt
+              ? new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "Europe/Paris" })
+              : "unknown";
+            statusCallCenterConfirmed.push({
+              id: o.id || o._id,
+              status: o.status?.name,
+              createdAt: o.createdAt,
+              createdToday: createdAtParis === todayParis,
+              createdAtParis,
+              statusCallCenter: val,
+            });
+          }
+        }
+
+        // Now check orders created today only, and compare
+        const todayCreated: any[] = all.filter((raw: any) => {
+          if (!raw.createdAt) return false;
+          return new Date(raw.createdAt).toLocaleDateString("en-CA", { timeZone: "Europe/Paris" }) === todayParis;
         });
 
-        // validated_status orders
-        const extraValidatedStatus = todayOrders.filter((o: any) => {
-          const isStatusConfirmed = (o.status?.name || "").toLowerCase() === "confirmed";
-          const val = getNested(o, "validated_status");
-          return !isStatusConfirmed && val !== null && val !== undefined && val !== "" && val !== false;
+        // Distribution of statusCallCenter among today-created orders
+        const sccDistToday: Record<string, number> = {};
+        for (const o of todayCreated) {
+          const val = String(getNested(o, "statusCallCenter") ?? "undefined");
+          sccDistToday[val] = (sccDistToday[val] || 0) + 1;
+        }
+
+        // Distribution of statusCallCenter among ALL orders (for comparison)
+        const sccDistAll: Record<string, number> = {};
+        for (const raw of all) {
+          const o: any = raw;
+          const val = String(getNested(o, "statusCallCenter") ?? "undefined");
+          sccDistAll[val] = (sccDistAll[val] || 0) + 1;
+        }
+
+        // Show all dates-related keys and their values for a few sample orders
+        const dateKeySamples = all.slice(0, 5).map((raw: any) => {
+          const o: any = raw;
+          const row: any = { id: o.id || o._id, status: o.status?.name };
+          for (const k of sortedDateKeys) {
+            row[k] = getNested(o, k);
+          }
+          return row;
         });
+
+        // Orders where statusCallCenter = Confirmed AND created today = our 16
+        const sccConfirmedCreatedToday = statusCallCenterConfirmed.filter((o: any) => o.createdToday);
+        
+        // Orders where statusCallCenter = Confirmed regardless of creation date = COD Africa's 25?
+        const sccConfirmedAll = statusCallCenterConfirmed;
+
+        // Check validated_status with value "Confirmed" or similar
+        const validatedConfirmed: any[] = [];
+        for (const raw of all) {
+          const o: any = raw;
+          const val = getNested(o, "validated_status");
+          if (val !== undefined && val !== null && val !== "" && val !== false) {
+            const createdAtParis = o.createdAt
+              ? new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "Europe/Paris" })
+              : "unknown";
+            validatedConfirmed.push({
+              id: o.id || o._id,
+              status: o.status?.name,
+              createdAt: o.createdAt,
+              createdToday: createdAtParis === todayParis,
+              validated_status: val,
+            });
+          }
+        }
 
         setData({
-          today, total: todayOrders.length,
-          fieldPaths, distributions, tests,
-          orderTable,
-          confirmedStatus,
-          autoConfirmedTrue,
-          extraAutoConfirmed,
-          extraTeleConsultant,
-          extraStatusCallCenter,
-          extraValidatedStatus,
-          statusCounts: todayOrders.reduce((acc: any, o: any) => {
+          todayParis,
+          allCount: all.length,
+          todayCreatedCount: todayCreated.length,
+          confirmedTodayViaFieldCount: confirmedTodayViaField.length,
+          confirmedTodayViaField,
+          statusCallCenterConfirmedCountAll: sccConfirmedAll.length,
+          statusCallCenterConfirmedCountToday: sccConfirmedCreatedToday.length,
+          statusCallCenterConfirmedAll: sccConfirmedAll,
+          statusCallCenterConfirmedToday: sccConfirmedCreatedToday,
+          validatedConfirmedCount: validatedConfirmed.length,
+          validatedConfirmed,
+          sccDistToday,
+          sccDistAll,
+          todayStatusBreakdown: todayCreated.reduce((acc: any, o: any) => {
             const s = o.status?.name || "unknown";
             acc[s] = (acc[s] || 0) + 1;
             return acc;
           }, {} as Record<string, number>),
+          sortedDateKeys,
+          sortedAllKeys,
+          dateKeySamples,
         });
       } catch (e: any) {
         setError(e.message);
@@ -181,57 +203,96 @@ export default function DebugStatusesPage() {
 
   return (
     <div className="p-8 text-white max-w-7xl mx-auto space-y-8">
-      <h1 className="text-2xl font-bold">Call-Center Field Analysis — Confirmed Orders</h1>
-      <p>Date (Europe/Paris): <strong>{data.today}</strong> | Orders today: <strong>{data.total}</strong></p>
-      <p>Status breakdown: {Object.entries(data.statusCounts as Record<string, number>).map(([k, v]) => `${k}=${v}`).join(", ")}</p>
+      <h1 className="text-2xl font-bold">Confirmation Date Investigation</h1>
+      <p>Date (Europe/Paris): <strong>{data.todayParis}</strong></p>
+      <p>Total API orders: <strong>{data.allCount}</strong> | Created today: <strong>{data.todayCreatedCount}</strong></p>
+      <p>Status breakdown (created today): {Object.entries(data.todayStatusBreakdown as Record<string, number>).map(([k, v]) => `${k}=${v}`).join(", ")}</p>
       <p>COD Africa Confirmed: <strong>25</strong></p>
 
-      <div>
-        <h2 className="text-xl font-semibold mb-2">Field Distribution</h2>
-        {data.fieldPaths.map((fp: string) => (
-          <div key={fp} className="mb-4">
-            <h3 className="text-lg font-semibold text-blue-400">{fp}</h3>
-            <table className="w-auto border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-gray-700">
-                  <th className="text-left py-1 px-3">Value</th>
-                  <th className="text-right py-1 px-3">Count</th>
-                  <th className="text-right py-1 px-3">%</th>
-                </tr>
-              </thead>
-              <tbody>
-                {Object.entries(data.distributions[fp] as Record<string, number>)
-                  .sort(([, a], [, b]) => b - a)
-                  .map(([val, count]) => (
-                    <tr key={val} className={`border-b border-gray-800 ${count === 25 ? "bg-green-900/30 font-bold" : ""}`}>
-                      <td className="py-1 px-3 font-mono">{val}</td>
-                      <td className="text-right py-1 px-3">{count}</td>
-                      <td className="text-right py-1 px-3">{(count / data.total * 100).toFixed(1)}%</td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
-          </div>
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="bg-gray-900 p-4 rounded">
+          <h3 className="font-semibold">statusCallCenter = Confirmed</h3>
+          <p className="text-2xl font-bold text-blue-400">{data.statusCallCenterConfirmedCountAll}</p>
+          <p className="text-sm text-gray-400">across ALL orders (regardless of createdAt)</p>
+          {data.statusCallCenterConfirmedCountAll === 25 && <p className="text-green-400 font-bold">✅ MATCHES 25</p>}
+        </div>
+        <div className="bg-gray-900 p-4 rounded">
+          <h3 className="font-semibold">statusCallCenter = Confirmed</h3>
+          <p className="text-2xl font-bold text-yellow-400">{data.statusCallCenterConfirmedCountToday}</p>
+          <p className="text-sm text-gray-400">only among orders created today</p>
+        </div>
+        <div className="bg-gray-900 p-4 rounded">
+          <h3 className="font-semibold">Any date field = today</h3>
+          <p className="text-2xl font-bold text-purple-400">{data.confirmedTodayViaFieldCount}</p>
+          <p className="text-sm text-gray-400">orders with any date/confirm field = today</p>
+        </div>
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-2">Confirmation Formula Tests</h2>
-        <p className="text-sm text-gray-400 mb-2">Which rule produces exactly 25 confirmed orders? (Marked in green)</p>
-        <table className="w-full border-collapse">
+        <h2 className="text-xl font-semibold mb-2">statusCallCenter Distribution (created today)</h2>
+        <table className="w-auto border-collapse">
           <thead>
             <tr className="border-b border-gray-700">
-              <th className="text-left py-2 px-3">Rule / Formula</th>
-              <th className="text-right py-2 px-3">Confirmed</th>
-              <th className="text-center py-2 px-3">Matches 25?</th>
+              <th className="text-left py-1 px-3">Value</th>
+              <th className="text-right py-1 px-3">Count</th>
             </tr>
           </thead>
           <tbody>
-            {data.tests.map((t: any, i: number) => (
-              <tr key={i} className={`border-b border-gray-800 ${t.matches25 ? "bg-green-900/30" : ""}`}>
-                <td className="py-2 px-3 font-mono text-sm">{t.field}</td>
-                <td className="text-right py-2 px-3">{t.confirmed}</td>
-                <td className="text-center py-2 px-3">{t.matches25 ? "✅ MATCH" : ""}</td>
+            {Object.entries(data.sccDistToday as Record<string, number>)
+              .sort(([, a], [, b]) => b - a)
+              .map(([val, count]) => (
+                <tr key={val} className="border-b border-gray-800">
+                  <td className="py-1 px-3 font-mono">{val}</td>
+                  <td className="text-right py-1 px-3">{count}</td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <h2 className="text-xl font-semibold mb-2">statusCallCenter Distribution (ALL orders)</h2>
+        <table className="w-auto border-collapse">
+          <thead>
+            <tr className="border-b border-gray-700">
+              <th className="text-left py-1 px-3">Value</th>
+              <th className="text-right py-1 px-3">Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            {Object.entries(data.sccDistAll as Record<string, number>)
+              .sort(([, a], [, b]) => b - a)
+              .map(([val, count]) => (
+                <tr key={val} className="border-b border-gray-800">
+                  <td className="py-1 px-3 font-mono">{val}</td>
+                  <td className="text-right py-1 px-3">{count}</td>
+                </tr>
+              ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div>
+        <h2 className="text-xl font-semibold mb-2">statusCallCenter = Confirmed Orders (all)</h2>
+        <p>Count: <strong>{data.statusCallCenterConfirmedCountAll}</strong></p>
+        <table className="w-full border-collapse text-xs">
+          <thead>
+            <tr className="border-b border-gray-700">
+              <th className="text-left py-1 px-2">ID</th>
+              <th className="text-left py-1 px-2">Status</th>
+              <th className="text-left py-1 px-2">createdAt</th>
+              <th className="text-left py-1 px-2">Created Today?</th>
+              <th className="text-left py-1 px-2">statusCallCenter</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.statusCallCenterConfirmedAll.map((o: any) => (
+              <tr key={o.id} className={`border-b border-gray-800 ${o.createdToday ? "" : "bg-yellow-900/20"}`}>
+                <td className="py-1 px-2 font-mono">{o.id}</td>
+                <td className="py-1 px-2">{o.status}</td>
+                <td className="py-1 px-2 text-xs">{o.createdAt}</td>
+                <td className="py-1 px-2">{o.createdToday ? "✅" : "❌ (prior day)"}</td>
+                <td className="py-1 px-2">{o.statusCallCenter}</td>
               </tr>
             ))}
           </tbody>
@@ -239,103 +300,62 @@ export default function DebugStatusesPage() {
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-2">Extra Orders Beyond status=Confirmed</h2>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="bg-gray-900 p-4 rounded">
-            <h3 className="font-semibold text-yellow-400">Added by autoConfirmed (not status Confirmed)</h3>
-            <p className="text-sm text-gray-400">{data.extraAutoConfirmed.length} orders</p>
-            <table className="w-full text-xs mt-2 border-collapse">
-              <thead><tr className="border-b border-gray-700"><th className="text-left py-1">ID</th><th className="text-left py-1">Status</th><th className="text-left py-1">autoConfirmed</th></tr></thead>
-              <tbody>
-                {data.extraAutoConfirmed.map((o: any) => (
-                  <tr key={o.id || o._id} className="border-b border-gray-800">
-                    <td className="py-1 font-mono">{o.id || o._id}</td>
-                    <td className="py-1">{o.status?.name}</td>
-                    <td className="py-1">{String(o.autoConfirmed)}</td>
-                  </tr>
-                ))}
-                {data.extraAutoConfirmed.length === 0 && <tr><td colSpan={3} className="py-2 text-gray-500">No extra orders</td></tr>}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="bg-gray-900 p-4 rounded">
-            <h3 className="font-semibold text-yellow-400">Added by teleConsultantConfirm (not status Confirmed)</h3>
-            <p className="text-sm text-gray-400">{data.extraTeleConsultant.length} orders</p>
-            <table className="w-full text-xs mt-2 border-collapse">
-              <thead><tr className="border-b border-gray-700"><th className="text-left py-1">ID</th><th className="text-left py-1">Status</th><th className="text-left py-1">teleConsultantConfirm</th></tr></thead>
-              <tbody>
-                {data.extraTeleConsultant.map((o: any) => (
-                  <tr key={o.id || o._id} className="border-b border-gray-800">
-                    <td className="py-1 font-mono">{o.id || o._id}</td>
-                    <td className="py-1">{o.status?.name}</td>
-                    <td className="py-1">{String(o.teleConsultantConfirm)}</td>
-                  </tr>
-                ))}
-                {data.extraTeleConsultant.length === 0 && <tr><td colSpan={3} className="py-2 text-gray-500">No extra orders</td></tr>}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="bg-gray-900 p-4 rounded">
-            <h3 className="font-semibold text-yellow-400">Added by statusCallCenter (not status Confirmed)</h3>
-            <p className="text-sm text-gray-400">{data.extraStatusCallCenter.length} orders</p>
-            <table className="w-full text-xs mt-2 border-collapse">
-              <thead><tr className="border-b border-gray-700"><th className="text-left py-1">ID</th><th className="text-left py-1">Status</th><th className="text-left py-1">statusCallCenter</th></tr></thead>
-              <tbody>
-                {data.extraStatusCallCenter.map((o: any) => (
-                  <tr key={o.id || o._id} className="border-b border-gray-800">
-                    <td className="py-1 font-mono">{o.id || o._id}</td>
-                    <td className="py-1">{o.status?.name}</td>
-                    <td className="py-1">{String(o.statusCallCenter)}</td>
-                  </tr>
-                ))}
-                {data.extraStatusCallCenter.length === 0 && <tr><td colSpan={3} className="py-2 text-gray-500">No extra orders</td></tr>}
-              </tbody>
-            </table>
-          </div>
-
-          <div className="bg-gray-900 p-4 rounded">
-            <h3 className="font-semibold text-yellow-400">Added by validated_status (not status Confirmed)</h3>
-            <p className="text-sm text-gray-400">{data.extraValidatedStatus.length} orders</p>
-            <table className="w-full text-xs mt-2 border-collapse">
-              <thead><tr className="border-b border-gray-700"><th className="text-left py-1">ID</th><th className="text-left py-1">Status</th><th className="text-left py-1">validated_status</th></tr></thead>
-              <tbody>
-                {data.extraValidatedStatus.map((o: any) => (
-                  <tr key={o.id || o._id} className="border-b border-gray-800">
-                    <td className="py-1 font-mono">{o.id || o._id}</td>
-                    <td className="py-1">{o.status?.name}</td>
-                    <td className="py-1">{String(o.validated_status)}</td>
-                  </tr>
-                ))}
-                {data.extraValidatedStatus.length === 0 && <tr><td colSpan={3} className="py-2 text-gray-500">No extra orders</td></tr>}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <h2 className="text-xl font-semibold mb-2">validated_status Values (non-empty, all orders)</h2>
+        <p>Count: <strong>{data.validatedConfirmedCount}</strong></p>
+        <table className="w-full border-collapse text-xs">
+          <thead>
+            <tr className="border-b border-gray-700">
+              <th className="text-left py-1 px-2">ID</th>
+              <th className="text-left py-1 px-2">Status</th>
+              <th className="text-left py-1 px-2">createdAt</th>
+              <th className="text-left py-1 px-2">Created Today?</th>
+              <th className="text-left py-1 px-2">validated_status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.validatedConfirmed.map((o: any) => (
+              <tr key={o.id} className="border-b border-gray-800">
+                <td className="py-1 px-2 font-mono">{o.id}</td>
+                <td className="py-1 px-2">{o.status}</td>
+                <td className="py-1 px-2 text-xs">{o.createdAt}</td>
+                <td className="py-1 px-2">{o.createdToday ? "✅" : "❌ (prior day)"}</td>
+                <td className="py-1 px-2">{JSON.stringify(o.validated_status)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-2">Per-Order Field Values</h2>
+        <h2 className="text-xl font-semibold mb-2">Date-Related Keys Found Across All Orders</h2>
+        <details>
+          <summary className="cursor-pointer text-sm text-blue-400">{data.sortedDateKeys.length} keys — click to expand</summary>
+          <div className="bg-gray-900 p-4 rounded text-xs font-mono mt-2 overflow-x-auto whitespace-pre-wrap">
+            {data.sortedDateKeys.join("\n")}
+          </div>
+        </details>
+      </div>
+
+      <div>
+        <h2 className="text-xl font-semibold mb-2">Order Samples — All Date/Confirm Fields</h2>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-xs">
             <thead>
               <tr className="border-b border-gray-700">
                 <th className="text-left py-1 px-2 sticky left-0 bg-[#0F172A]">ID</th>
                 <th className="text-left py-1 px-2 sticky left-0 bg-[#0F172A]">Status</th>
-                {data.fieldPaths.map((fp: string) => (
-                  <th key={fp} className="text-left py-1 px-2">{fp}</th>
+                {data.sortedDateKeys.map((k: string) => (
+                  <th key={k} className="text-left py-1 px-2 whitespace-nowrap">{k}</th>
                 ))}
               </tr>
             </thead>
             <tbody>
-              {data.orderTable.map((row: any, i: number) => (
+              {data.dateKeySamples.map((row: any, i: number) => (
                 <tr key={i} className="border-b border-gray-800">
                   <td className="py-1 px-2 font-mono sticky left-0 bg-[#0F172A]">{row.id}</td>
-                  <td className="py-1 px-2 sticky left-0 bg-[#0F172A]">{row.statusName}</td>
-                  {data.fieldPaths.map((fp: string) => (
-                    <td key={fp} className="py-1 px-2">{String(row[fp] ?? "")}</td>
+                  <td className="py-1 px-2 sticky left-0 bg-[#0F172A]">{row.status}</td>
+                  {data.sortedDateKeys.map((k: string) => (
+                    <td key={k} className="py-1 px-2 whitespace-nowrap">{row[k] !== undefined ? String(row[k]) : ""}</td>
                   ))}
                 </tr>
               ))}
