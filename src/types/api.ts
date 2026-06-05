@@ -9,6 +9,8 @@ export interface CodinAfricaShipping {
   updatedAt: string;
   source?: string;
   details?: CodinAfricaOrderDetail[];
+  deliveredAt?: string;
+  paidAt?: string;
 }
 
 export interface CodinAfricaOrder {

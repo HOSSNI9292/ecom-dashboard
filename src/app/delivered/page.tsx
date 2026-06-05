@@ -46,7 +46,7 @@ export default function DeliveredPage() {
   const filteredShippings = useMemo(() => {
     const mapped = allShippings.map((s) => ({
       ...s,
-      date: s.createdAt || s.date || s.updatedAt || "",
+      date: s.date || s.createdAt || s.updatedAt || "",
     }));
     return filterOrdersByDate(mapped, dateFilter);
   }, [allShippings, dateFilter]);
@@ -259,6 +259,29 @@ export default function DeliveredPage() {
             subtitle={t("delivered.withDeliveries")}
           />
         </div>
+
+        <Card hover={false} className="border border-[#6366F1]/20">
+          <CardHeader>
+            <CardTitle>Status Breakdown (debug)</CardTitle>
+            <span className="text-[#94A3B8] text-xs">status | count for selected period</span>
+          </CardHeader>
+          <div className="px-6 pb-4">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-2">
+              {Object.entries(statusBreakdown)
+                .sort(([, a], [, b]) => b - a)
+                .map(([status, count]) => (
+                  <div key={status} className="flex items-center justify-between p-2 rounded-lg bg-[#111827] border border-[#1F2937]">
+                    <span className="text-white text-xs font-medium">{SHIPPING_STATUS_LABELS[status] || status}</span>
+                    <span className="text-white text-sm font-bold ml-2">{count}</span>
+                  </div>
+                ))}
+              <div className="flex items-center justify-between p-2 rounded-lg bg-[#6366F1]/10 border border-[#6366F1]/30">
+                <span className="text-[#6366F1] text-xs font-bold">TOTAL</span>
+                <span className="text-[#6366F1] text-sm font-bold">{stats.totalDeliveries}</span>
+              </div>
+            </div>
+          </div>
+        </Card>
 
         <Card hover={false}>
           <CardHeader>
