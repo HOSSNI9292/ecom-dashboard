@@ -67,6 +67,12 @@ export const STATUS_MAP: Record<string, string> = {
   Delivered: "delivered",
   delivered: "delivered",
   DELIVERED: "delivered",
+  Livré: "delivered",
+  livré: "delivered",
+  LIVRÉ: "delivered",
+  Livre: "delivered",
+  livre: "delivered",
+  LIVRE: "delivered",
   Processed: "confirmed",
   processed: "confirmed",
   PROCESSED: "confirmed",
@@ -76,12 +82,9 @@ export const STATUS_MAP: Record<string, string> = {
   Shipped: "shipped",
   shipped: "shipped",
   SHIPPED: "shipped",
-  Shipping: "shipped",
-  shipping: "shipped",
-  SHIPPING: "shipped",
-  Cancelled: "cancelled",
-  cancelled: "cancelled",
-  CANCELLED: "cancelled",
+  Shipping: "shipping",
+  shipping: "shipping",
+  SHIPPING: "shipping",
   Returned: "returned",
   returned: "returned",
   RETURNED: "returned",
@@ -136,3 +139,5 @@ export const FIXED_COUNTRY_FEES: Record<string, number> = {
 };
 
 export const DEFAULT_FIXED_FEE = 5000;
+
+export const XOF_TO_USD_RATE = 600;

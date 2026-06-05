@@ -114,7 +114,7 @@ export default function FraudDetectionPage() {
       else if (o.status === "out_of_stock") p.outOfStock += 1;
       else if (o.status === "pending") p.pending += 1;
       else if (o.status === "confirmed") p.confirmed += 1;
-      else if (o.status === "delivered" || o.status === "shipping") p.delivered += 1;
+      else if (o.status === "delivered" || o.status === "shipping" || o.status === "shipped") p.delivered += 1;
     }
 
     for (const p of map.values()) {

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { api } from "@/services";
 import type {
+  CodinAfricaShipping,
   DashboardStats,
   Order,
   Product,
@@ -66,11 +67,9 @@ function useApi<T>(
     mountedRef.current = true;
     hasDataRef.current = false;
     if (autoFetch) {
-      console.log("[useApi] Initial fetch");
       fetchData();
     }
     return () => {
-      console.log("[useApi] Cleanup");
       mountedRef.current = false;
     };
   }, [autoFetch, fetchData]);
@@ -91,7 +90,7 @@ function useApi<T>(
 
 export function useDashboardData(options?: UseApiOptions) {
   return useApi(() => api.fetchAllData(), {
-    refreshInterval: 60000,
+    refreshInterval: 0,
     ...options,
   });
 }
@@ -105,11 +104,10 @@ export function useOrders(options?: UseApiOptions & {
 }) {
   const { search, status, country, page = 1, perPage = 20, ...apiOpts } = options || {};
   const fetcher = useCallback(() => api.fetchAllData(), []);
-  const result = useApi(fetcher, { refreshInterval: 60000, ...apiOpts });
+  const result = useApi(fetcher, { refreshInterval: 0, ...apiOpts });
 
   const filtered = useMemo(() => {
     if (!result.data?.orders) return { orders: [], totalPages: 0 };
-    console.log("[useOrders] Filtering. Total raw orders:", result.data.orders.length);
     let list = [...result.data.orders];
     if (search) {
       const s = search.toLowerCase();
@@ -127,7 +125,6 @@ export function useOrders(options?: UseApiOptions & {
     const totalPages = Math.ceil(total / perPage);
     const start = (page - 1) * perPage;
     list = list.slice(start, start + perPage);
-    console.log("[useOrders] Filtered to", list.length, "orders, page", page, "of", totalPages);
     return { orders: list, totalPages };
   }, [result.data?.orders, search, status, country, page, perPage]);
 
@@ -144,7 +141,7 @@ export function useProducts(options?: UseApiOptions & {
 }) {
   const { search, country, sortBy = "revenue", sortOrder = "desc", page = 1, perPage = 20, ...apiOpts } = options || {};
   const fetcher = useCallback(() => api.fetchAllData(), []);
-  const result = useApi(fetcher, { refreshInterval: 60000, ...apiOpts });
+  const result = useApi(fetcher, { refreshInterval: 0, ...apiOpts });
 
   const processed = useMemo(() => {
     if (!result.data?.products) return { products: [] as Product[], totalPages: 0 };
@@ -187,25 +184,25 @@ export function useProducts(options?: UseApiOptions & {
 
 export function useCountries(options?: UseApiOptions) {
   const fetcher = useCallback(() => api.fetchAllData(), []);
-  const result = useApi(fetcher, { refreshInterval: 60000, ...options });
+  const result = useApi(fetcher, { refreshInterval: 0, ...options });
   return { ...result, data: result.data?.countries ?? null };
 }
 
 export function useDashboardStats(options?: UseApiOptions) {
   const fetcher = useCallback(() => api.fetchAllData(), []);
-  const result = useApi(fetcher, { refreshInterval: 60000, ...options });
+  const result = useApi(fetcher, { refreshInterval: 0, ...options });
   return { ...result, data: result.data?.stats ?? null };
 }
 
 export function useRevenueTrend(options?: UseApiOptions) {
   const fetcher = useCallback(() => api.fetchAllData(), []);
-  const result = useApi(fetcher, { refreshInterval: 60000, ...options });
+  const result = useApi(fetcher, { refreshInterval: 0, ...options });
   return { ...result, data: result.data?.revenueTrend ?? null };
 }
 
 export function useLowStockProducts(options?: UseApiOptions) {
   const fetcher = useCallback(() => api.fetchAllData(), []);
-  const result = useApi(fetcher, { refreshInterval: 60000, ...options });
+  const result = useApi(fetcher, { refreshInterval: 0, ...options });
   const low = useMemo(() => {
     if (!result.data?.products) return [];
     const aggregated = new Map<string, Product>();
@@ -228,7 +225,7 @@ export function useLowStockProducts(options?: UseApiOptions) {
 
 export function useOutOfStockProducts(options?: UseApiOptions) {
   const fetcher = useCallback(() => api.fetchAllData(), []);
-  const result = useApi(fetcher, { refreshInterval: 60000, ...options });
+  const result = useApi(fetcher, { refreshInterval: 0, ...options });
   const out = useMemo(() => {
     if (!result.data?.products) return [];
     const aggregated = new Map<string, Product>();

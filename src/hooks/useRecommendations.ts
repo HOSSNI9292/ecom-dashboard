@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import type { Recommendation, RecommendationsData } from "@/types/meta";
 import type { DashboardStats, CountryStats, Product } from "@/types/api";
 import type { MetaSummary } from "@/types/meta";
@@ -12,6 +13,7 @@ export function useRecommendations(
   products: Product[],
   metaData: MetaSummary | null
 ) {
+  const { i18n } = useTranslation();
   const [data, setData] = useState<RecommendationsData | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -26,11 +28,12 @@ export function useRecommendations(
       setLoading(false);
       return;
     }
-    const recs = generateRecommendations(stats, countries, products, metaData);
+    const currentLang = i18n.language || "en";
+    const recs = generateRecommendations(stats, countries, products, metaData, currentLang);
     const result: RecommendationsData = { recommendations: recs, generatedAt: new Date().toISOString() };
     setData(result);
     setLoading(false);
-  }, [stats, countries, products, metaData]);
+  }, [stats, countries, products, metaData, i18n.language]);
 
   useEffect(() => {
     generate();

@@ -25,9 +25,11 @@ export async function POST(request: Request) {
     let accountCurrency = "";
     let accountName = "";
     let rawAccountResponse = "";
+    let accountFetchStatus = 0;
     try {
       const acctUrl = `${META_GRAPH_URL}/${cleanAdAccountId}?fields=id,name,currency&access_token=${accessToken}`;
       const acctRes = await fetch(acctUrl);
+      accountFetchStatus = acctRes.status;
       const acctRaw = await acctRes.text();
       rawAccountResponse = acctRaw;
       if (acctRes.ok) {
@@ -114,9 +116,6 @@ export async function POST(request: Request) {
       const linkClicks = (ad.actions || [])
         .filter((a) => a.action_type === "link_click")
         .reduce((sum, a) => sum + parseFloat(a.value || "0"), 0);
-      const conversions = (ad.actions || [])
-        .filter((a) => a.action_type === "purchase")
-        .reduce((sum, a) => sum + parseFloat(a.value || "0"), 0);
       const purchaseValue = (ad.action_values || [])
         .filter((a) => a.action_type === "purchase")
         .reduce((sum, a) => sum + parseFloat(a.value || "0"), 0);
@@ -138,15 +137,17 @@ export async function POST(request: Request) {
         frequency: parseFloat(ad.frequency || "0"),
         roas,
         linkClicks,
-        conversions,
         purchaseRoas,
       };
     });
 
     const totalSpend = ads.reduce((sum: number, a: { spend: number }) => sum + a.spend, 0);
     const totalPurchases = ads.reduce((sum: number, a: { purchases: number }) => sum + a.purchases, 0);
+    const totalImpressions = ads.reduce((sum: number, a: { impressions: number }) => sum + a.impressions, 0);
     const averageCpa = totalPurchases > 0 ? totalSpend / totalPurchases : 0;
-    const averageCtr = ads.length > 0 ? ads.reduce((sum: number, a: { ctr: number }) => sum + a.ctr, 0) / ads.length : 0;
+    const averageCtr = totalImpressions > 0
+      ? ads.reduce((sum: number, a: { ctr: number; impressions: number }) => sum + a.ctr * a.impressions, 0) / totalImpressions
+      : 0;
     const averageRoas = totalSpend > 0
       ? ads.reduce((sum: number, a: { roas: number; spend: number }) => sum + a.roas * a.spend, 0) / totalSpend
       : 0;
@@ -175,6 +176,7 @@ export async function POST(request: Request) {
       dateRange: { since: preset.since, until: preset.until },
       rawSpend: totalSpend,
       rawResponse: rawAccountResponse,
+      accountFetchStatus,
     };
 
     return NextResponse.json({

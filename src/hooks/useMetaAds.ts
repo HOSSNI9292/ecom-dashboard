@@ -11,6 +11,7 @@ export function useMetaAds(datePreset?: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const hasDataRef = useRef(false);
 
   const hasCredentials = typeof window !== "undefined" && getMetaCredentials() !== null;
 
@@ -23,14 +24,15 @@ export function useMetaAds(datePreset?: string) {
       setError(null);
       const result = await fetchMetaAds(datePreset);
       setData(result);
+      hasDataRef.current = true;
     } catch (err) {
       const cached = getCachedMetaData();
-      if (cached && !data) setData(cached);
+      if (cached && !hasDataRef.current) setData(cached);
       setError(err instanceof Error ? err.message : "Failed to sync Meta Ads");
     } finally {
       setLoading(false);
     }
-  }, [data, datePreset]);
+  }, [datePreset]);
 
   useEffect(() => {
     if (!hasCredentials) {

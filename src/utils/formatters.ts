@@ -1,4 +1,11 @@
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number, currency?: string): string {
+  if (currency) {
+    try {
+      return new Intl.NumberFormat("en-US", { style: "currency", currency: currency.toUpperCase(), minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+    } catch {
+      return `${new Intl.NumberFormat("en-US").format(Math.round(amount * 100) / 100)} ${currency.toUpperCase()}`;
+    }
+  }
   return `${new Intl.NumberFormat("en-US").format(Math.round(amount))} XOF`;
 }
 

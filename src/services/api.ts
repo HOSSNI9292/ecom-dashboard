@@ -1,5 +1,6 @@
 import type {
   CodinAfricaOrder,
+  CodinAfricaShipping,
   CodinAfricaWarehouse,
   AuthCredentials,
   Order,
@@ -164,7 +165,7 @@ function mapOrder(raw: CodinAfricaOrder): Order {
     status: mappedStatus,
     rawStatus: rawStatusName,
     statusColor: raw.status?.color || "#94A3B8",
-    date: raw.date || raw.createdAt,
+    date: raw.createdAt || raw.date || raw.updatedAt,
     amount: Math.round(raw.totalPrice || 0),
     productName: detail?.name || product?.name || "Unknown",
     productCode: product?.code?.[0] || "",
@@ -202,14 +203,16 @@ class ApiService {
   private token: string;
   private apiUrl: string;
   private ordersCache: CodinAfricaOrder[] = [];
+  private shippingsCache: CodinAfricaShipping[] = [];
   private warehousesCache: CodinAfricaWarehouse[] = [];
   private allDataCache: {
-    data: { orders: Order[]; products: Product[]; countries: CountryStats[]; stats: DashboardStats; revenueTrend: RevenuePoint[] } | null;
+    data: { orders: Order[]; products: Product[]; shippings: CodinAfricaShipping[]; countries: CountryStats[]; stats: DashboardStats; revenueTrend: RevenuePoint[] } | null;
     ts: number;
   } = { data: null, ts: 0 };
   private pendingFetchOrders: Promise<CodinAfricaOrder[]> | null = null;
+  private pendingFetchShippings: Promise<CodinAfricaShipping[]> | null = null;
   private pendingFetchAllData: Promise<{
-    orders: Order[]; products: Product[]; countries: CountryStats[]; stats: DashboardStats; revenueTrend: RevenuePoint[];
+    orders: Order[]; products: Product[]; shippings: CodinAfricaShipping[]; countries: CountryStats[]; stats: DashboardStats; revenueTrend: RevenuePoint[];
   }> | null = null;
   private readonly CACHE_TTL = 45000;
 
@@ -229,9 +232,11 @@ class ApiService {
 
   clearCache(): void {
     this.ordersCache = [];
+    this.shippingsCache = [];
     this.warehousesCache = [];
     this.allDataCache = { data: null, ts: 0 };
     this.pendingFetchOrders = null;
+    this.pendingFetchShippings = null;
     this.pendingFetchAllData = null;
   }
 
@@ -299,6 +304,56 @@ class ApiService {
     }
   }
 
+  async fetchAllShippings(): Promise<CodinAfricaShipping[]> {
+    if (!this.token) return [];
+    if (this.shippingsCache.length > 0) return this.shippingsCache;
+    if (this.pendingFetchShippings) return this.pendingFetchShippings;
+
+    const doFetch = async () => {
+      const perPage = 1000;
+      const first = await this.request<ApiResponse<CodinAfricaShipping>>(`/shippings/search?limit=${perPage}&page=1`);
+      const firstResults = first?.content?.results || [];
+      const lastPage = first?.content?.last_page || 1;
+      const total = first?.content?.total || firstResults.length;
+      console.log(`[API] Shippings: ${total} total, ${lastPage} pages, fetching...`);
+
+      if (lastPage <= 1) {
+        this.shippingsCache = firstResults;
+        return firstResults;
+      }
+
+      const pagesToFetch = Math.min(lastPage, 35);
+      const pagePromises: Promise<ApiResponse<CodinAfricaShipping>>[] = [];
+      for (let p = 2; p <= pagesToFetch; p++) {
+        pagePromises.push(this.request<ApiResponse<CodinAfricaShipping>>(`/shippings/search?limit=${perPage}&page=${p}`));
+      }
+      const settled = await Promise.allSettled(pagePromises);
+      const restResults: CodinAfricaShipping[] = [];
+      let failedPages = 0;
+      for (let i = 0; i < settled.length; i++) {
+        const r = settled[i];
+        if (r.status === "fulfilled") {
+          const items = r.value?.content?.results || [];
+          restResults.push(...items);
+        } else {
+          failedPages++;
+          console.warn(`[API] Shippings page ${i + 2} failed: ${r.reason}`);
+        }
+      }
+      const allShippings = [firstResults, ...restResults].flat();
+      console.log(`[API] Fetched ${allShippings.length} shippings total${failedPages > 0 ? ` (${failedPages} pages failed)` : ""}`);
+      this.shippingsCache = allShippings;
+      return allShippings;
+    };
+
+    this.pendingFetchShippings = doFetch();
+    try {
+      return await this.pendingFetchShippings;
+    } finally {
+      this.pendingFetchShippings = null;
+    }
+  }
+
   async fetchWarehouses(): Promise<CodinAfricaWarehouse[]> {
     if (!this.token) {
       this.warehousesCache = MOCK_WAREHOUSES;
@@ -314,6 +369,7 @@ class ApiService {
   async fetchAllData(): Promise<{
     orders: Order[];
     products: Product[];
+    shippings: CodinAfricaShipping[];
     countries: CountryStats[];
     stats: DashboardStats;
     revenueTrend: RevenuePoint[];
@@ -325,18 +381,19 @@ class ApiService {
     if (this.pendingFetchAllData) return this.pendingFetchAllData;
 
     const doFetch = async () => {
-      const [rawOrders, warehouses] = await Promise.all([
+      const [rawOrders, warehouses, rawShippings] = await Promise.all([
         this.fetchAllOrders(),
         this.fetchWarehouses(),
+        this.fetchAllShippings(),
       ]);
 
       const mappedOrders = rawOrders.map(mapOrder);
       const allProducts = rawOrders.flatMap(mapProduct);
-      const stats = this.computeStats(mappedOrders, allProducts);
+      const stats = this.computeStats(mappedOrders, allProducts, rawShippings);
       const countries = this.computeCountries(mappedOrders, warehouses);
       const revenueTrend = this.computeRevenueTrend(mappedOrders);
 
-      const result = { orders: mappedOrders, products: allProducts, countries, stats, revenueTrend };
+      const result = { orders: mappedOrders, products: allProducts, shippings: rawShippings, countries, stats, revenueTrend };
       this.allDataCache = { data: result, ts: Date.now() };
       return result;
     };
@@ -349,7 +406,7 @@ class ApiService {
     }
   }
 
-  private computeStats(orders: Order[], products: Product[]): DashboardStats {
+  private computeStats(orders: Order[], products: Product[], shippings: CodinAfricaShipping[]): DashboardStats {
     const total = orders.length;
     const revenue = orders.reduce((s, o) => s + o.amount, 0);
     const pending = orders.filter((o) => o.status === "pending").length;
@@ -357,27 +414,33 @@ class ApiService {
     const outOfStock = orders.filter((o) => o.status === "out_of_stock").length;
     const double = orders.filter((o) => o.status === "double").length;
     const transferred = orders.filter((o) => o.status === "transferred").length;
-    const confirmed = orders.filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping").length;
-    const delivered = orders.filter((o) => o.status === "delivered" || o.status === "shipping").length;
-    const nonCancelled = total - cancelled;
-
-    const nonCancelledOrders = orders.filter((o) => o.status !== "cancelled" && o.status !== "out_of_stock");
-    const confirmedOrDelivered = nonCancelledOrders.filter(
-      (o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping"
-    ).length;
-
-    const uniqueProducts = new Set(products.map((p) => p.id)).size;
-
+    const unreached = orders.filter((o) => o.status === "unreached").length;
     const processedOrders = orders.filter((o) => o.status === "confirmed").length;
-    const confirmedOrders = orders.filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping").length;
+    const confirmedOrders = orders.filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping" || o.status === "shipped").length;
+    const nonCancelled = total - cancelled - outOfStock - double - transferred - unreached;
+    const uniqueProducts = new Set(products.map((p) => p.id)).size;
     const processedRevenue = orders
       .filter((o) => o.status === "confirmed")
       .reduce((s, o) => s + o.amount, 0);
     const confirmedRevenue = orders
-      .filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping")
+      .filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping" || o.status === "shipped")
       .reduce((s, o) => s + o.amount, 0);
 
-    const deliveryRate = total > 0 ? processedOrders / total : 0;
+    const deliveredOrders = shippings.filter((s) => s.status === "delivered").length;
+    const paidOrders = shippings.filter((s) => s.status === "processed").length;
+    const shippedOrders = shippings.filter((s) => s.status === "shipped").length;
+    const returnedOrders = shippings.filter((s) => s.status === "return").length;
+    const toPrepareOrders = shippings.filter((s) => s.status === "to prepare").length;
+    const preparedOrders = shippings.filter((s) => s.status === "prepared").length;
+    const reprogrammerOrders = shippings.filter((s) => s.status === "reprogrammer").length;
+    const deliveredRevenue = shippings
+      .filter((s) => s.status === "delivered")
+      .reduce((sum, s) => sum + (s.totalPrice || 0), 0);
+    const paidRevenue = shippings
+      .filter((s) => s.status === "processed")
+      .reduce((sum, s) => sum + (s.totalPrice || 0), 0);
+    const totalDeliveryAttempts = paidOrders + returnedOrders;
+    const deliveryRate = totalDeliveryAttempts > 0 ? paidOrders / totalDeliveryAttempts : 0;
 
     let serviceFeesTotal = 0;
     const processedByCountry = new Map<string, number>();
@@ -401,14 +464,23 @@ class ApiService {
       outOfStockOrders: outOfStock,
       doubleOrders: double,
       transferredOrders: transferred,
+      unreachedOrders: unreached,
       confirmedOrders: confirmedOrders,
-      deliveredOrders: delivered,
+      deliveredOrders,
+      paidOrders,
+      shippedOrders,
+      returnedOrders,
+      toPrepareOrders,
+      preparedOrders,
+      reprogrammerOrders,
       processedOrders,
       processedRevenue,
       confirmedRevenue,
+      deliveredRevenue,
+      paidRevenue,
       netRevenue,
       serviceFeesTotal,
-      confirmationRate: nonCancelled > 0 ? confirmed / nonCancelled : 0,
+      confirmationRate: nonCancelled > 0 ? confirmedOrders / nonCancelled : 0,
       deliveryRate,
       totalProducts: uniqueProducts,
       averageOrderValue: total > 0 ? revenue / total : 0,
@@ -440,7 +512,7 @@ class ApiService {
       if (o.status === "pending") entry.pending += 1;
       else if (o.status === "cancelled") entry.cancelled += 1;
       else if (o.status === "out_of_stock") entry.outOfStock += 1;
-      else if (o.status === "confirmed" || o.status === "delivered" || o.status === "shipping") entry.confirmed += 1;
+      else if (o.status === "confirmed" || o.status === "delivered" || o.status === "shipping" || o.status === "shipped") entry.confirmed += 1;
       if (o.status === "confirmed") {
         entry.processedOrders += 1;
         entry.processedRevenue += o.amount;

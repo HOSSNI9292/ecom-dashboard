@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useTranslation } from "react-i18next";
-import { Save, Shield, Key, Globe, Eye, EyeOff, CheckCircle, AlertCircle, RefreshCw, DollarSign, ChevronRight, Bot, Facebook } from "lucide-react";
+import { Save, Shield, Key, Globe, Eye, EyeOff, CheckCircle, AlertCircle, RefreshCw, DollarSign, ChevronRight, Bot, Facebook, Package } from "lucide-react";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { MetaConnection } from "@/components/MetaConnection";
 import { saveCredentials, clearCredentials, getApiConfig, api } from "@/services";
@@ -171,6 +171,25 @@ export default function SettingsPage() {
       </Card>
 
       <MetaConnection onConnected={() => {}} />
+
+      <Link href="/settings/product-costs" className="block group">
+        <Card hover={false} className="hover:border-[#6366F1]/30 transition-all duration-200">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-[#8B5CF6]/10">
+                  <Package className="w-5 h-5 text-[#8B5CF6]" />
+                </div>
+                <CardTitle>Product Cost Settings</CardTitle>
+              </div>
+              <ChevronRight className="w-5 h-5 text-[#64748B] group-hover:text-white transition-colors duration-200" />
+            </div>
+          </CardHeader>
+          <p className="text-[#94A3B8] text-sm">
+            Configure per-product costs (COGS, shipping, COD fees) for accurate profit calculations.
+          </p>
+        </Card>
+      </Link>
 
       <Link href="/settings/fees" className="block group">
         <Card hover={false} className="hover:border-[#6366F1]/30 transition-all duration-200">

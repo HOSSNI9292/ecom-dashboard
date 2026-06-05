@@ -43,7 +43,6 @@ export interface MetaAd {
   frequency: number;
   roas: number;
   linkClicks: number;
-  conversions: number;
   purchaseRoas: number;
 }
 
@@ -70,6 +69,7 @@ export interface MetaSummary {
     dateRange: { since: string; until: string };
     rawSpend: number;
     rawResponse?: string;
+    accountFetchStatus?: number;
   };
   rawAccountResponse?: string;
 }

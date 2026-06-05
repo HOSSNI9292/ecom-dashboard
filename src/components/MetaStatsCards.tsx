@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { DollarSign, TrendingUp, Target, BarChart3, Trophy, AlertTriangle, Globe, Package, Facebook, CheckCircle } from "lucide-react";
+import { DollarSign, TrendingUp, Target, BarChart3, Trophy, AlertTriangle, Facebook, CheckCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { getMetaConnection } from "@/services/meta";
@@ -25,15 +25,28 @@ const PRESET_OPTIONS: { value: DatePreset; label: string }[] = [
 ];
 
 function formatAccountCurrency(n: number, currency: string | undefined | null): string {
-  if (!currency) return "Unknown Currency";
+  if (!currency) return String(Math.round(n * 100) / 100);
   const code = currency.toUpperCase();
   try {
-    if (code === "USD") return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-    if (code === "EUR") return new Intl.NumberFormat("en-US", { style: "currency", currency: "EUR", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-    if (code === "GBP") return new Intl.NumberFormat("en-US", { style: "currency", currency: "GBP", minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: code, minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(n);
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: code, minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
   } catch {
-    return `${Math.round(n).toLocaleString()} ${code}`;
+    return `${n.toFixed(2)} ${code}`;
+  }
+}
+
+function isErrorResponse(raw: string): boolean {
+  try {
+    const o = JSON.parse(raw);
+    return o.error !== undefined;
+  } catch { return false; }
+}
+
+function parseRawResponse(raw: string): { formatted: string; isError: boolean } {
+  try {
+    const o = JSON.parse(raw);
+    return { formatted: JSON.stringify(o, null, 2), isError: o.error !== undefined };
+  } catch {
+    return { formatted: raw, isError: raw.startsWith("Fetch error") };
   }
 }
 
@@ -141,19 +154,10 @@ export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCr
       color: "error" as const,
       subtitle: data.worstCampaign ? `ROAS ${data.worstCampaign.roas.toFixed(2)}x` : undefined,
     },
-    {
-      title: t("meta.bestProduct"),
-      value: data.bestProduct || t("common.noData"),
-      icon: <Package className="w-5 h-5" />,
-      color: "accent" as const,
-    },
-    {
-      title: t("meta.bestCountry"),
-      value: data.bestCountry || t("common.noData"),
-      icon: <Globe className="w-5 h-5" />,
-      color: "primary" as const,
-    },
   ];
+
+  const rawParsed = data.debugInfo?.rawResponse ? parseRawResponse(data.debugInfo.rawResponse) : null;
+  const fetchErrored = rawParsed?.isError || (data.debugInfo?.accountFetchStatus && data.debugInfo.accountFetchStatus >= 400);
 
   return (
     <Card>
@@ -240,16 +244,16 @@ export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCr
           <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-xs font-mono">
             <div className="col-span-2 md:col-span-1">
               <span className="text-[#64748B]">Account ID: </span>
-              <span className="text-white">{data.debugInfo?.accountId || data.rawAccountResponse ? JSON.parse(data.rawAccountResponse || "{}").id || "—" : connection?.adAccountId || "—"}</span>
+              <span className="text-white">{data.debugInfo?.accountId || connection?.adAccountId || "—"}</span>
             </div>
             <div className="col-span-2 md:col-span-1">
               <span className="text-[#64748B]">Account Name: </span>
               <span className="text-white">{data.debugInfo?.accountName || "—"}</span>
             </div>
             <div className="col-span-2 md:col-span-1">
-              <span className="text-[#64748B]">Currency returned by Meta: </span>
+              <span className="text-[#64748B]">currency: </span>
               <span className={data.debugInfo?.currency ? "text-[#10B981] font-bold" : "text-[#EF4444] font-bold"}>
-                {data.debugInfo?.currency || "NONE"}
+                {data.debugInfo?.currency || (fetchErrored ? "API ERROR (see below)" : "null")}
               </span>
             </div>
             <div className="col-span-2 md:col-span-1">
@@ -261,19 +265,24 @@ export function MetaStatsCards({ data, loading, error, onRefresh, onSetup, hasCr
               <span className="text-white">{fmt(data.totalSpend)}</span>
             </div>
             <div className="col-span-2 md:col-span-1">
-              <span className="text-[#64748B]">Currency Source: </span>
-              <span className="text-white">{data.accountCurrency ? "Meta API" : connection?.currency ? "Connection storage" : "Not found"}</span>
+              <span className="text-[#64748B]">HTTP Status: </span>
+              <span className={data.debugInfo?.accountFetchStatus && data.debugInfo.accountFetchStatus >= 400 ? "text-[#EF4444]" : "text-white"}>
+                {data.debugInfo?.accountFetchStatus || "?"}
+              </span>
             </div>
           </div>
+
           {data.debugInfo?.rawResponse && (
-            <details className="mt-3">
-              <summary className="text-[#F59E0B] text-xs font-mono cursor-pointer hover:text-[#FBBF24] select-none">
-                Raw JSON response from GET /act_{data.debugInfo.accountId?.replace("act_", "") || "{id}"}?fields=id,name,currency
-              </summary>
-              <pre className="mt-2 p-3 rounded-lg bg-[#000000]/40 text-[#10B981] text-[11px] leading-relaxed overflow-x-auto max-h-48 overflow-y-auto border border-[#1F2937]/60">
-{data.debugInfo.rawResponse}
+            <div className="mt-3">
+              <p className="text-[#F59E0B] text-xs font-mono mb-1">
+                Raw response from GET /act_{data.debugInfo.accountId?.replace("act_", "") || "{id}"}?fields=id,name,currency
+              </p>
+              <pre className={`p-3 rounded-lg text-[11px] leading-relaxed overflow-x-auto max-h-64 overflow-y-auto border ${
+                fetchErrored ? "bg-[#1A0000]/60 border-[#EF4444]/40 text-[#EF4444]" : "bg-[#000000]/40 border-[#1F2937]/60 text-[#10B981]"
+              }`}>
+{rawParsed?.formatted || data.debugInfo.rawResponse}
               </pre>
-            </details>
+            </div>
           )}
         </div>
       </div>

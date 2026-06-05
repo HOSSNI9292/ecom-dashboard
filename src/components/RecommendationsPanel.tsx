@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslation } from "react-i18next";
+import Link from "next/link";
 import {
   TrendingUp, TrendingDown, AlertTriangle, Star, ShieldAlert,
   DollarSign, Target, Globe, Package, Zap, RefreshCw, CheckCircle,
@@ -29,31 +30,37 @@ const typeConfig: Record<string, { icon: React.ElementType; color: string; bg: s
   alert: { icon: AlertTriangle, color: "text-[#F59E0B]", bg: "bg-[#F59E0B]/10" },
 };
 
-function priorityColor(priority: string): string {
+function priorityBadge(priority: string, t: (key: string) => string): { label: string; classes: string } {
+  switch (priority) {
+    case "high":
+      return { label: t("insights.priorityHigh"), classes: "bg-[#EF4444]/10 text-[#EF4444] border border-[#EF4444]/20" };
+    case "medium":
+      return { label: t("insights.priorityMedium"), classes: "bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20" };
+    case "low":
+      return { label: t("insights.priorityLow"), classes: "bg-[#10B981]/10 text-[#10B981] border border-[#10B981]/20" };
+    default:
+      return { label: "", classes: "bg-[#64748B]/10 text-[#64748B] border border-[#64748B]/20" };
+  }
+}
+
+function priorityBorder(priority: string): string {
   switch (priority) {
     case "high": return "border-l-[#EF4444]";
     case "medium": return "border-l-[#F59E0B]";
-    case "low": return "border-l-[#64748B]";
+    case "low": return "border-l-[#10B981]";
     default: return "border-l-[#64748B]";
   }
 }
 
-function priorityLabel(priority: string, t: (key: string) => string): string {
-  switch (priority) {
-    case "high": return t("insights.priorityHigh");
-    case "medium": return t("insights.priorityMedium");
-    case "low": return t("insights.priorityLow");
-    default: return "";
-  }
-}
-
 function RecommendationItem({ rec, onMarkRead }: { rec: Recommendation; onMarkRead?: (id: string) => void }) {
+  const { t } = useTranslation();
   const cfg = typeConfig[rec.type] || typeConfig.alert;
   const IconComp = cfg.icon;
+  const badge = priorityBadge(rec.priority, t);
 
   return (
     <div
-      className={`relative pl-4 border-l-2 ${priorityColor(rec.priority)} py-3 px-4 rounded-lg bg-[#111827] hover:bg-[#1A1F2E] transition-colors ${rec.read ? "opacity-60" : ""}`}
+      className={`relative pl-4 border-l-2 ${priorityBorder(rec.priority)} py-4 px-4 rounded-lg bg-[#111827] hover:bg-[#1A1F2E] hover:border-l-[#6366F1]/50 transition-all duration-200 cursor-default ${rec.read ? "opacity-60" : ""}`}
     >
       <div className="flex items-start gap-3">
         <div className={`p-2 rounded-lg ${cfg.bg} shrink-0 mt-0.5`}>
@@ -62,12 +69,8 @@ function RecommendationItem({ rec, onMarkRead }: { rec: Recommendation; onMarkRe
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
             <h4 className="text-white text-sm font-semibold">{rec.title}</h4>
-            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${
-              rec.priority === "high" ? "bg-[#EF4444]/10 text-[#EF4444]" :
-              rec.priority === "medium" ? "bg-[#F59E0B]/10 text-[#F59E0B]" :
-              "bg-[#64748B]/10 text-[#64748B]"
-            }`}>
-              {priorityLabel(rec.priority, (key: string) => key)}
+            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded ${badge.classes}`}>
+              {badge.label}
             </span>
           </div>
           <p className="text-[#94A3B8] text-xs mt-1">{rec.description}</p>
@@ -80,8 +83,8 @@ function RecommendationItem({ rec, onMarkRead }: { rec: Recommendation; onMarkRe
         {onMarkRead && !rec.read && (
           <button
             onClick={() => onMarkRead(rec.id)}
-            className="p-1 rounded text-[#64748B] hover:text-white hover:bg-[#1F2937] transition-colors shrink-0"
-            title="Mark as read"
+            className="p-1.5 rounded-lg text-[#64748B] hover:text-white hover:bg-[#1F2937] transition-all duration-200 shrink-0 cursor-pointer"
+            title={t("insights.markAsRead")}
           >
             <CheckCircle className="w-4 h-4" />
           </button>
@@ -123,7 +126,7 @@ export function RecommendationsPanel({ recommendations, loading, onRefresh, onMa
             <span className="text-[#64748B] text-[10px]">{recommendations.length} {t("insights.recommendations")}</span>
             <button
               onClick={onRefresh}
-              className="p-1.5 rounded-lg text-[#64748B] hover:text-white hover:bg-[#1F2937] transition-all"
+              className="p-1.5 rounded-lg text-[#64748B] hover:text-white hover:bg-[#1F2937] transition-all duration-200 cursor-pointer"
               title={t("common.refresh")}
             >
               <RefreshCw className="w-3.5 h-3.5" />
@@ -131,7 +134,7 @@ export function RecommendationsPanel({ recommendations, loading, onRefresh, onMa
           </div>
         </div>
       </CardHeader>
-      <div className="px-6 pb-6 space-y-2">
+      <div className="px-6 pb-6 space-y-3">
         {displayRecs.length === 0 ? (
           <div className="text-center py-8">
             <div className="w-12 h-12 rounded-xl bg-[#10B981]/10 flex items-center justify-center mx-auto mb-3">
@@ -146,7 +149,12 @@ export function RecommendationsPanel({ recommendations, loading, onRefresh, onMa
         )}
         {compact && recommendations.length > 4 && (
           <div className="text-center pt-2">
-            <span className="text-[#6366F1] text-xs font-medium">{t("insights.viewAll")} ({recommendations.length})</span>
+            <Link
+              href="/insights"
+              className="inline-flex items-center gap-1 px-4 py-2 rounded-lg text-xs font-medium text-[#6366F1] hover:text-white hover:bg-[#6366F1]/10 border border-[#6366F1]/20 hover:border-[#6366F1]/50 transition-all duration-200 cursor-pointer"
+            >
+              {t("insights.viewAll")} ({recommendations.length})
+            </Link>
           </div>
         )}
       </div>

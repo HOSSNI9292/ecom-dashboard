@@ -69,7 +69,7 @@ export default function ExecutiveBIPage() {
     const grossRevenue = orders.reduce((s, o) => s + o.amount, 0);
     const processedOrders = orders.filter((o) => o.status === "confirmed");
     const processedRevenue = processedOrders.reduce((s, o) => s + o.amount, 0);
-    const confirmed = orders.filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping").length;
+    const confirmed = orders.filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping" || o.status === "shipped").length;
     const totalFees = countryStats.reduce((s, c) => s + c.serviceFees, 0);
     const netRevenue = processedRevenue - totalFees;
     const margin = processedRevenue > 0 ? netRevenue / processedRevenue : 0;

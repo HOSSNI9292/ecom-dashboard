@@ -1,16 +1,17 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Package, ShoppingCart, Globe,
   Warehouse, Settings, BarChart3, ShieldAlert,
-  Bot, CheckCircle, X, TrendingUp, Lightbulb,
+  Bot, CheckCircle, X, TrendingUp, Lightbulb, PiggyBank,
 } from "lucide-react";
 
 const navItems = [
   { href: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { href: "/profit-dashboard", labelKey: "nav.profitDashboard", icon: PiggyBank },
   { href: "/business-intelligence", labelKey: "nav.businessIntelligence", icon: BarChart3 },
   { href: "/executive-bi", labelKey: "nav.executiveBi", icon: TrendingUp },
   { href: "/products", labelKey: "nav.products", icon: Package },
@@ -29,10 +30,18 @@ interface SidebarProps {
   onClose: () => void;
 }
 
+function navigate(href: string) {
+  window.location.href = href;
+}
+
 export function Sidebar({ open, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { t, i18n } = useTranslation();
   const isRtl = i18n.language === "ar";
+
+  useEffect(() => {
+    if (open) onClose();
+  }, [pathname]);
 
   return (
     <>
@@ -43,7 +52,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         />
       )}
       <aside
-        className={`fixed top-0 z-50 h-full w-64 bg-[#0B0F19] ltr:border-r rtl:border-l border-[#1F2937] transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto ${
+        className={`fixed top-0 z-50 h-full w-64 bg-[#0B0F19] ltr:border-r rtl:border-l border-[#1F2937] transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:relative lg:z-[49] ${
           isRtl ? "right-0" : "left-0"
         } ${
           open
@@ -52,7 +61,11 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         }`}
       >
         <div className="flex items-center justify-between px-5 py-5 border-b border-[#1F2937]">
-          <Link href="/dashboard" className="flex items-center gap-2.5 group" onClick={onClose}>
+          <a
+            href="/dashboard"
+            onClick={(e) => { if (e.button === 0 && !e.ctrlKey && !e.metaKey && !e.shiftKey) { e.preventDefault(); e.stopPropagation(); navigate("/dashboard"); } }}
+            className="flex items-center gap-2.5 group cursor-pointer"
+          >
             <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center shadow-[0_0_16px_rgba(99,102,241,0.15)] group-hover:shadow-[0_0_24px_rgba(99,102,241,0.25)] transition-shadow duration-200">
               <svg width="20" height="20" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="opacity-90">
                 <path d="M12 26V14l6-4 6 4v12l-6 4-6-4z" stroke="white" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
@@ -64,7 +77,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
               <span className="text-white font-semibold text-sm">{t("common.appName")}</span>
               <p className="text-[#64748B] text-[10px]">{t("common.appVersion")}</p>
             </div>
-          </Link>
+          </a>
           <button
             onClick={onClose}
             className="lg:hidden text-[#64748B] hover:text-white transition-colors duration-200"
@@ -76,11 +89,16 @@ export function Sidebar({ open, onClose }: SidebarProps) {
           {navItems.map((item) => {
             const isActive = pathname === item.href;
             return (
-              <Link
+              <a
                 key={item.href}
                 href={item.href}
-                onClick={onClose}
-                className={`flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group ${
+                onClick={(e) => {
+                  if (e.button !== 0 || e.ctrlKey || e.metaKey || e.shiftKey) return;
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate(item.href);
+                }}
+                className={`flex items-center justify-between gap-3 px-4 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 group cursor-pointer ${
                   isActive
                     ? "bg-[#6366F1]/10 text-[#6366F1]"
                     : "text-[#64748B] hover:text-white hover:bg-[#111827]"
@@ -95,7 +113,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
                 {isActive && (
                   <div className="w-1 h-5 rounded-full bg-[#6366F1] shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
                 )}
-              </Link>
+              </a>
             );
           })}
         </nav>

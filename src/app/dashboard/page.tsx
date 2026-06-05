@@ -4,7 +4,7 @@ import { useState, useMemo, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import {
   ShoppingCart, CheckCircle, DollarSign, TrendingUp,
-  Activity, Clock, Download, Eye, RefreshCw, Percent, Package
+  Activity, Clock, Download, Eye, RefreshCw, Percent, Package, TrendingDown
 } from "lucide-react";
 import { StatCard } from "@/components/ui/StatCard";
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
@@ -23,7 +23,7 @@ import { formatCurrency, formatNumber, formatPercentage, formatDate, filterOrder
 import { exportToCSV } from "@/utils/csv";
 import type { DateFilterValue } from "@/utils/dates";
 import type { DatePreset } from "@/types/meta";
-import type { Order, Product } from "@/types";
+import type { Order, Product, CodinAfricaShipping } from "@/types";
 
 function getPreviousPeriodRange(filter: DateFilterValue): { start: string; end: string } | null {
   const now = new Date();
@@ -70,9 +70,11 @@ export default function DashboardPage() {
 
   const orders = data?.orders ?? [];
   const allProducts = data?.products ?? [];
+  const allShippings: CodinAfricaShipping[] = data?.shippings ?? [];
   const isLoading = loading && !data;
 
   const filteredOrders = useMemo(() => filterOrdersByDate(orders, dateFilter), [orders, dateFilter]);
+  const filteredShippings = useMemo(() => filterOrdersByDate(allShippings, dateFilter), [allShippings, dateFilter]);
 
   const previousOrders = useMemo(() => {
     const range = getPreviousPeriodRange(dateFilter);
@@ -83,31 +85,60 @@ export default function DashboardPage() {
     });
   }, [orders, dateFilter]);
 
-  const filteredStats = useMemo(() => {
-    const pendingOrders = filteredOrders.filter((o) => o.status === "pending").length;
-    const confirmedOrders = filteredOrders.filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping").length;
-    const deliveredOrders = filteredOrders.filter((o) => o.status === "delivered" || o.status === "shipping").length;
-    const cancelledOrders = filteredOrders.filter((o) => o.status === "cancelled").length;
-    const outOfStockOrders = filteredOrders.filter((o) => o.status === "out_of_stock").length;
-    const doubleOrders = filteredOrders.filter((o) => o.status === "double").length;
-    const transferredOrders = filteredOrders.filter((o) => o.status === "transferred").length;
-    const unreachedOrders = filteredOrders.filter((o) => o.status === "unreached").length;
-    return { pendingOrders, confirmedOrders, deliveredOrders, cancelledOrders, outOfStockOrders, doubleOrders, transferredOrders, unreachedOrders };
-  }, [filteredOrders]);
+  const filteredStatusCounts = useMemo(() => {
+    let pending = 0, confirmed = 0, cancelled = 0;
+    let outOfStock = 0, doubleOrd = 0, transferred = 0, unreached = 0;
+    let confirmedCount = 0, nonCancelled = 0, processed = 0;
+    let processedRevenue = 0, revenue = 0;
 
-  const filteredRevenue = filteredOrders.reduce((s, o) => s + o.amount, 0);
-  const filteredPending = filteredOrders.filter((o) => o.status === "pending").length;
-  const filteredConfirmed = filteredOrders.filter((o) => o.status === "confirmed").length;
-  const filteredNonCancelled = filteredOrders.filter((o) => o.status !== "cancelled" && o.status !== "out_of_stock").length;
-  const filteredConfRate = filteredNonCancelled > 0 ? filteredConfirmed / filteredNonCancelled : 0;
-  const filteredProcessedOrders = filteredOrders.filter((o) => o.status === "confirmed").length;
-  const filteredProcessedRevenue = filteredOrders.filter((o) => o.status === "confirmed").reduce((s, o) => s + o.amount, 0);
-  const filteredDeliveryRate = filteredOrders.length > 0 ? filteredProcessedOrders / filteredOrders.length : 0;
+    for (const o of filteredOrders) {
+      revenue += o.amount;
+      if (o.status === "pending") { pending++; nonCancelled++; }
+      else if (o.status === "confirmed") { confirmed++; confirmedCount++; nonCancelled++; processed++; processedRevenue += o.amount; }
+      else if (o.status === "delivered" || o.status === "shipping" || o.status === "shipped") { confirmedCount++; nonCancelled++; }
+      else if (o.status === "cancelled") cancelled++;
+      else if (o.status === "out_of_stock") outOfStock++;
+      else if (o.status === "double") doubleOrd++;
+      else if (o.status === "transferred") transferred++;
+      else if (o.status === "unreached") unreached++;
+    }
 
-  const prevProcessedOrders = previousOrders.filter((o) => o.status === "confirmed").length;
-  const prevProcessedRevenue = previousOrders.filter((o) => o.status === "confirmed").reduce((s, o) => s + o.amount, 0);
-  const prevRevenue = previousOrders.reduce((s, o) => s + o.amount, 0);
-  const prevOrders = previousOrders.length;
+    const paid = filteredShippings.filter((s) => s.status === "processed").length;
+    const delivered = filteredShippings.filter((s) => s.status === "delivered").length;
+    const shipped = filteredShippings.filter((s) => s.status === "shipped").length;
+    const returned = filteredShippings.filter((s) => s.status === "return").length;
+    const totalDeliveredAttempts = paid + returned;
+    const deliveryRate = totalDeliveredAttempts > 0 ? paid / totalDeliveredAttempts : 0;
+
+    return {
+      pendingOrders: pending, confirmedOrders: confirmed, deliveredOrders: paid,
+      cancelledOrders: cancelled, outOfStockOrders: outOfStock, doubleOrders: doubleOrd,
+      transferredOrders: transferred, unreachedOrders: unreached,
+      returnedOrders: returned, shippedOrders: shipped, deliveredToCustomer: delivered,
+      revenue,
+      confirmedCount, nonCancelled, processedOrders: processed, processedRevenue,
+      confRate: nonCancelled > 0 ? confirmedCount / nonCancelled : 0,
+      deliveryRate,
+    };
+  }, [filteredOrders, filteredShippings]);
+
+  const prevStats = useMemo(() => {
+    let prevRevenue = 0, prevOrders = 0;
+    let prevProcessed = 0, prevProcessedRevenue = 0;
+    let prevPending = 0, prevConfirmed = 0, prevNonCancelled = 0;
+    for (const o of previousOrders) {
+      prevRevenue += o.amount;
+      prevOrders++;
+      if (o.status === "confirmed") {
+        prevProcessed++; prevProcessedRevenue += o.amount; prevConfirmed++; prevNonCancelled++;
+      } else if (o.status === "pending") { prevPending++; prevNonCancelled++; }
+      else if (o.status === "delivered" || o.status === "shipping" || o.status === "shipped") { prevConfirmed++; prevNonCancelled++; }
+    }
+    return {
+      prevRevenue, prevOrders, prevProcessed, prevProcessedRevenue,
+      prevPending, prevConfirmed, prevNonCancelled,
+    };
+  }, [previousOrders]);
 
   const filteredServiceFees = useMemo(() => {
     const byCountry = new Map<string, number>();
@@ -139,8 +170,8 @@ export default function DashboardPage() {
     return total;
   }, [previousOrders]);
 
-  const filteredNetRevenue = filteredProcessedRevenue - filteredServiceFees;
-  const prevNetRevenue = prevProcessedRevenue - prevServiceFees;
+  const filteredNetRevenue = filteredStatusCounts.processedRevenue - filteredServiceFees;
+  const prevNetRevenue = prevStats.prevProcessedRevenue - prevServiceFees;
 
   const filteredRevenueTrend = useMemo(() => {
     const dayMap = new Map<string, { revenue: number; orders: number }>();
@@ -207,13 +238,8 @@ export default function DashboardPage() {
     return ids.size;
   }, [filteredOrders]);
 
-  const avgOrderValue = filteredOrders.length > 0 ? filteredRevenue / filteredOrders.length : 0;
-  const prevAvgOrderValue = prevOrders > 0 ? prevRevenue / prevOrders : 0;
-
-  const prevPending = previousOrders.filter((o) => o.status === "pending").length;
-  const prevConfirmed = previousOrders.filter((o) => o.status === "confirmed").length;
-  const prevNonCancelled = previousOrders.filter((o) => o.status !== "cancelled" && o.status !== "out_of_stock").length;
-  const prevConfRate = prevNonCancelled > 0 ? prevConfirmed / prevNonCancelled : 0;
+  const avgOrderValue = filteredOrders.length > 0 ? filteredStatusCounts.revenue / filteredOrders.length : 0;
+  const prevAvgOrderValue = prevStats.prevOrders > 0 ? prevStats.prevRevenue / prevStats.prevOrders : 0;
 
   const [metaDatePreset, setMetaDatePreset] = useState<DatePreset>("last_30d");
   const { data: metaData, loading: metaLoading, error: metaError, refresh: refreshMeta, hasCredentials: metaHasCreds } = useMetaAds(metaDatePreset);
@@ -272,39 +298,78 @@ export default function DashboardPage() {
             delay={0}
             loading={isLoading}
             tooltip={t("dashboard.totalOrdersTooltip")}
-            trend={computeTrend(filteredOrders.length, prevOrders)}
+            trend={computeTrend(filteredOrders.length, prevStats.prevOrders)}
           />
           <StatCard
             title={t("dashboard.totalRevenue")}
-            value={formatCurrency(filteredRevenue)}
+            value={formatCurrency(filteredStatusCounts.revenue)}
             icon={<DollarSign className="w-5 h-5" />}
             color="success"
             delay={50}
             loading={isLoading}
             tooltip={t("dashboard.totalRevenueTooltip")}
-            trend={computeTrend(filteredRevenue, prevRevenue)}
+            trend={computeTrend(filteredStatusCounts.revenue, prevStats.prevRevenue)}
           />
           <StatCard
             title={t("dashboard.processedOrders")}
-            value={formatNumber(filteredProcessedOrders)}
+            value={formatNumber(filteredStatusCounts.processedOrders)}
             icon={<CheckCircle className="w-5 h-5" />}
             color="primary"
             delay={100}
             subtitle={t("dashboard.paidByCodinAfrica")}
             loading={isLoading}
             tooltip={t("dashboard.processedOrdersTooltip")}
-            trend={computeTrend(filteredProcessedOrders, prevProcessedOrders)}
+            trend={computeTrend(filteredStatusCounts.processedOrders, prevStats.prevProcessed)}
           />
           <StatCard
             title={t("dashboard.processedRevenue")}
-            value={formatCurrency(filteredProcessedRevenue)}
+            value={formatCurrency(filteredStatusCounts.processedRevenue)}
             icon={<TrendingUp className="w-5 h-5" />}
             color="success"
             delay={150}
             subtitle={t("dashboard.realCollectedRevenue")}
             loading={isLoading}
             tooltip={t("dashboard.processedRevenueTooltip")}
-            trend={computeTrend(filteredProcessedRevenue, prevProcessedRevenue)}
+            trend={computeTrend(filteredStatusCounts.processedRevenue, prevStats.prevProcessedRevenue)}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            title="Delivered (COD Africa)"
+            value={formatNumber(filteredStatusCounts.deliveredOrders)}
+            icon={<CheckCircle className="w-5 h-5" />}
+            color="success"
+            delay={200}
+            subtitle="status = processed (paid)"
+            loading={isLoading}
+          />
+          <StatCard
+            title="Delivered to Customer"
+            value={formatNumber(filteredStatusCounts.deliveredToCustomer)}
+            icon={<Package className="w-5 h-5" />}
+            color="primary"
+            delay={250}
+            subtitle="status = delivered"
+            loading={isLoading}
+          />
+          <StatCard
+            title="Returned"
+            value={formatNumber(filteredStatusCounts.returnedOrders)}
+            icon={<TrendingDown className="w-5 h-5" />}
+            color="error"
+            delay={300}
+            subtitle="status = return"
+            loading={isLoading}
+          />
+          <StatCard
+            title="Shipped"
+            value={formatNumber(filteredStatusCounts.shippedOrders)}
+            icon={<Package className="w-5 h-5" />}
+            color="primary"
+            delay={350}
+            subtitle="status = shipped"
+            loading={isLoading}
           />
         </div>
 
@@ -314,7 +379,7 @@ export default function DashboardPage() {
             value={formatCurrency(filteredNetRevenue)}
             icon={<DollarSign className="w-5 h-5" />}
             color="success"
-            delay={200}
+            delay={400}
             subtitle={t("dashboard.afterServiceFees")}
             loading={isLoading}
             tooltip={t("dashboard.netRevenueTooltip")}
@@ -325,7 +390,7 @@ export default function DashboardPage() {
             value={formatCurrency(filteredServiceFees)}
             icon={<Percent className="w-5 h-5" />}
             color="warning"
-            delay={250}
+            delay={450}
             subtitle={t("dashboard.codinAfricaFees")}
             loading={isLoading}
             tooltip={t("dashboard.serviceFeesTooltip")}
@@ -333,7 +398,7 @@ export default function DashboardPage() {
           />
           <StatCard
             title={t("dashboard.deliveryRate")}
-            value={formatPercentage(filteredDeliveryRate)}
+            value={formatPercentage(filteredStatusCounts.deliveryRate)}
             icon={<Activity className="w-5 h-5" />}
             color="primary"
             delay={300}
@@ -343,10 +408,10 @@ export default function DashboardPage() {
           />
           <StatCard
             title={t("dashboard.confirmationRate")}
-            value={formatPercentage(filteredConfRate)}
+            value={formatPercentage(filteredStatusCounts.confRate)}
             icon={<CheckCircle className="w-5 h-5" />}
             color="success"
-            delay={350}
+            delay={550}
             loading={isLoading}
             tooltip={t("dashboard.confirmationRateTooltip")}
           />
@@ -358,7 +423,7 @@ export default function DashboardPage() {
             value={formatCurrency(avgOrderValue)}
             icon={<TrendingUp className="w-5 h-5" />}
             color="primary"
-            delay={400}
+            delay={600}
             loading={isLoading}
             tooltip={t("dashboard.avgOrderValueTooltip")}
             trend={computeTrend(avgOrderValue, prevAvgOrderValue)}
@@ -368,37 +433,37 @@ export default function DashboardPage() {
             value={formatNumber(uniqueProductCount)}
             icon={<Package className="w-5 h-5" />}
             color="primary"
-            delay={450}
+            delay={650}
             subtitle={t("dashboard.uniqueInPeriod")}
             loading={isLoading}
             tooltip={t("dashboard.productsSoldTooltip")}
           />
           <StatCard
             title={t("dashboard.pending")}
-            value={formatNumber(filteredPending)}
+            value={formatNumber(filteredStatusCounts.pendingOrders)}
             icon={<Clock className="w-5 h-5" />}
             color="warning"
             delay={500}
-            subtitle={`${filteredOrders.length > 0 ? ((filteredPending / filteredOrders.length) * 100).toFixed(1) : 0}${t("dashboard.percentOfTotal")}`}
+            subtitle={`${filteredOrders.length > 0 ? ((filteredStatusCounts.pendingOrders / filteredOrders.length) * 100).toFixed(1) : 0}${t("dashboard.percentOfTotal")}`}
             loading={isLoading}
             tooltip={t("dashboard.pendingTooltip")}
-            trend={computeTrend(filteredPending, prevPending)}
+            trend={computeTrend(filteredStatusCounts.pendingOrders, prevStats.prevPending)}
           />
           <StatCard
             title={t("dashboard.confirmedOrders")}
-            value={formatNumber(filteredConfirmed)}
+            value={formatNumber(filteredStatusCounts.confirmedOrders)}
             icon={<CheckCircle className="w-5 h-5" />}
             color="success"
             delay={550}
             loading={isLoading}
             tooltip={t("dashboard.confirmedOrdersTooltip")}
-            trend={computeTrend(filteredConfirmed, prevConfirmed)}
+            trend={computeTrend(filteredStatusCounts.confirmedOrders, prevStats.prevConfirmed)}
           />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <RevenueChart data={filteredRevenueTrend} loading={isLoading} />
-          <OrdersStatusChart stats={filteredStats} loading={isLoading} />
+          <OrdersStatusChart stats={filteredStatusCounts} loading={isLoading} />
         </div>
 
         <MetaStatsCards

@@ -10,24 +10,31 @@ import { DateFilter } from "@/components/DateFilter";
 import { Select } from "@/components/ui/Select";
 import { useDashboardData } from "@/hooks";
 import { formatNumber, formatCurrency, formatPercentage, filterOrdersByDate, COUNTRY_FLAGS } from "@/utils";
-import { getImageUrlOrFallback } from "@/utils/images";
 import { exportToCSV } from "@/utils/csv";
 import type { DateFilterValue } from "@/utils/dates";
+import type { CodinAfricaShipping } from "@/types";
 
-const DELIVERY_STATUS_COLORS: Record<string, string> = {
-  processed: "#10B981",
-  delivered: "#10B981",
+const SHIPPING_STATUS_COLORS: Record<string, string> = {
+  "to prepare": "#F59E0B",
+  prepared: "#6366F1",
   shipped: "#8B5CF6",
-  confirmed: "#6366F1",
-  pending: "#F59E0B",
-  cancelled: "#64748B",
-  returned: "#EF4444",
-  double: "#8B5CF6",
-  out_of_stock: "#64748B",
-  transferred: "#8B5CF6",
+  delivered: "#10B981",
+  processed: "#10B981",
+  reprogrammer: "#F97316",
+  return: "#EF4444",
+  rembourser: "#64748B",
 };
 
-
+const SHIPPING_STATUS_LABELS: Record<string, string> = {
+  "to prepare": "To Prepare",
+  prepared: "Prepared",
+  shipped: "Shipped",
+  delivered: "Delivered",
+  processed: "Paid",
+  reprogrammer: "Reprogrammer",
+  return: "Returned",
+  rembourser: "Rembourser",
+};
 
 export default function DeliveredPage() {
   const { t } = useTranslation();
@@ -35,93 +42,84 @@ export default function DeliveredPage() {
   const [dateFilter, setDateFilter] = useState<DateFilterValue>("all");
   const [statusFilter, setStatusFilter] = useState("all");
 
-  const allOrders = data?.orders ?? [];
-  const filteredOrders = useMemo(() => filterOrdersByDate(allOrders, dateFilter), [allOrders, dateFilter]);
-
-  const deliveryOrders = useMemo(() => {
-    return filteredOrders.filter((o) => {
-      const status = o.status.toLowerCase();
-      return [
-        "pending",
-        "confirmed",
-        "cancelled",
-        "double",
-        "out_of_stock",
-        "transferred",
-        "processed",
-        "delivered",
-        "shipped",
-        "returned",
-      ].includes(status);
-    });
-  }, [filteredOrders]);
+  const allShippings: CodinAfricaShipping[] = data?.shippings ?? [];
+  const filteredShippings = useMemo(() => {
+    const mapped = allShippings.map((s) => ({
+      ...s,
+      date: s.createdAt || s.date || s.updatedAt || "",
+    }));
+    return filterOrdersByDate(mapped, dateFilter);
+  }, [allShippings, dateFilter]);
 
   const filteredByStatus = useMemo(() => {
-    if (statusFilter === "all") return deliveryOrders;
-    return deliveryOrders.filter((o) => {
-      const status = o.status.toLowerCase().replace(/\s+/g, "_");
-      return status === statusFilter;
-    });
-  }, [deliveryOrders, statusFilter]);
+    if (statusFilter === "all") return filteredShippings;
+    return filteredShippings.filter((s) => s.status === statusFilter);
+  }, [filteredShippings, statusFilter]);
 
   const stats = useMemo(() => {
-    const totalDeliveries = deliveryOrders.length;
-    const deliveredOrders = deliveryOrders.filter((o) => {
-      const s = o.status.toLowerCase();
-      return s === "delivered" || s === "processed";
-    }).length;
-    const deliveredRevenue = deliveryOrders
-      .filter((o) => {
-        const s = o.status.toLowerCase();
-        return s === "delivered" || s === "processed";
-      })
-      .reduce((s, o) => s + o.amount, 0);
-    const returnedOrders = deliveryOrders.filter((o) => 
-      o.status.toLowerCase() === "returned"
-    ).length;
+    const totalDeliveries = filteredShippings.length;
+    const deliveredOrders = filteredShippings.filter((s) => s.status === "delivered").length;
+    const deliveredRevenue = filteredShippings
+      .filter((s) => s.status === "delivered")
+      .reduce((sum, s) => sum + (s.totalPrice || 0), 0);
+    const paidOrders = filteredShippings.filter((s) => s.status === "processed").length;
+    const paidRevenue = filteredShippings
+      .filter((s) => s.status === "processed")
+      .reduce((sum, s) => sum + (s.totalPrice || 0), 0);
+    const shippedOrders = filteredShippings.filter((s) => s.status === "shipped").length;
+    const returnedOrders = filteredShippings.filter((s) => s.status === "return").length;
+    const toPrepareOrders = filteredShippings.filter((s) => s.status === "to prepare").length;
+    const preparedOrders = filteredShippings.filter((s) => s.status === "prepared").length;
+    const reprogrammerOrders = filteredShippings.filter((s) => s.status === "reprogrammer").length;
     
-    const returnRate = totalDeliveries > 0 ? returnedOrders / totalDeliveries : 0;
-    const deliveryRate = totalDeliveries > 0 ? deliveredOrders / totalDeliveries : 0;
+    const totalDeliveryAttempts = paidOrders + returnedOrders;
+    const deliveryRate = totalDeliveryAttempts > 0 ? paidOrders / totalDeliveryAttempts : 0;
+    const returnRate = totalDeliveryAttempts > 0 ? returnedOrders / totalDeliveryAttempts : 0;
     
-    const countriesSet = new Set(deliveryOrders.map((o) => o.country));
+    const countriesSet = new Set(filteredShippings.map((s) => s.customer?.country).filter(Boolean));
 
     return {
       totalDeliveries,
       deliveredOrders,
       deliveredRevenue,
+      paidOrders,
+      paidRevenue,
+      shippedOrders,
+      returnedOrders,
+      toPrepareOrders,
+      preparedOrders,
+      reprogrammerOrders,
       returnRate,
       deliveryRate,
       countriesCount: countriesSet.size,
     };
-  }, [deliveryOrders]);
+  }, [filteredShippings]);
 
   const statusBreakdown = useMemo(() => {
     const breakdown: Record<string, number> = {};
-    deliveryOrders.forEach((o) => {
-      const status = o.status.toLowerCase().replace(/\s+/g, "_");
-      breakdown[status] = (breakdown[status] || 0) + 1;
+    filteredShippings.forEach((s) => {
+      const st = s.status || "unknown";
+      breakdown[st] = (breakdown[st] || 0) + 1;
     });
     return breakdown;
-  }, [deliveryOrders]);
+  }, [filteredShippings]);
 
   const handleExport = () => {
     exportToCSV(
-      filteredByStatus.map((o) => ({
-        trackingNumber: o.orderId,
-        product: o.productName,
-        country: o.countryName || o.country,
-        deliveryDate: new Date(o.date).toLocaleDateString(),
-        quantity: o.quantity,
-        status: o.status,
-        revenue: o.amount,
+      filteredByStatus.map((s) => ({
+        trackingNumber: s.id || s._id,
+        customer: s.customer?.fullName || "Unknown",
+        country: s.customer?.country || "",
+        date: new Date(s.date || s.createdAt || s.updatedAt).toLocaleDateString(),
+        status: s.status,
+        revenue: s.totalPrice || 0,
       })),
       "deliveries",
       {
         trackingNumber: "Tracking Number",
-        product: "Product",
+        customer: "Customer",
         country: "Country",
-        deliveryDate: "Delivery Date",
-        quantity: "Quantity",
+        date: "Date",
         status: "Status",
         revenue: "Revenue (XOF)",
       }
@@ -129,21 +127,8 @@ export default function DeliveredPage() {
   };
 
   const getStatusBadge = (status: string) => {
-    const normalizedStatus = status.toLowerCase().replace(/\s+/g, "_");
-    const color = DELIVERY_STATUS_COLORS[normalizedStatus] || "#64748B";
-    const labelMap: Record<string, string> = {
-      processed: t("status.delivered"),
-      delivered: t("status.delivered"),
-      shipped: t("status.shipping"),
-      confirmed: t("status.confirmed"),
-      pending: t("status.pending"),
-      cancelled: t("status.cancelled"),
-      returned: t("status.returned"),
-      double: t("status.double"),
-      out_of_stock: t("status.outOfStock"),
-      transferred: t("status.transferred"),
-    };
-    const label = labelMap[normalizedStatus] || status;
+    const color = SHIPPING_STATUS_COLORS[status] || "#64748B";
+    const label = SHIPPING_STATUS_LABELS[status] || status;
     
     return (
       <span
@@ -196,67 +181,81 @@ export default function DeliveredPage() {
             onChange={setStatusFilter}
             options={[
               { value: "all", label: t("common.all") },
-              { value: "pending", label: t("status.pending") },
-              { value: "confirmed", label: t("status.confirmed") },
-              { value: "cancelled", label: t("status.cancelled") },
-              { value: "delivered", label: t("status.delivered") },
-              { value: "processed", label: t("status.delivered") },
-              { value: "shipped", label: t("status.shipping") },
-              { value: "returned", label: t("status.returned") },
-              { value: "double", label: t("status.double") },
-              { value: "out_of_stock", label: t("status.outOfStock") },
-              { value: "transferred", label: t("status.transferred") },
+              { value: "processed", label: "Paid" },
+              { value: "delivered", label: "Delivered" },
+              { value: "shipped", label: "Shipped" },
+              { value: "return", label: "Returned" },
+              { value: "to prepare", label: "To Prepare" },
+              { value: "prepared", label: "Prepared" },
+              { value: "reprogrammer", label: "Reprogrammer" },
+              { value: "rembourser", label: "Rembourser" },
             ]}
           />
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             title={t("delivered.totalDeliveries")}
             value={formatNumber(stats.totalDeliveries)}
             icon={<Package className="w-5 h-5" />}
             color="primary"
             delay={0}
-            subtitle={`${stats.countriesCount} ${t("delivered.countries").toLowerCase()}`}
+            subtitle={`${stats.countriesCount} countries`}
           />
           <StatCard
-            title={t("delivered.deliveredOrders")}
-            value={formatNumber(stats.deliveredOrders)}
+            title="Paid (COD Africa)"
+            value={formatNumber(stats.paidOrders)}
             icon={<CheckCircle className="w-5 h-5" />}
             color="success"
             delay={50}
-            subtitle={formatCurrency(stats.deliveredRevenue)}
+            subtitle={formatCurrency(stats.paidRevenue)}
           />
           <StatCard
-            title={t("delivered.deliveredRevenue")}
-            value={formatCurrency(stats.deliveredRevenue)}
-            icon={<DollarSign className="w-5 h-5" />}
+            title="Delivered (to customer)"
+            value={formatNumber(stats.deliveredOrders)}
+            icon={<Package className="w-5 h-5" />}
             color="success"
-            delay={100}
-            subtitle={`${stats.deliveredOrders} ${t("common.orders")}`}
-          />
-          <StatCard
-            title={t("delivered.returnRate")}
-            value={formatPercentage(stats.returnRate)}
-            icon={<TrendingDown className="w-5 h-5" />}
-            color="error"
-            delay={150}
-            subtitle={t("delivered.returnedOrders")}
+            delay={75}
+            subtitle={formatCurrency(stats.deliveredRevenue)}
           />
           <StatCard
             title={t("delivered.deliveryRate")}
             value={formatPercentage(stats.deliveryRate)}
             icon={<TrendingUp className="w-5 h-5" />}
             color="success"
-            delay={200}
-            subtitle={t("delivered.successfullyDelivered")}
+            delay={100}
+            subtitle="paid / (paid + returned)"
+          />
+          <StatCard
+            title="Shipped"
+            value={formatNumber(stats.shippedOrders)}
+            icon={<Package className="w-5 h-5" />}
+            color="primary"
+            delay={125}
+            subtitle={`${stats.toPrepareOrders} to prepare, ${stats.preparedOrders} prepared`}
+          />
+          <StatCard
+            title="Returned"
+            value={formatNumber(stats.returnedOrders)}
+            icon={<TrendingDown className="w-5 h-5" />}
+            color="error"
+            delay={150}
+            subtitle={`${stats.returnRate > 0 ? formatPercentage(stats.returnRate) : "0%"} return rate`}
+          />
+          <StatCard
+            title="Reprogrammer"
+            value={formatNumber(stats.reprogrammerOrders)}
+            icon={<RefreshCw className="w-5 h-5" />}
+            color="warning"
+            delay={175}
+            subtitle="rescheduled deliveries"
           />
           <StatCard
             title={t("delivered.countries")}
             value={formatNumber(stats.countriesCount)}
             icon={<Globe className="w-5 h-5" />}
             color="primary"
-            delay={250}
+            delay={200}
             subtitle={t("delivered.withDeliveries")}
           />
         </div>
@@ -270,74 +269,45 @@ export default function DeliveredPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#1F2937]">
-                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.tracking")}</th>
-                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.product")}</th>
+                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">ID</th>
+                  <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.customer")}</th>
                   <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.country")}</th>
                   <th className="text-left text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.date")}</th>
-                  <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.qty")}</th>
                   <th className="text-center text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.status")}</th>
                   <th className="text-right text-[#64748B] text-xs font-semibold uppercase tracking-wider py-3.5 px-4">{t("delivered.revenue")}</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredByStatus.map((o) => (
-                  <tr key={o.id} className="border-b border-[#1F2937]/50 transition-all duration-150 hover:bg-[#1E293B] group">
+                {filteredByStatus.map((s) => (
+                  <tr key={s._id} className="border-b border-[#1F2937]/50 transition-all duration-150 hover:bg-[#1E293B] group">
                     <td className="py-3.5 px-4">
-                      <span className="text-white font-mono text-xs">{o.orderId.substring(0, 12)}...</span>
+                      <span className="text-white font-mono text-xs">{(s.id || s._id).substring(0, 12)}...</span>
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="flex items-center gap-3">
-                        {o.productImage ? (
-                          <img 
-                            src={getImageUrlOrFallback(o.productImage)} 
-                            alt={o.productName} 
-                            className="w-10 h-10 rounded-lg object-cover bg-[#1F2937]"
-                            referrerPolicy="no-referrer"
-                            crossOrigin="anonymous"
-                            onError={(e) => {
-                              e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23606060' stroke-width='2'%3E%3Crect width='18' height='18' x='3' y='3' rx='2' ry='2'/%3E%3Ccircle cx='9' cy='9' r='2'/%3E%3Cpath d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/%3E%3C/svg%3E";
-                            }}
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded-lg bg-[#1F2937] flex items-center justify-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748B" strokeWidth="2">
-                              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
-                              <circle cx="9" cy="9" r="2"/>
-                              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
-                            </svg>
-                          </div>
-                        )}
-                        <div className="min-w-0">
-                          <p className="text-white text-sm font-medium truncate max-w-[200px]">{o.productName}</p>
-                          <p className="text-[#64748B] text-xs">{o.productCode}</p>
-                        </div>
-                      </div>
+                      <span className="text-white text-sm">{s.customer?.fullName || "Unknown"}</span>
                     </td>
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-2">
-                        {COUNTRY_FLAGS[o.country] && (
-                          <img src={COUNTRY_FLAGS[o.country]} alt={o.countryName} className="w-5 h-3.5 rounded shadow-sm object-cover" />
+                        {COUNTRY_FLAGS[s.customer?.country || ""] && (
+                          <img src={COUNTRY_FLAGS[s.customer?.country || ""]} alt={s.customer?.country || ""} className="w-5 h-3.5 rounded shadow-sm object-cover" />
                         )}
-                        <span className="text-white text-sm">{o.countryName || o.country}</span>
+                        <span className="text-white text-sm">{s.customer?.country || ""}</span>
                       </div>
                     </td>
                     <td className="py-3.5 px-4">
-                      <span className="text-[#94A3B8] text-sm">{new Date(o.date).toLocaleDateString()}</span>
+                      <span className="text-[#94A3B8] text-sm">{new Date(s.updatedAt || s.date || s.createdAt).toLocaleDateString()}</span>
                     </td>
                     <td className="py-3.5 px-4 text-center">
-                      <span className="text-white font-semibold">{o.quantity}</span>
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      {getStatusBadge(o.status)}
+                      {getStatusBadge(s.status)}
                     </td>
                     <td className="py-3.5 px-4 text-right">
-                      <span className="text-white font-semibold">{formatCurrency(o.amount)}</span>
+                      <span className="text-white font-semibold">{formatCurrency(s.totalPrice || 0)}</span>
                     </td>
                   </tr>
                 ))}
                 {filteredByStatus.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-[#64748B]">
+                    <td colSpan={6} className="text-center py-12 text-[#64748B]">
                       {t("delivered.noDeliveries")}
                     </td>
                   </tr>

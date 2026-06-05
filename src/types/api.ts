@@ -1,3 +1,16 @@
+export interface CodinAfricaShipping {
+  _id: string;
+  id: string;
+  customer: CodinAfricaCustomer;
+  totalPrice: number;
+  status: string;
+  date: string;
+  createdAt: string;
+  updatedAt: string;
+  source?: string;
+  details?: CodinAfricaOrderDetail[];
+}
+
 export interface CodinAfricaOrder {
   _id: string;
   id: string;
@@ -164,11 +177,20 @@ export interface DashboardStats {
   outOfStockOrders: number;
   doubleOrders: number;
   transferredOrders: number;
+  unreachedOrders: number;
   confirmedOrders: number;
   deliveredOrders: number;
+  paidOrders: number;
+  shippedOrders: number;
+  returnedOrders: number;
+  toPrepareOrders: number;
+  preparedOrders: number;
+  reprogrammerOrders: number;
   processedOrders: number;
   processedRevenue: number;
   confirmedRevenue: number;
+  deliveredRevenue: number;
+  paidRevenue: number;
   netRevenue: number;
   serviceFeesTotal: number;
   confirmationRate: number;
