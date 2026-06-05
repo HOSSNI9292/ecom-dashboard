@@ -1,8 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-
-const TIMEZONES = ["UTC", "Europe/Paris", "Africa/Libreville", "Africa/Casablanca", "Africa/Lagos", "Africa/Tunis"];
-const DATE_FIELDS = ["createdAt", "date", "updatedAt"];
+import { STATUS_MAP } from "@/utils/constants";
 
 export default function DebugStatusesPage() {
   const [data, setData] = useState<any>(null);
@@ -14,88 +12,71 @@ export default function DebugStatusesPage() {
       try {
         const { api } = await import("@/services/api");
         const all = await api.fetchAllOrders();
-        const today = new Date().toISOString().substring(0, 10);
+        const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
 
-        // Status breakdown by createdAt UTC (baseline)
-        const todayOrders = all.filter((o: any) => (o.createdAt || "").substring(0, 10) === today);
-        const statuses: Record<string, number> = {};
+        // Today orders by createdAt + Europe/Paris
+        const todayOrders = all.filter((o: any) => {
+          if (!o.createdAt) return false;
+          try {
+            return new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "Europe/Paris" }) === today;
+          } catch { return false; }
+        });
+
+        // Group by raw status name
+        const byStatus: Record<string, any[]> = {};
         for (const o of todayOrders) {
           const s = o.status?.name || "unknown";
-          statuses[s] = (statuses[s] || 0) + 1;
+          if (!byStatus[s]) byStatus[s] = [];
+          byStatus[s].push(o);
         }
 
-        // Date field + timezone table
-        const dateTzRows: { field: string; tz: string; count: number }[] = [];
-        for (const field of DATE_FIELDS) {
-          for (const tz of TIMEZONES) {
-            let count: number;
-            if (tz === "UTC") {
-              count = all.filter((o: any) => (o[field] || "").substring(0, 10) === today).length;
-            } else {
-              count = all.filter((o: any) => {
-                const val = o[field];
-                if (!val) return false;
-                try {
-                  const d = new Date(val);
-                  const local = d.toLocaleDateString("en-CA", { timeZone: tz });
-                  return local === today;
-                } catch { return false; }
-              }).length;
-            }
-            dateTzRows.push({ field, tz, count });
-          }
-        }
-
-        // Show all orders grouped by date-field + timezone to see which ones shift
-        const shiftedOrders: any[] = [];
-        for (const o of all) {
-          const createdAtUTC = (o.createdAt || "").substring(0, 10);
-          let createdAtParis = "";
-          let createdAtLibreville = "";
-          let createdAtCasablanca = "";
-          try {
-            const d = new Date(o.createdAt);
-            createdAtParis = d.toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
-            createdAtLibreville = d.toLocaleDateString("en-CA", { timeZone: "Africa/Libreville" });
-            createdAtCasablanca = d.toLocaleDateString("en-CA", { timeZone: "Africa/Casablanca" });
-          } catch {}
-          if (createdAtUTC !== today && (createdAtParis === today || createdAtLibreville === today || createdAtCasablanca === today)) {
-            shiftedOrders.push({ id: o.id, status: o.status?.name, createdAt: o.createdAt, utc: createdAtUTC, paris: createdAtParis, libreville: createdAtLibreville, casablanca: createdAtCasablanca });
-          }
-        }
-
-        // Also check date field
-        const dateShifted: any[] = [];
-        for (const o of all) {
-          const dateUTC = (o.date || "").substring(0, 10);
-          let dateParis = "";
-          try {
-            const d = new Date(o.date);
-            dateParis = d.toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
-          } catch {}
-          if (dateUTC !== today && dateParis === today) {
-            dateShifted.push({ id: o.id, status: o.status?.name, date: o.date, utc: dateUTC, paris: dateParis });
-          }
-        }
-
-        // Sample order date fields
-        const sample = all.slice(0, 5).map((o: any) => ({
-          id: o.id,
-          status: o.status?.name,
-          createdAt: o.createdAt,
-          date: o.date,
-          updatedAt: o.updatedAt,
+        // For each status, show the mapped value and count
+        const statusSummary = Object.entries(byStatus).map(([name, orders]) => ({
+          name,
+          mapped: STATUS_MAP[name] || name.toLowerCase(),
+          count: orders.length,
+          orders: orders.map((o: any) => ({
+            id: o.id || o._id,
+            statusName: o.status?.name,
+            statusId: o.status?._id,
+            createdAt: o.createdAt,
+            createdAtParis: new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "Europe/Paris" }),
+            customer: o.customer?.fullName,
+            phone: o.customer?.phone,
+            country: o.customer?.country,
+            city: o.customer?.city,
+            totalPrice: o.totalPrice,
+            source: o.source,
+          })),
         }));
 
+        // Simulate what our dashboard counts
+        const dashboardConfirmed = todayOrders.filter((o: any) => {
+          const raw = o.status?.name || "unknown";
+          const mapped = STATUS_MAP[raw] || raw.toLowerCase();
+          return ["confirmed", "processed", "delivered", "shipping", "shipped"].includes(mapped);
+        }).length;
+
+        // If COD Africa says 25, check what 9 extra are
+        const dashboardNotConfirmed = todayOrders.filter((o: any) => {
+          const raw = o.status?.name || "unknown";
+          const mapped = STATUS_MAP[raw] || raw.toLowerCase();
+          return !["confirmed", "processed", "delivered", "shipping", "shipped"].includes(mapped);
+        });
+
         setData({
-          totalByCreatedAtUTC: todayOrders.length,
-          statuses,
-          dateTzRows,
-          shiftedOrders,
-          dateShifted,
-          sample,
-          allCount: all.length,
           today,
+          total: todayOrders.length,
+          dashboardConfirmed,
+          codAfricaConfirmed: 25,
+          gap: 25 - dashboardConfirmed,
+          statusSummary,
+          dashboardNotConfirmed: dashboardNotConfirmed.map((o: any) => ({
+            id: o.id || o._id,
+            statusName: o.status?.name,
+            mapped: STATUS_MAP[o.status?.name || "unknown"] || (o.status?.name || "unknown").toLowerCase(),
+            createdAt: o.createdAt,
+          })),
         });
       } catch (e: any) {
         setError(e.message);
@@ -110,125 +91,104 @@ export default function DebugStatusesPage() {
   if (!data) return <div className="p-8 text-white">No data</div>;
 
   return (
-    <div className="p-8 text-white max-w-5xl mx-auto space-y-8">
-      <h1 className="text-2xl font-bold">Date Field + Timezone Investigation</h1>
-      <p>Server date (UTC): <strong>{data.today}</strong> | Total API orders: <strong>{data.allCount}</strong></p>
+    <div className="p-8 text-white max-w-6xl mx-auto space-y-8">
+      <h1 className="text-2xl font-bold">COD Africa Confirmed Orders Investigation</h1>
+      <p>Date (Europe/Paris): <strong>{data.today}</strong></p>
+      <p>API orders today: <strong>{data.total}</strong> | Dashboard Confirmed: <strong>{data.dashboardConfirmed}</strong></p>
+      <p>COD Africa UI Confirmed: <strong>{data.codAfricaConfirmed}</strong> | Gap: <strong>{data.gap} orders</strong></p>
 
       <div>
-        <h2 className="text-xl font-semibold mb-2">Current: createdAt UTC = {data.totalByCreatedAtUTC} orders</h2>
-        <p>COD Africa shows 56 orders for Today.</p>
-      </div>
-
-      <div>
-        <h2 className="text-xl font-semibold mb-2">Date Field + Timezone | Count</h2>
+        <h2 className="text-xl font-semibold mb-2">Status Summary</h2>
         <table className="w-full border-collapse">
           <thead>
             <tr className="border-b border-gray-700">
-              <th className="text-left py-2 px-3">Field</th>
-              <th className="text-left py-2 px-3">Timezone</th>
+              <th className="text-left py-2 px-3">Raw Status</th>
+              <th className="text-left py-2 px-3">Mapped To</th>
               <th className="text-right py-2 px-3">Count</th>
-              <th className="text-right py-2 px-3">Match COD Africa (56)?</th>
+              <th className="text-center py-2 px-3">In Dashboard Confirmed?</th>
             </tr>
           </thead>
           <tbody>
-            {data.dateTzRows.map((r: any, i: number) => (
-              <tr key={i} className={`border-b border-gray-800 ${r.count === 56 ? "bg-green-900/30" : ""}`}>
-                <td className="py-2 px-3">{r.field}</td>
-                <td className="py-2 px-3">{r.tz}</td>
-                <td className="text-right py-2 px-3 font-mono">{r.count}</td>
-                <td className="text-right py-2 px-3">{r.count === 56 ? "✅ MATCH" : r.count > 56 ? "⚠️ Over" : ""}</td>
-              </tr>
-            ))}
+            {data.statusSummary.map((s: any) => {
+              const isConfirmed = ["confirmed", "processed", "delivered", "shipping", "shipped"].includes(s.mapped);
+              return (
+                <tr key={s.name} className={`border-b border-gray-800 ${isConfirmed ? "bg-green-900/20" : ""}`}>
+                  <td className="py-2 px-3">{s.name}</td>
+                  <td className="py-2 px-3">{s.mapped}</td>
+                  <td className="text-right py-2 px-3 font-mono">{s.count}</td>
+                  <td className="text-center py-2 px-3">{isConfirmed ? "✅" : "❌"}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>
 
-      {data.shiftedOrders.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Orders Shifting INTO today by timezone (not in UTC createdAt today)</h2>
-          <p>These orders have createdAt that falls on today in a non-UTC timezone.</p>
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b border-gray-700">
-                <th className="text-left py-2 px-3">ID</th>
-                <th className="text-left py-2 px-3">Status</th>
-                <th className="text-left py-2 px-3">createdAt</th>
-                <th className="text-right py-2 px-3">UTC</th>
-                <th className="text-right py-2 px-3">Paris</th>
-                <th className="text-right py-2 px-3">Libreville</th>
-                <th className="text-right py-2 px-3">Casablanca</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.shiftedOrders.map((o: any, i: number) => (
-                <tr key={i} className="border-b border-gray-800">
-                  <td className="py-2 px-3">{o.id}</td>
-                  <td className="py-2 px-3">{o.status}</td>
-                  <td className="py-2 px-3 text-xs">{o.createdAt}</td>
-                  <td className="text-right py-2 px-3">{o.utc}</td>
-                  <td className="text-right py-2 px-3">{o.paris}</td>
-                  <td className="text-right py-2 px-3">{o.libreville}</td>
-                  <td className="text-right py-2 px-3">{o.casablanca}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
-      {data.dateShifted.length > 0 && (
-        <div>
-          <h2 className="text-xl font-semibold mb-2">Orders shifting INTO today by `date` field in Paris timezone</h2>
-          <table className="w-full border-collapse">
-            <thead>
-              <tr className="border-b border-gray-700">
-                <th className="text-left py-2 px-3">ID</th>
-                <th className="text-left py-2 px-3">Status</th>
-                <th className="text-left py-2 px-3">date</th>
-                <th className="text-right py-2 px-3">UTC</th>
-                <th className="text-right py-2 px-3">Paris</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.dateShifted.map((o: any, i: number) => (
-                <tr key={i} className="border-b border-gray-800">
-                  <td className="py-2 px-3">{o.id}</td>
-                  <td className="py-2 px-3">{o.status}</td>
-                  <td className="py-2 px-3 text-xs">{o.date}</td>
-                  <td className="text-right py-2 px-3">{o.utc}</td>
-                  <td className="text-right py-2 px-3">{o.paris}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-
       <div>
-        <h2 className="text-xl font-semibold mb-2">Sample Orders (date fields)</h2>
-        <pre className="bg-gray-900 p-4 rounded text-xs overflow-x-auto">{JSON.stringify(data.sample, null, 2)}</pre>
-      </div>
-
-      <div>
-        <h2 className="text-xl font-semibold mb-2">Status Breakdown (by createdAt UTC)</h2>
-        <table className="w-full border-collapse">
+        <h2 className="text-xl font-semibold mb-2">All Orders Not in Dashboard Confirmed</h2>
+        <p className="text-sm text-gray-400 mb-2">These {data.dashboardNotConfirmed.length} orders are NOT counted as Confirmed by the dashboard. Compare with COD Africa UI to identify which 9 should be.</p>
+        <table className="w-full border-collapse text-xs">
           <thead>
             <tr className="border-b border-gray-700">
-              <th className="text-left py-2 px-3">Status</th>
-              <th className="text-right py-2 px-3">Count</th>
+              <th className="text-left py-2 px-2">ID</th>
+              <th className="text-left py-2 px-2">Raw Status</th>
+              <th className="text-left py-2 px-2">Mapped</th>
+              <th className="text-left py-2 px-2">createdAt (Paris)</th>
             </tr>
           </thead>
           <tbody>
-            {Object.entries(data.statuses as Record<string, number>)
-              .sort(([, a], [, b]) => b - a)
-              .map(([s, c]) => (
-                <tr key={s} className="border-b border-gray-800">
-                  <td className="py-2 px-3">{s}</td>
-                  <td className="text-right py-2 px-3">{c}</td>
+            {data.dashboardNotConfirmed.map((o: any) => {
+              const parisDate = new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
+              const parisTime = new Date(o.createdAt).toLocaleTimeString("fr-FR", { timeZone: "Europe/Paris" });
+              return (
+                <tr key={o.id} className="border-b border-gray-800">
+                  <td className="py-1 px-2 font-mono">{o.id}</td>
+                  <td className="py-1 px-2">{o.statusName}</td>
+                  <td className="py-1 px-2">{o.mapped}</td>
+                  <td className="py-1 px-2">{parisDate} {parisTime}</td>
                 </tr>
-              ))}
+              );
+            })}
           </tbody>
         </table>
+      </div>
+
+      <div>
+        <h2 className="text-xl font-semibold mb-2">All Orders Today — Detailed Listing</h2>
+        <p className="text-sm text-gray-400 mb-2">Compare each order with COD Africa UI. Mark which ones COD Africa counts as "Confirmed".</p>
+        {data.statusSummary.map((s: any) => (
+          <div key={s.name} className="mb-6">
+            <h3 className="text-lg font-semibold mb-1">{s.name} ({s.count} orders)</h3>
+            <table className="w-full border-collapse text-xs">
+              <thead>
+                <tr className="border-b border-gray-700">
+                  <th className="text-left py-1 px-2">Order ID</th>
+                  <th className="text-left py-1 px-2">Status</th>
+                  <th className="text-left py-1 px-2">Customer</th>
+                  <th className="text-left py-1 px-2">Phone</th>
+                  <th className="text-left py-1 px-2">Country</th>
+                  <th className="text-left py-1 px-2">Amount</th>
+                  <th className="text-left py-1 px-2">Source</th>
+                  <th className="text-left py-1 px-2">createdAt (Paris)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {s.orders.map((o: any) => (
+                  <tr key={o.id} className="border-b border-gray-800 hover:bg-gray-800/50">
+                    <td className="py-1 px-2 font-mono">{o.id}</td>
+                    <td className="py-1 px-2">{o.statusName}</td>
+                    <td className="py-1 px-2">{o.customer}</td>
+                    <td className="py-1 px-2">{o.phone}</td>
+                    <td className="py-1 px-2">{o.country}</td>
+                    <td className="py-1 px-2">{o.totalPrice}</td>
+                    <td className="py-1 px-2">{o.source}</td>
+                    <td className="py-1 px-2">{new Date(o.createdAt).toLocaleString("fr-FR", { timeZone: "Europe/Paris" })}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ))}
       </div>
     </div>
   );
