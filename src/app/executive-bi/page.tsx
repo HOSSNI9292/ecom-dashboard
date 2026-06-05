@@ -12,7 +12,7 @@ import {
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { PageWrapper } from "@/components/PageWrapper";
 import { useDashboardData, useLowStockProducts, useOutOfStockProducts } from "@/hooks";
-import { formatCurrency, formatNumber, formatPercentage, toParisDate, getFeeForCountry, computeServiceFees, COUNTRY_NAMES } from "@/utils";
+import { formatCurrency, formatNumber, formatPercentage, toParisDate, isDateInFilter, getFeeForCountry, computeServiceFees, COUNTRY_NAMES } from "@/utils";
 import { exportToExcel } from "@/utils/excel";
 import { exportToCSV } from "@/utils/csv";
 import { getCached, setCache } from "@/utils/cache";
@@ -45,7 +45,7 @@ export default function ExecutiveBIPage() {
       if (o.status === "pending") e.pending += 1;
       else if (o.status === "cancelled") e.cancelled += 1;
       else if (o.status === "out_of_stock") e.outOfStock += 1;
-      else if (o.status === "confirmed") e.confirmed += 1;
+      if (o.confirmedAt) e.confirmed += 1;
       if (o.status === "confirmed") { e.processedOrders += 1; e.processedRevenue += o.amount; }
     }
     return Array.from(map.entries()).map(([code, d]) => {
@@ -69,7 +69,7 @@ export default function ExecutiveBIPage() {
     const grossRevenue = orders.reduce((s, o) => s + o.amount, 0);
     const processedOrders = orders.filter((o) => o.status === "confirmed");
     const processedRevenue = processedOrders.reduce((s, o) => s + o.amount, 0);
-    const confirmed = orders.filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping" || o.status === "shipped").length;
+    const confirmed = orders.filter((o) => o.confirmedAt).length;
     const totalFees = countryStats.reduce((s, c) => s + c.serviceFees, 0);
     const netRevenue = processedRevenue - totalFees;
     const margin = processedRevenue > 0 ? netRevenue / processedRevenue : 0;

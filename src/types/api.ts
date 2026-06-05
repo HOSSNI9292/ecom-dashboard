@@ -23,6 +23,7 @@ export interface CodinAfricaOrder {
   updatedAt: string;
   source?: string;
   isExpress?: boolean;
+  teleConsultantConfirm?: { date?: string };
 }
 
 export interface CodinAfricaOrderDetail {
@@ -115,6 +116,7 @@ export interface Order {
   source?: string;
   productImage?: string;
   productImages?: string[];
+  confirmedAt?: string;
 }
 
 export interface Product {

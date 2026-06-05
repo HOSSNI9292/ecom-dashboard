@@ -109,7 +109,7 @@ const en = {
     avgOrderValueTooltip: "Total Revenue / Total Orders. The average amount per order.",
     productsSoldTooltip: "Number of unique product codes/names found in orders for this period.",
     pendingTooltip: "Orders with status 'pending' — not yet processed or confirmed.",
-    confirmedOrdersTooltip: "Orders with status 'confirmed' — successfully processed and paid by CodinAfrica.",
+    confirmedOrdersTooltip: "Orders confirmed by call center (teleConsultantConfirm.date).",
   },
   status: {
     pending: "Pending",

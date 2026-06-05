@@ -12,7 +12,7 @@ import { RevenueChart } from "@/components/charts/RevenueChart";
 import { PageWrapper } from "@/components/PageWrapper";
 import { DateFilter } from "@/components/DateFilter";
 import { useDashboardData } from "@/hooks";
-import { formatCurrency, formatNumber, formatPercentage, filterOrdersByDate, toParisDate, getFeeForCountry, computeServiceFees, COUNTRY_NAMES } from "@/utils";
+import { formatCurrency, formatNumber, formatPercentage, filterOrdersByDate, toParisDate, isDateInFilter, getFeeForCountry, computeServiceFees, COUNTRY_NAMES } from "@/utils";
 import { exportToExcel } from "@/utils/excel";
 import type { ExcelColumn } from "@/utils/excel";
 import type { DateFilterValue } from "@/utils/dates";
@@ -73,7 +73,7 @@ export default function BusinessIntelligencePage() {
       if (o.status === "pending") e.pending += 1;
       else if (o.status === "cancelled") e.cancelled += 1;
       else if (o.status === "out_of_stock") e.outOfStock += 1;
-      else if (o.status === "confirmed") e.confirmed += 1;
+      if (o.confirmedAt) e.confirmed += 1;
       if (o.status === "confirmed") {
         e.processedOrders += 1;
         e.processedRevenue += o.amount;

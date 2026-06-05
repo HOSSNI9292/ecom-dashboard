@@ -174,6 +174,7 @@ function mapOrder(raw: CodinAfricaOrder): Order {
     source: raw.source,
     productImage: detail?.picture || product?.picture || "",
     productImages: product?.relatedPictures?.length ? product.relatedPictures : (detail?.picture || product?.picture ? [detail?.picture || product?.picture || ""] : []),
+    confirmedAt: raw.teleConsultantConfirm?.date || undefined,
   };
 }
 
@@ -416,14 +417,14 @@ class ApiService {
     const transferred = orders.filter((o) => o.status === "transferred").length;
     const unreached = orders.filter((o) => o.status === "unreached").length;
     const processedOrders = orders.filter((o) => o.status === "confirmed" || o.status === "processed").length;
-    const confirmedOrders = orders.filter((o) => o.status === "confirmed" || o.status === "processed" || o.status === "delivered" || o.status === "shipping" || o.status === "shipped").length;
+    const confirmedOrders = orders.filter((o) => o.confirmedAt).length;
     const nonCancelled = total - cancelled - outOfStock - double - transferred - unreached;
     const uniqueProducts = new Set(products.map((p) => p.id)).size;
     const processedRevenue = orders
       .filter((o) => o.status === "confirmed" || o.status === "processed")
       .reduce((s, o) => s + o.amount, 0);
     const confirmedRevenue = orders
-      .filter((o) => o.status === "confirmed" || o.status === "processed" || o.status === "delivered" || o.status === "shipping" || o.status === "shipped")
+      .filter((o) => o.confirmedAt)
       .reduce((s, o) => s + o.amount, 0);
 
     const deliveredOrders = shippings.filter((s) => s.status === "delivered").length;

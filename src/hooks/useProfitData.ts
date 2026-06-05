@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useDashboardData } from "./useApi";
 import { useMetaAds } from "./useMetaAds";
 import { useProductCosts, getCostForProduct } from "./useProductCosts";
-import { filterOrdersByDate, toParisDate } from "@/utils";
+import { filterOrdersByDate, toParisDate, isDateInFilter } from "@/utils";
 import { getFeeForCountry, computeServiceFees } from "@/utils/fees";
 import { XOF_TO_USD_RATE } from "@/utils/constants";
 import type { DateFilterValue } from "@/utils/dates";
@@ -54,7 +54,9 @@ export function useProfitData(dateFilter: DateFilterValue, metaDatePreset: DateP
     const allProducts = codData.products ?? [];
     const filteredOrders = filterOrdersByDate(orders, dateFilter);
 
-    const confirmedOrders = filteredOrders.filter((o) => o.status === "confirmed" || o.status === "delivered");
+    const confirmedOrders = dateFilter === "all"
+      ? orders.filter((o) => o.confirmedAt)
+      : orders.filter((o) => isDateInFilter(o.confirmedAt, dateFilter));
 
     const revenue = confirmedOrders.reduce((s, o) => s + o.amount, 0);
     const totalQuantity = confirmedOrders.reduce((s, o) => s + o.quantity, 0);

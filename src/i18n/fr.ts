@@ -108,7 +108,7 @@ const fr = {
     avgOrderValueTooltip: "Revenu total / Total commandes. Montant moyen par commande.",
     productsSoldTooltip: "Nombre de produits uniques trouvés dans les commandes de cette période.",
     pendingTooltip: "Commandes en attente — non encore traitées ou confirmées.",
-    confirmedOrdersTooltip: "Commandes confirmées — traitées et payées par CodinAfrica.",
+    confirmedOrdersTooltip: "Commandes confirmées par le centre d'appels (teleConsultantConfirm.date).",
   },
   status: {
     pending: "En Attente",

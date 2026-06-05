@@ -33,26 +33,27 @@ export function toParisDate(dateStr?: string): string {
   }
 }
 
-export function filterOrdersByDate<T extends { date?: string }>(orders: T[], filter: DateFilterValue): T[] {
+export function isDateInFilter(dateStr: string | undefined | null, filter: DateFilterValue): boolean {
+  if (!dateStr || filter === "all") return filter === "all";
+  const d = toParisDate(dateStr);
+  if (!d) return false;
   const now = new Date();
   const today = now.toLocaleDateString("en-CA", { timeZone: TIMEZONE });
   const yesterday = new Date(now.getTime() - 86400000).toLocaleDateString("en-CA", { timeZone: TIMEZONE });
   const d7 = new Date(now.getTime() - 7 * 86400000).toLocaleDateString("en-CA", { timeZone: TIMEZONE });
   const d30 = new Date(now.getTime() - 30 * 86400000).toLocaleDateString("en-CA", { timeZone: TIMEZONE });
-  const todayParis = now.toLocaleDateString("en-CA", { timeZone: TIMEZONE });
-  const [y, m] = todayParis.split("-").map(Number);
+  const [y, m] = today.split("-").map(Number);
   const thisMonthStart = `${y}-${String(m).padStart(2, "0")}-01`;
   const thisYearStart = `${y}-01-01`;
+  if (filter === "today") return d === today;
+  if (filter === "yesterday") return d === yesterday;
+  if (filter === "7d") return d >= d7;
+  if (filter === "30d") return d >= d30;
+  if (filter === "thisMonth") return d >= thisMonthStart;
+  if (filter === "thisYear") return d >= thisYearStart;
+  return true;
+}
 
-  return orders.filter((o) => {
-    const d = toParisDate(o.date);
-    if (!d) return false;
-    if (filter === "today") return d === today;
-    if (filter === "yesterday") return d === yesterday;
-    if (filter === "7d") return d >= d7;
-    if (filter === "30d") return d >= d30;
-    if (filter === "thisMonth") return d >= thisMonthStart;
-    if (filter === "thisYear") return d >= thisYearStart;
-    return true;
-  });
+export function filterOrdersByDate<T extends { date?: string }>(orders: T[], filter: DateFilterValue): T[] {
+  return orders.filter((o) => isDateInFilter(o.date, filter));
 }

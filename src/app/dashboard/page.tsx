@@ -19,7 +19,7 @@ import { RecommendationsPanel } from "@/components/RecommendationsPanel";
 import { useDashboardData } from "@/hooks";
 import { useMetaAds } from "@/hooks/useMetaAds";
 import { useRecommendations } from "@/hooks/useRecommendations";
-import { formatCurrency, formatNumber, formatPercentage, formatDate, filterOrdersByDate, toParisDate, DATE_FILTER_LABELS, getImageUrlOrFallback, getFeeForCountry, computeServiceFees, COUNTRY_NAMES, COUNTRY_FLAGS } from "@/utils";
+import { formatCurrency, formatNumber, formatPercentage, formatDate, filterOrdersByDate, toParisDate, isDateInFilter, DATE_FILTER_LABELS, getImageUrlOrFallback, getFeeForCountry, computeServiceFees, COUNTRY_NAMES, COUNTRY_FLAGS } from "@/utils";
 import { exportToCSV } from "@/utils/csv";
 import type { DateFilterValue } from "@/utils/dates";
 import type { DatePreset } from "@/types/meta";
@@ -87,17 +87,22 @@ export default function DashboardPage() {
     });
   }, [orders, dateFilter]);
 
+  const confirmedByDate = useMemo(() => {
+    if (dateFilter === "all") return orders.filter((o) => o.confirmedAt);
+    return orders.filter((o) => isDateInFilter(o.confirmedAt, dateFilter));
+  }, [orders, dateFilter]);
+
   const filteredStatusCounts = useMemo(() => {
     let pending = 0, confirmed = 0, cancelled = 0;
     let outOfStock = 0, doubleOrd = 0, transferred = 0, unreached = 0;
-    let confirmedCount = 0, nonCancelled = 0, processed = 0;
+    let nonCancelled = 0, processed = 0;
     let processedRevenue = 0, revenue = 0;
 
     for (const o of filteredOrders) {
       revenue += o.amount;
       if (o.status === "pending") { pending++; nonCancelled++; }
-      else if (o.status === "confirmed" || o.status === "processed") { confirmed++; confirmedCount++; nonCancelled++; processed++; processedRevenue += o.amount; }
-      else if (o.status === "delivered" || o.status === "shipping" || o.status === "shipped") { confirmedCount++; nonCancelled++; }
+      else if (o.status === "confirmed" || o.status === "processed") { confirmed++; nonCancelled++; processed++; processedRevenue += o.amount; }
+      else if (o.status === "delivered" || o.status === "shipping" || o.status === "shipped") { nonCancelled++; }
       else if (o.status === "cancelled") cancelled++;
       else if (o.status === "out_of_stock") outOfStock++;
       else if (o.status === "double") doubleOrd++;
@@ -113,34 +118,45 @@ export default function DashboardPage() {
     const deliveryRate = totalDeliveredAttempts > 0 ? paid / totalDeliveredAttempts : 0;
 
     return {
-      pendingOrders: pending, confirmedOrders: confirmedCount, deliveredOrders: paid,
+      pendingOrders: pending, confirmedOrders: confirmedByDate.length, deliveredOrders: paid,
       cancelledOrders: cancelled, outOfStockOrders: outOfStock, doubleOrders: doubleOrd,
       transferredOrders: transferred, unreachedOrders: unreached,
       returnedOrders: returned, shippedOrders: shipped, deliveredToCustomer: delivered,
       revenue,
-      confirmedCount, nonCancelled, processedOrders: processed, processedRevenue,
-      confRate: nonCancelled > 0 ? confirmedCount / nonCancelled : 0,
+      confirmedCount: confirmedByDate.length, nonCancelled, processedOrders: processed, processedRevenue,
+      confRate: nonCancelled > 0 ? confirmedByDate.length / nonCancelled : 0,
       deliveryRate,
     };
-  }, [filteredOrders, filteredShippings]);
+  }, [filteredOrders, filteredShippings, confirmedByDate]);
 
   const prevStats = useMemo(() => {
     let prevRevenue = 0, prevOrders = 0;
     let prevProcessed = 0, prevProcessedRevenue = 0;
-    let prevPending = 0, prevConfirmed = 0, prevNonCancelled = 0;
+    let prevPending = 0, prevNonCancelled = 0;
+
+    const range = getPreviousPeriodRange(dateFilter);
+    let prevConfirmedCount = 0;
+    if (range) {
+      prevConfirmedCount = orders.filter((o) => {
+        if (!o.confirmedAt) return false;
+        const d = toParisDate(o.confirmedAt);
+        return !!d && d >= range.start && d <= range.end;
+      }).length;
+    }
+
     for (const o of previousOrders) {
       prevRevenue += o.amount;
       prevOrders++;
       if (o.status === "confirmed" || o.status === "processed") {
-        prevProcessed++; prevProcessedRevenue += o.amount; prevConfirmed++; prevNonCancelled++;
+        prevProcessed++; prevProcessedRevenue += o.amount; prevNonCancelled++;
       } else if (o.status === "pending") { prevPending++; prevNonCancelled++; }
-      else if (o.status === "delivered" || o.status === "shipping" || o.status === "shipped") { prevConfirmed++; prevNonCancelled++; }
+      else if (o.status === "delivered" || o.status === "shipping" || o.status === "shipped") { prevNonCancelled++; }
     }
     return {
       prevRevenue, prevOrders, prevProcessed, prevProcessedRevenue,
-      prevPending, prevConfirmed, prevNonCancelled,
+      prevPending, prevConfirmed: prevConfirmedCount, prevNonCancelled,
     };
-  }, [previousOrders]);
+  }, [previousOrders, orders, dateFilter]);
 
   const filteredServiceFees = useMemo(() => {
     const byCountry = new Map<string, number>();
@@ -393,6 +409,7 @@ export default function DashboardPage() {
             icon={<CheckCircle className="w-5 h-5" />}
             color="success"
             delay={450}
+            subtitle="call center confirmation date"
             loading={isLoading}
             tooltip={t("dashboard.confirmedOrdersTooltip")}
             trend={computeTrend(filteredStatusCounts.confirmedOrders, prevStats.prevConfirmed)}
