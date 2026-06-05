@@ -94,7 +94,7 @@ export default function DashboardPage() {
     for (const o of filteredOrders) {
       revenue += o.amount;
       if (o.status === "pending") { pending++; nonCancelled++; }
-      else if (o.status === "confirmed") { confirmed++; confirmedCount++; nonCancelled++; processed++; processedRevenue += o.amount; }
+      else if (o.status === "confirmed" || o.status === "processed") { confirmed++; confirmedCount++; nonCancelled++; processed++; processedRevenue += o.amount; }
       else if (o.status === "delivered" || o.status === "shipping" || o.status === "shipped") { confirmedCount++; nonCancelled++; }
       else if (o.status === "cancelled") cancelled++;
       else if (o.status === "out_of_stock") outOfStock++;
@@ -111,7 +111,7 @@ export default function DashboardPage() {
     const deliveryRate = totalDeliveredAttempts > 0 ? paid / totalDeliveredAttempts : 0;
 
     return {
-      pendingOrders: pending, confirmedOrders: confirmed, deliveredOrders: paid,
+      pendingOrders: pending, confirmedOrders: confirmedCount, deliveredOrders: paid,
       cancelledOrders: cancelled, outOfStockOrders: outOfStock, doubleOrders: doubleOrd,
       transferredOrders: transferred, unreachedOrders: unreached,
       returnedOrders: returned, shippedOrders: shipped, deliveredToCustomer: delivered,

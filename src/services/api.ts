@@ -415,15 +415,15 @@ class ApiService {
     const double = orders.filter((o) => o.status === "double").length;
     const transferred = orders.filter((o) => o.status === "transferred").length;
     const unreached = orders.filter((o) => o.status === "unreached").length;
-    const processedOrders = orders.filter((o) => o.status === "confirmed").length;
-    const confirmedOrders = orders.filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping" || o.status === "shipped").length;
+    const processedOrders = orders.filter((o) => o.status === "confirmed" || o.status === "processed").length;
+    const confirmedOrders = orders.filter((o) => o.status === "confirmed" || o.status === "processed" || o.status === "delivered" || o.status === "shipping" || o.status === "shipped").length;
     const nonCancelled = total - cancelled - outOfStock - double - transferred - unreached;
     const uniqueProducts = new Set(products.map((p) => p.id)).size;
     const processedRevenue = orders
-      .filter((o) => o.status === "confirmed")
+      .filter((o) => o.status === "confirmed" || o.status === "processed")
       .reduce((s, o) => s + o.amount, 0);
     const confirmedRevenue = orders
-      .filter((o) => o.status === "confirmed" || o.status === "delivered" || o.status === "shipping" || o.status === "shipped")
+      .filter((o) => o.status === "confirmed" || o.status === "processed" || o.status === "delivered" || o.status === "shipping" || o.status === "shipped")
       .reduce((s, o) => s + o.amount, 0);
 
     const deliveredOrders = shippings.filter((s) => s.status === "delivered").length;
@@ -445,7 +445,7 @@ class ApiService {
     let serviceFeesTotal = 0;
     const processedByCountry = new Map<string, number>();
     for (const o of orders) {
-      if (o.status === "confirmed") {
+      if (o.status === "confirmed" || o.status === "processed") {
         const c = o.country || "XX";
         processedByCountry.set(c, (processedByCountry.get(c) || 0) + 1);
       }
