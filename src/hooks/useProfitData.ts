@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { useDashboardData } from "./useApi";
 import { useMetaAds } from "./useMetaAds";
 import { useProductCosts, getCostForProduct } from "./useProductCosts";
-import { filterOrdersByDate } from "@/utils";
+import { filterOrdersByDate, toParisDate } from "@/utils";
 import { getFeeForCountry, computeServiceFees } from "@/utils/fees";
 import { XOF_TO_USD_RATE } from "@/utils/constants";
 import type { DateFilterValue } from "@/utils/dates";
@@ -98,7 +98,7 @@ export function useProfitData(dateFilter: DateFilterValue, metaDatePreset: DateP
       upsellTotal += uc;
       if (!settings) unconfiguredOrders += 1;
 
-      const day = o.date?.substring(0, 10) || "unknown";
+      const day = toParisDate(o.date) || "unknown";
       if (!dailyMap.has(day)) dailyMap.set(day, { revenue: 0, orders: 0, costs: [] });
       const entry = dailyMap.get(day)!;
       entry.revenue += o.amount;

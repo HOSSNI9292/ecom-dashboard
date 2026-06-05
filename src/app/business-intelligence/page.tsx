@@ -12,7 +12,7 @@ import { RevenueChart } from "@/components/charts/RevenueChart";
 import { PageWrapper } from "@/components/PageWrapper";
 import { DateFilter } from "@/components/DateFilter";
 import { useDashboardData } from "@/hooks";
-import { formatCurrency, formatNumber, formatPercentage, filterOrdersByDate, getFeeForCountry, computeServiceFees, COUNTRY_NAMES } from "@/utils";
+import { formatCurrency, formatNumber, formatPercentage, filterOrdersByDate, toParisDate, getFeeForCountry, computeServiceFees, COUNTRY_NAMES } from "@/utils";
 import { exportToExcel } from "@/utils/excel";
 import type { ExcelColumn } from "@/utils/excel";
 import type { DateFilterValue } from "@/utils/dates";
@@ -101,7 +101,7 @@ export default function BusinessIntelligencePage() {
   const filteredTrend = useMemo(() => {
     const dayMap = new Map<string, { revenue: number; orders: number }>();
     for (const o of filteredOrders as Order[]) {
-      const day = o.date?.substring(0, 10);
+      const day = toParisDate(o.date);
       if (!day) continue;
       if (!dayMap.has(day)) dayMap.set(day, { revenue: 0, orders: 0 });
       const e = dayMap.get(day)!;
@@ -180,7 +180,7 @@ export default function BusinessIntelligencePage() {
         productName: o.productName,
         amount: o.amount,
         status: o.status,
-        date: o.date?.substring(0, 10),
+        date: toParisDate(o.date),
       })),
       "bi_orders",
       ordersCols

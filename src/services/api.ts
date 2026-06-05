@@ -10,7 +10,7 @@ import type {
   RevenuePoint,
   ApiResponse,
 } from "@/types";
-import { COUNTRY_NAMES, COUNTRY_FLAGS, COUNTRY_CURRENCIES, STATUS_MAP, DEFAULT_API_URL } from "@/utils";
+import { COUNTRY_NAMES, COUNTRY_FLAGS, COUNTRY_CURRENCIES, STATUS_MAP, DEFAULT_API_URL, toParisDate } from "@/utils";
 import { getFeeForCountry, computeServiceFees } from "@/utils/fees";
 
 const STORAGE_KEY = "cod_dashboard_credentials";
@@ -546,7 +546,7 @@ class ApiService {
   private computeRevenueTrend(orders: Order[]): RevenuePoint[] {
     const dayMap = new Map<string, { revenue: number; orders: number }>();
     for (const o of orders) {
-      const day = o.date?.substring(0, 10);
+      const day = toParisDate(o.date);
       if (!day) continue;
       if (!dayMap.has(day)) dayMap.set(day, { revenue: 0, orders: 0 });
       const entry = dayMap.get(day)!;

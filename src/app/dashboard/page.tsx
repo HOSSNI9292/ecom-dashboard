@@ -19,7 +19,7 @@ import { RecommendationsPanel } from "@/components/RecommendationsPanel";
 import { useDashboardData } from "@/hooks";
 import { useMetaAds } from "@/hooks/useMetaAds";
 import { useRecommendations } from "@/hooks/useRecommendations";
-import { formatCurrency, formatNumber, formatPercentage, formatDate, filterOrdersByDate, DATE_FILTER_LABELS, getImageUrlOrFallback, getFeeForCountry, computeServiceFees, COUNTRY_NAMES, COUNTRY_FLAGS } from "@/utils";
+import { formatCurrency, formatNumber, formatPercentage, formatDate, filterOrdersByDate, toParisDate, DATE_FILTER_LABELS, getImageUrlOrFallback, getFeeForCountry, computeServiceFees, COUNTRY_NAMES, COUNTRY_FLAGS } from "@/utils";
 import { exportToCSV } from "@/utils/csv";
 import type { DateFilterValue } from "@/utils/dates";
 import type { DatePreset } from "@/types/meta";
@@ -27,33 +27,35 @@ import type { Order, Product, CodinAfricaShipping } from "@/types";
 
 function getPreviousPeriodRange(filter: DateFilterValue): { start: string; end: string } | null {
   const now = new Date();
+  const paris = (d: Date) => d.toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
+
   if (filter === "today") {
-    const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
-    const yesterdayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).toISOString();
-    return { start: yesterdayStart, end: todayStart };
+    const d = paris(new Date(now.getTime() - 86400000));
+    return { start: d, end: d };
   }
   if (filter === "yesterday") {
-    const yesterdayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1).toISOString();
-    const d2Start = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 2).toISOString();
-    return { start: d2Start, end: yesterdayStart };
+    const d1 = paris(new Date(now.getTime() - 86400000));
+    const d2 = paris(new Date(now.getTime() - 2 * 86400000));
+    return { start: d2, end: d1 };
   }
   if (filter === "7d") {
-    return { start: new Date(now.getTime() - 14 * 86400000).toISOString(), end: new Date(now.getTime() - 7 * 86400000).toISOString() };
+    return { start: paris(new Date(now.getTime() - 14 * 86400000)), end: paris(new Date(now.getTime() - 7 * 86400000)) };
   }
   if (filter === "30d") {
-    return { start: new Date(now.getTime() - 60 * 86400000).toISOString(), end: new Date(now.getTime() - 30 * 86400000).toISOString() };
+    return { start: paris(new Date(now.getTime() - 60 * 86400000)), end: paris(new Date(now.getTime() - 30 * 86400000)) };
   }
   if (filter === "thisMonth") {
-    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
-    return { start: lastMonthStart, end: thisMonthStart };
+    const todayParis = paris(now);
+    const [y, m] = todayParis.split("-").map(Number);
+    const lmY = m === 1 ? y - 1 : y;
+    const lmM = m === 1 ? 12 : m - 1;
+    return { start: paris(new Date(Date.UTC(lmY, lmM - 1, 1))), end: paris(new Date(Date.UTC(y, m - 1, 1))) };
   }
   if (filter === "thisYear") {
-    const thisYearStart = new Date(now.getFullYear(), 0, 1).toISOString();
-    const lastYearStart = new Date(now.getFullYear() - 1, 0, 1).toISOString();
-    return { start: lastYearStart, end: thisYearStart };
+    const thisY = Number(paris(now).substring(0, 4));
+    return { start: `${thisY - 1}-01-01`, end: `${thisY}-01-01` };
   }
-  return { start: new Date(now.getTime() - 60 * 86400000).toISOString(), end: new Date(now.getTime() - 30 * 86400000).toISOString() };
+  return null;
 }
 
 function computeTrend(current: number, previous: number): { value: number; isUp: boolean } | undefined {
@@ -80,8 +82,8 @@ export default function DashboardPage() {
     const range = getPreviousPeriodRange(dateFilter);
     if (!range) return [];
     return orders.filter((o) => {
-      if (!o.date) return false;
-      return o.date >= range.start && o.date < range.end;
+      const d = toParisDate(o.date);
+      return !!d && d >= range.start && d <= range.end;
     });
   }, [orders, dateFilter]);
 
@@ -176,7 +178,7 @@ export default function DashboardPage() {
   const filteredRevenueTrend = useMemo(() => {
     const dayMap = new Map<string, { revenue: number; orders: number }>();
     for (const o of filteredOrders) {
-      const day = o.date?.substring(0, 10);
+      const day = toParisDate(o.date);
       if (!day) continue;
       if (!dayMap.has(day)) dayMap.set(day, { revenue: 0, orders: 0 });
       const entry = dayMap.get(day)!;
@@ -260,7 +262,7 @@ export default function DashboardPage() {
         productName: o.productName,
         amount: o.amount,
         status: o.status,
-        date: o.date?.substring(0, 10),
+        date: toParisDate(o.date),
       })),
       "orders_export",
       { orderId: "Order ID", customerName: "Customer", phone: "Phone", country: "Country", productName: "Product", amount: "Amount (XOF)", status: "Status", date: "Date" }

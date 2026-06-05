@@ -10,7 +10,7 @@ import { PageWrapper } from "@/components/PageWrapper";
 import { OrderModal } from "@/components/OrderModal";
 import { DateFilter } from "@/components/DateFilter";
 import { useOrders } from "@/hooks";
-import { formatCurrency, formatDate, getImageUrlOrFallback, filterOrdersByDate } from "@/utils";
+import { formatCurrency, formatDate, getImageUrlOrFallback, filterOrdersByDate, toParisDate } from "@/utils";
 import { exportToCSV } from "@/utils/csv";
 import type { Order } from "@/types";
 import type { DateFilterValue } from "@/utils/dates";
@@ -94,7 +94,7 @@ export default function OrdersPage() {
         productName: o.productName,
         amount: o.amount,
         status: o.status,
-        date: o.date?.substring(0, 10),
+        date: toParisDate(o.date),
       })),
       "orders_export",
       { orderId: "Order ID", customerName: "Customer", phone: "Phone", country: "Country", productName: "Product", amount: "Amount (XOF)", status: "Status", date: "Date" }

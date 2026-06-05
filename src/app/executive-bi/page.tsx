@@ -12,7 +12,7 @@ import {
 import { Card, CardHeader, CardTitle } from "@/components/ui/Card";
 import { PageWrapper } from "@/components/PageWrapper";
 import { useDashboardData, useLowStockProducts, useOutOfStockProducts } from "@/hooks";
-import { formatCurrency, formatNumber, formatPercentage, getFeeForCountry, computeServiceFees, COUNTRY_NAMES } from "@/utils";
+import { formatCurrency, formatNumber, formatPercentage, toParisDate, getFeeForCountry, computeServiceFees, COUNTRY_NAMES } from "@/utils";
 import { exportToExcel } from "@/utils/excel";
 import { exportToCSV } from "@/utils/csv";
 import { getCached, setCache } from "@/utils/cache";
@@ -92,18 +92,20 @@ export default function ExecutiveBIPage() {
   const outOfStockProducts = useMemo(() => productAgg.filter((p) => p.stockQuantity === 0).sort((a, b) => a.name.localeCompare(b.name)), [productAgg]);
 
   const kpi = useMemo(() => {
-    const dates = orders.map((o) => o.date?.substring(0, 10)).filter(Boolean);
+    const dates = orders.map((o) => toParisDate(o.date)).filter(Boolean);
     const uniqueDays = new Set(dates).size || 1;
     const totalRevenue = orders.reduce((s, o) => s + o.amount, 0);
     const avgRevenuePerDay = totalRevenue / uniqueDays;
     const avgOrdersPerDay = orders.length / uniqueDays;
     const avgOrderValue = orders.length > 0 ? totalRevenue / orders.length : 0;
 
-    const now = new Date();
-    const thirtyDaysAgo = new Date(now.getTime() - 30 * 86400000).toISOString().substring(0, 10);
-    const sixtyDaysAgo = new Date(now.getTime() - 60 * 86400000).toISOString().substring(0, 10);
-    const recentOrders = orders.filter((o) => o.date >= thirtyDaysAgo);
-    const prevOrders = orders.filter((o) => o.date >= sixtyDaysAgo && o.date < thirtyDaysAgo);
+    const thirtyDaysAgo = new Date(new Date().getTime() - 30 * 86400000).toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
+    const sixtyDaysAgo = new Date(new Date().getTime() - 60 * 86400000).toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
+    const recentOrders = orders.filter((o) => toParisDate(o.date) >= thirtyDaysAgo);
+    const prevOrders = orders.filter((o) => {
+      const d = toParisDate(o.date);
+      return !!d && d >= sixtyDaysAgo && d < thirtyDaysAgo;
+    });
     const recentRevenue = recentOrders.reduce((s, o) => s + o.amount, 0);
     const prevRevenue = prevOrders.reduce((s, o) => s + o.amount, 0);
     const revenueGrowth = prevRevenue > 0 ? (recentRevenue - prevRevenue) / prevRevenue : 0;
