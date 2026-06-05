@@ -1,6 +1,17 @@
 "use client";
 import { useEffect, useState } from "react";
-import { STATUS_MAP } from "@/utils/constants";
+
+function flattenKeys(obj: any, prefix = ""): string[] {
+  const keys: string[] = [];
+  for (const k of Object.keys(obj || {})) {
+    const fullKey = prefix ? `${prefix}.${k}` : k;
+    keys.push(fullKey);
+    if (obj[k] && typeof obj[k] === "object" && !Array.isArray(obj[k]) && k !== "customer" && k !== "status" && k !== "details") {
+      keys.push(...flattenKeys(obj[k], fullKey));
+    }
+  }
+  return keys;
+}
 
 export default function DebugStatusesPage() {
   const [data, setData] = useState<any>(null);
@@ -14,69 +25,92 @@ export default function DebugStatusesPage() {
         const all = await api.fetchAllOrders();
         const today = new Date().toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
 
-        // Today orders by createdAt + Europe/Paris
-        const todayOrders = all.filter((o: any) => {
+        const todayOrders: any[] = all.filter((o: any) => {
           if (!o.createdAt) return false;
           try {
             return new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "Europe/Paris" }) === today;
           } catch { return false; }
         });
 
-        // Group by raw status name
-        const byStatus: Record<string, any[]> = {};
-        for (const o of todayOrders) {
-          const s = o.status?.name || "unknown";
-          if (!byStatus[s]) byStatus[s] = [];
-          byStatus[s].push(o);
+        // 1. Discover ALL unique top-level keys across today's orders
+        const allKeys = new Set<string>();
+        const topKeys = new Set<string>();
+        for (const raw of todayOrders) {
+          const o: any = raw;
+          for (const k of Object.keys(o)) {
+            topKeys.add(k);
+            allKeys.add(k);
+          }
+          for (const k of Object.keys(o)) {
+            if (o[k] && typeof o[k] === "object" && !Array.isArray(o[k])) {
+              for (const sk of Object.keys(o[k])) {
+                allKeys.add(`${k}.${sk}`);
+              }
+            }
+          }
         }
 
-        // For each status, show the mapped value and count
-        const statusSummary = Object.entries(byStatus).map(([name, orders]) => ({
-          name,
-          mapped: STATUS_MAP[name] || name.toLowerCase(),
-          count: orders.length,
-          orders: orders.map((o: any) => ({
-            id: o.id || o._id,
-            statusName: o.status?.name,
-            statusId: o.status?._id,
-            createdAt: o.createdAt,
-            createdAtParis: new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "Europe/Paris" }),
-            customer: o.customer?.fullName,
-            phone: o.customer?.phone,
-            country: o.customer?.country,
-            city: o.customer?.city,
-            totalPrice: o.totalPrice,
-            source: o.source,
-          })),
-        }));
+        const sortedKeys = Array.from(allKeys).sort();
 
-        // Simulate what our dashboard counts
-        const dashboardConfirmed = todayOrders.filter((o: any) => {
-          const raw = o.status?.name || "unknown";
-          const mapped = STATUS_MAP[raw] || raw.toLowerCase();
-          return ["confirmed", "processed", "delivered", "shipping", "shipped"].includes(mapped);
-        }).length;
+        // 2. Look for call-center / confirmation related fields in each order
+        const searchTerms = ["valid", "confirm", "call", "srr", "consult", "callcenter", "call_center", "status_", "approv", "reject"];
+        const callCenterFields = sortedKeys.filter((k) =>
+          searchTerms.some((t) => k.toLowerCase().includes(t))
+        );
 
-        // If COD Africa says 25, check what 9 extra are
-        const dashboardNotConfirmed = todayOrders.filter((o: any) => {
-          const raw = o.status?.name || "unknown";
-          const mapped = STATUS_MAP[raw] || raw.toLowerCase();
-          return !["confirmed", "processed", "delivered", "shipping", "shipped"].includes(mapped);
+        // 3. Build a table: each row = order, each column = potential call-center field
+        const callCenterData = todayOrders.map((o: any) => {
+          const row: any = { id: o.id || o._id, statusName: o.status?.name };
+          for (const field of callCenterFields) {
+            const parts = field.split(".");
+            let val: any = o;
+            for (const p of parts) {
+              val = val?.[p];
+            }
+            row[field] = val !== undefined ? JSON.stringify(val) : "";
+          }
+          return row;
         });
 
+        // 4. Full raw dump of first 3 orders
+        const rawSamples = todayOrders.slice(0, 3).map((o: any) => {
+          const sanitized = JSON.parse(JSON.stringify(o));
+          return sanitized;
+        });
+
+        // 5. Compute confirmed using a hypothetical rule
+        // Check if any field has truthy values that could indicate confirmation
+        const fieldAnalysis: Record<string, { values: Set<string>; count: number }> = {};
+        for (const field of callCenterFields) {
+          const info = { values: new Set<string>(), count: 0 };
+          for (const o of todayOrders) {
+            const parts = field.split(".");
+            let val: any = o;
+            for (const p of parts) {
+              val = val?.[p];
+            }
+            const str = val !== undefined && val !== null ? JSON.stringify(val) : "undefined";
+            info.values.add(str);
+            if (val !== undefined && val !== null && val !== false && val !== "") {
+              info.count++;
+            }
+          }
+          fieldAnalysis[field] = info;
+        }
+
         setData({
-          today,
-          total: todayOrders.length,
-          dashboardConfirmed,
-          codAfricaConfirmed: 25,
-          gap: 25 - dashboardConfirmed,
-          statusSummary,
-          dashboardNotConfirmed: dashboardNotConfirmed.map((o: any) => ({
-            id: o.id || o._id,
-            statusName: o.status?.name,
-            mapped: STATUS_MAP[o.status?.name || "unknown"] || (o.status?.name || "unknown").toLowerCase(),
-            createdAt: o.createdAt,
-          })),
+          today, total: todayOrders.length,
+          topKeys: Array.from(topKeys).sort(),
+          allKeys: sortedKeys,
+          callCenterFields,
+          callCenterData,
+          fieldAnalysis,
+          rawSamples,
+          statusCounts: todayOrders.reduce((acc: any, o: any) => {
+            const s = o.status?.name || "unknown";
+            acc[s] = (acc[s] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>),
         });
       } catch (e: any) {
         setError(e.message);
@@ -91,103 +125,103 @@ export default function DebugStatusesPage() {
   if (!data) return <div className="p-8 text-white">No data</div>;
 
   return (
-    <div className="p-8 text-white max-w-6xl mx-auto space-y-8">
-      <h1 className="text-2xl font-bold">COD Africa Confirmed Orders Investigation</h1>
-      <p>Date (Europe/Paris): <strong>{data.today}</strong></p>
-      <p>API orders today: <strong>{data.total}</strong> | Dashboard Confirmed: <strong>{data.dashboardConfirmed}</strong></p>
-      <p>COD Africa UI Confirmed: <strong>{data.codAfricaConfirmed}</strong> | Gap: <strong>{data.gap} orders</strong></p>
+    <div className="p-8 text-white max-w-7xl mx-auto space-y-8">
+      <h1 className="text-2xl font-bold">Order Fields Deep Investigation</h1>
+      <p>Date (Europe/Paris): <strong>{data.today}</strong> | Orders today: <strong>{data.total}</strong></p>
+      <p>Status breakdown: {Object.entries(data.statusCounts as Record<string, number>).map(([k, v]) => `${k}=${v}`).join(", ")}</p>
+      <p>COD Africa Confirmed: <strong>25</strong></p>
 
       <div>
-        <h2 className="text-xl font-semibold mb-2">Status Summary</h2>
-        <table className="w-full border-collapse">
-          <thead>
-            <tr className="border-b border-gray-700">
-              <th className="text-left py-2 px-3">Raw Status</th>
-              <th className="text-left py-2 px-3">Mapped To</th>
-              <th className="text-right py-2 px-3">Count</th>
-              <th className="text-center py-2 px-3">In Dashboard Confirmed?</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.statusSummary.map((s: any) => {
-              const isConfirmed = ["confirmed", "processed", "delivered", "shipping", "shipped"].includes(s.mapped);
-              return (
-                <tr key={s.name} className={`border-b border-gray-800 ${isConfirmed ? "bg-green-900/20" : ""}`}>
-                  <td className="py-2 px-3">{s.name}</td>
-                  <td className="py-2 px-3">{s.mapped}</td>
-                  <td className="text-right py-2 px-3 font-mono">{s.count}</td>
-                  <td className="text-center py-2 px-3">{isConfirmed ? "✅" : "❌"}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <h2 className="text-xl font-semibold mb-2">All Top-Level Keys in Order Objects</h2>
+        <div className="bg-gray-900 p-4 rounded text-xs font-mono overflow-x-auto">
+          {data.topKeys.join(", ")}
+        </div>
       </div>
 
       <div>
-        <h2 className="text-xl font-semibold mb-2">All Orders Not in Dashboard Confirmed</h2>
-        <p className="text-sm text-gray-400 mb-2">These {data.dashboardNotConfirmed.length} orders are NOT counted as Confirmed by the dashboard. Compare with COD Africa UI to identify which 9 should be.</p>
-        <table className="w-full border-collapse text-xs">
-          <thead>
-            <tr className="border-b border-gray-700">
-              <th className="text-left py-2 px-2">ID</th>
-              <th className="text-left py-2 px-2">Raw Status</th>
-              <th className="text-left py-2 px-2">Mapped</th>
-              <th className="text-left py-2 px-2">createdAt (Paris)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.dashboardNotConfirmed.map((o: any) => {
-              const parisDate = new Date(o.createdAt).toLocaleDateString("en-CA", { timeZone: "Europe/Paris" });
-              const parisTime = new Date(o.createdAt).toLocaleTimeString("fr-FR", { timeZone: "Europe/Paris" });
-              return (
-                <tr key={o.id} className="border-b border-gray-800">
-                  <td className="py-1 px-2 font-mono">{o.id}</td>
-                  <td className="py-1 px-2">{o.statusName}</td>
-                  <td className="py-1 px-2">{o.mapped}</td>
-                  <td className="py-1 px-2">{parisDate} {parisTime}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+        <h2 className="text-xl font-semibold mb-2">Call-Center Related Fields Found</h2>
+        {data.callCenterFields.length === 0 ? (
+          <p className="text-yellow-400">No call-center related fields found in top-level or direct nested objects.</p>
+        ) : (
+          <div className="bg-gray-900 p-4 rounded text-xs font-mono overflow-x-auto">
+            {data.callCenterFields.join(", ")}
+          </div>
+        )}
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold mb-2">Field Value Analysis (truthy count / total)</h3>
+          <table className="w-full border-collapse text-xs">
+            <thead>
+              <tr className="border-b border-gray-700">
+                <th className="text-left py-2 px-3">Field</th>
+                <th className="text-right py-2 px-3">Truthy / Total</th>
+                <th className="text-left py-2 px-3">Unique Values</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.callCenterFields.map((field: string) => {
+                const info = data.fieldAnalysis[field];
+                const vals = Array.from(info.values).slice(0, 10);
+                return (
+                  <tr key={field} className="border-b border-gray-800 font-mono">
+                    <td className="py-1 px-3 text-xs">{field}</td>
+                    <td className="text-right py-1 px-3">{info.count}/{data.total}</td>
+                    <td className="py-1 px-3 text-xs">{vals.join(", ")}{info.values.size > 10 ? `... (${info.values.size} total)` : ""}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
 
-      <div>
-        <h2 className="text-xl font-semibold mb-2">All Orders Today — Detailed Listing</h2>
-        <p className="text-sm text-gray-400 mb-2">Compare each order with COD Africa UI. Mark which ones COD Africa counts as "Confirmed".</p>
-        {data.statusSummary.map((s: any) => (
-          <div key={s.name} className="mb-6">
-            <h3 className="text-lg font-semibold mb-1">{s.name} ({s.count} orders)</h3>
+      {data.callCenterFields.length > 0 && (
+        <div>
+          <h2 className="text-xl font-semibold mb-2">Call-Center Field Values per Order</h2>
+          <div className="overflow-x-auto">
             <table className="w-full border-collapse text-xs">
               <thead>
                 <tr className="border-b border-gray-700">
-                  <th className="text-left py-1 px-2">Order ID</th>
-                  <th className="text-left py-1 px-2">Status</th>
-                  <th className="text-left py-1 px-2">Customer</th>
-                  <th className="text-left py-1 px-2">Phone</th>
-                  <th className="text-left py-1 px-2">Country</th>
-                  <th className="text-left py-1 px-2">Amount</th>
-                  <th className="text-left py-1 px-2">Source</th>
-                  <th className="text-left py-1 px-2">createdAt (Paris)</th>
+                  <th className="text-left py-1 px-2 sticky left-0 bg-[#0F172A]">ID</th>
+                  <th className="text-left py-1 px-2 sticky left-0 bg-[#0F172A]">Status</th>
+                  {data.callCenterFields.map((f: string) => (
+                    <th key={f} className="text-left py-1 px-2">{f}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {s.orders.map((o: any) => (
-                  <tr key={o.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                    <td className="py-1 px-2 font-mono">{o.id}</td>
-                    <td className="py-1 px-2">{o.statusName}</td>
-                    <td className="py-1 px-2">{o.customer}</td>
-                    <td className="py-1 px-2">{o.phone}</td>
-                    <td className="py-1 px-2">{o.country}</td>
-                    <td className="py-1 px-2">{o.totalPrice}</td>
-                    <td className="py-1 px-2">{o.source}</td>
-                    <td className="py-1 px-2">{new Date(o.createdAt).toLocaleString("fr-FR", { timeZone: "Europe/Paris" })}</td>
+                {data.callCenterData.map((row: any, i: number) => (
+                  <tr key={i} className="border-b border-gray-800">
+                    <td className="py-1 px-2 font-mono sticky left-0 bg-[#0F172A]">{row.id}</td>
+                    <td className="py-1 px-2 sticky left-0 bg-[#0F172A]">{row.statusName}</td>
+                    {data.callCenterFields.map((f: string) => (
+                      <td key={f} className="py-1 px-2">{row[f]}</td>
+                    ))}
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      <div>
+        <h2 className="text-xl font-semibold mb-2">All Fields (keys) — Complete List</h2>
+        <details>
+          <summary className="cursor-pointer text-sm text-blue-400">{data.allKeys.length} unique keys</summary>
+          <div className="bg-gray-900 p-4 rounded text-xs font-mono overflow-x-auto mt-2 whitespace-pre-wrap">
+            {data.allKeys.join("\n")}
+          </div>
+        </details>
+      </div>
+
+      <div>
+        <h2 className="text-xl font-semibold mb-2">Raw JSON — Sample Orders (first 3)</h2>
+        <p className="text-sm text-gray-400 mb-2">Full raw object from API for each sample order.</p>
+        {data.rawSamples.map((o: any, i: number) => (
+          <details key={i} className="mb-4">
+            <summary className="cursor-pointer text-sm text-blue-400">Order {o.id || o._id} ({o.status?.name})</summary>
+            <pre className="bg-gray-900 p-4 rounded text-xs overflow-x-auto mt-2">{JSON.stringify(o, null, 2)}</pre>
+          </details>
         ))}
       </div>
     </div>
