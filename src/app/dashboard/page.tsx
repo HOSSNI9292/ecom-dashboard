@@ -129,7 +129,7 @@ export default function DashboardPage() {
     for (const o of previousOrders) {
       prevRevenue += o.amount;
       prevOrders++;
-      if (o.status === "confirmed") {
+      if (o.status === "confirmed" || o.status === "processed") {
         prevProcessed++; prevProcessedRevenue += o.amount; prevConfirmed++; prevNonCancelled++;
       } else if (o.status === "pending") { prevPending++; prevNonCancelled++; }
       else if (o.status === "delivered" || o.status === "shipping" || o.status === "shipped") { prevConfirmed++; prevNonCancelled++; }
@@ -143,7 +143,7 @@ export default function DashboardPage() {
   const filteredServiceFees = useMemo(() => {
     const byCountry = new Map<string, number>();
     for (const o of filteredOrders) {
-      if (o.status === "confirmed") {
+      if (o.status === "confirmed" || o.status === "processed") {
         const c = o.country || "XX";
         byCountry.set(c, (byCountry.get(c) || 0) + 1);
       }
@@ -158,7 +158,7 @@ export default function DashboardPage() {
   const prevServiceFees = useMemo(() => {
     const byCountry = new Map<string, number>();
     for (const o of previousOrders) {
-      if (o.status === "confirmed") {
+      if (o.status === "confirmed" || o.status === "processed") {
         const c = o.country || "XX";
         byCountry.set(c, (byCountry.get(c) || 0) + 1);
       }
@@ -375,6 +375,46 @@ export default function DashboardPage() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
+            title={t("dashboard.pending")}
+            value={formatNumber(filteredStatusCounts.pendingOrders)}
+            icon={<Clock className="w-5 h-5" />}
+            color="warning"
+            delay={400}
+            subtitle={`${filteredOrders.length > 0 ? ((filteredStatusCounts.pendingOrders / filteredOrders.length) * 100).toFixed(1) : 0}${t("dashboard.percentOfTotal")}`}
+            loading={isLoading}
+            tooltip={t("dashboard.pendingTooltip")}
+            trend={computeTrend(filteredStatusCounts.pendingOrders, prevStats.prevPending)}
+          />
+          <StatCard
+            title={t("dashboard.confirmedOrders")}
+            value={formatNumber(filteredStatusCounts.confirmedOrders)}
+            icon={<CheckCircle className="w-5 h-5" />}
+            color="success"
+            delay={450}
+            loading={isLoading}
+            tooltip={t("dashboard.confirmedOrdersTooltip")}
+            trend={computeTrend(filteredStatusCounts.confirmedOrders, prevStats.prevConfirmed)}
+          />
+          <StatCard
+            title="Cancelled"
+            value={formatNumber(filteredStatusCounts.cancelledOrders)}
+            icon={<TrendingDown className="w-5 h-5" />}
+            color="error"
+            delay={500}
+            loading={isLoading}
+          />
+          <StatCard
+            title="Out of Stock"
+            value={formatNumber(filteredStatusCounts.outOfStockOrders)}
+            icon={<Package className="w-5 h-5" />}
+            color="error"
+            delay={550}
+            loading={isLoading}
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
             title={t("dashboard.netRevenue")}
             value={formatCurrency(filteredNetRevenue)}
             icon={<DollarSign className="w-5 h-5" />}
@@ -439,25 +479,20 @@ export default function DashboardPage() {
             tooltip={t("dashboard.productsSoldTooltip")}
           />
           <StatCard
-            title={t("dashboard.pending")}
-            value={formatNumber(filteredStatusCounts.pendingOrders)}
+            title="Unreached"
+            value={formatNumber(filteredStatusCounts.unreachedOrders)}
             icon={<Clock className="w-5 h-5" />}
             color="warning"
-            delay={500}
-            subtitle={`${filteredOrders.length > 0 ? ((filteredStatusCounts.pendingOrders / filteredOrders.length) * 100).toFixed(1) : 0}${t("dashboard.percentOfTotal")}`}
+            delay={700}
             loading={isLoading}
-            tooltip={t("dashboard.pendingTooltip")}
-            trend={computeTrend(filteredStatusCounts.pendingOrders, prevStats.prevPending)}
           />
           <StatCard
-            title={t("dashboard.confirmedOrders")}
-            value={formatNumber(filteredStatusCounts.confirmedOrders)}
-            icon={<CheckCircle className="w-5 h-5" />}
-            color="success"
-            delay={550}
+            title="Transferred"
+            value={formatNumber(filteredStatusCounts.transferredOrders)}
+            icon={<Package className="w-5 h-5" />}
+            color="primary"
+            delay={750}
             loading={isLoading}
-            tooltip={t("dashboard.confirmedOrdersTooltip")}
-            trend={computeTrend(filteredStatusCounts.confirmedOrders, prevStats.prevConfirmed)}
           />
         </div>
 
