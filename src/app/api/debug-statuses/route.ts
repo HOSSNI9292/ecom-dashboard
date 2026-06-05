@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 
 const CODINAFRICA_API = "https://api.codinafrica.com/api";
 
-function buildHeaders(): HeadersInit {
-  const token = process.env.NEXT_PUBLIC_CODINAFRICA_TOKEN || "";
-  return { "Content-Type": "application/json", "X-Auth-Token": token };
+function buildHeaders(token?: string): HeadersInit {
+  const t = token || process.env.NEXT_PUBLIC_CODINAFRICA_TOKEN || "";
+  return { "Content-Type": "application/json", "X-Auth-Token": t };
 }
 
-async function fetchAllPages(url: string, limit = 10): Promise<any[]> {
+async function fetchAllPages(url: string, token: string, limit = 10): Promise<any[]> {
   const all: any[] = [];
   for (let p = 1; p <= limit; p++) {
     try {
-      const res = await fetch(`${url}${url.includes("?") ? "&" : "?"}limit=1000&page=${p}`, { headers: buildHeaders() });
+      const res = await fetch(`${url}${url.includes("?") ? "&" : "?"}limit=1000&page=${p}`, { headers: buildHeaders(token) });
       if (!res.ok) break;
       const data = await res.json();
       const results = data?.content?.results || [];
@@ -25,13 +25,14 @@ async function fetchAllPages(url: string, limit = 10): Promise<any[]> {
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const dateParam = searchParams.get("date") || new Date().toISOString().substring(0, 10);
+  const token = searchParams.get("token") || "";
   const today = new Date().toISOString().substring(0, 10);
   const yesterday = new Date(Date.now() - 86400000).toISOString().substring(0, 10);
 
-  const result: Record<string, any> = { serverDateUTC: today, yesterday, queriedDate: dateParam };
+  const result: Record<string, any> = { serverDateUTC: today, yesterday, queriedDate: dateParam, tokenProvided: !!token };
 
   // Fetch orders
-  const allOrders = await fetchAllPages(`${CODINAFRICA_API}/orders/search`);
+  const allOrders = await fetchAllPages(`${CODINAFRICA_API}/orders/search`, token);
   result.ordersTotal = allOrders.length;
 
   // Status breakdown by date field
@@ -71,7 +72,7 @@ export async function GET(request: NextRequest) {
 
   // Try statuses endpoint
   try {
-    const statusRes = await fetch(`${CODINAFRICA_API}/statuses/search?limit=50`, { headers: buildHeaders() });
+    const statusRes = await fetch(`${CODINAFRICA_API}/statuses/search?limit=50`, { headers: buildHeaders(token) });
     if (statusRes.ok) {
       const statusData = await statusRes.json();
       result.statusesEndpoint = statusData;
